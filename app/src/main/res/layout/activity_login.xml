@@ -7,19 +7,19 @@
 
     <EditText
         android:id="@+id/email_et"
-        android:layout_width="243dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="234dp"
-        android:layout_marginBottom="25dp"
+        android:layout_width="244dp"
+        android:layout_height="69dp"
+        android:layout_marginStart="83dp"
+        android:layout_marginTop="230dp"
+        android:layout_marginEnd="84dp"
+        android:layout_marginBottom="23dp"
         android:ems="10"
         android:hint="이메일"
-        android:inputType="text"
+        android:inputType="textEmailAddress"
         app:layout_constraintBottom_toTopOf="@+id/pwd_et"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/pwd_et"
@@ -62,4 +62,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/pwd_et" />
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="182dp"
+        android:layout_marginTop="144dp"
+        android:layout_marginEnd="176dp"
+        android:text="rootmap"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

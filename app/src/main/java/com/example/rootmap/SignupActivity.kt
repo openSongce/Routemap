@@ -13,7 +13,6 @@ import com.google.firebase.auth.FirebaseUser
 class SignupActivity : AppCompatActivity() {
     lateinit var emailSignup: EditText
     lateinit var passwordSignup: EditText
-    lateinit var passwordSignupCheck: EditText
     lateinit var signupSuccessBtn: Button
     lateinit var auth: FirebaseAuth
     lateinit var binding: ActivitySignupBinding // lateinit 제거
@@ -27,7 +26,6 @@ class SignupActivity : AppCompatActivity() {
 
         emailSignup = findViewById(R.id.emailSignup)
         passwordSignup = findViewById(R.id.passwordSignup)
-        passwordSignupCheck = findViewById(R.id.passwordSignupCheck)
         signupSuccessBtn = findViewById(R.id.signupSuccessBtn)
 
         signupSuccessBtn = binding.signupSuccessBtn
@@ -45,11 +43,14 @@ class SignupActivity : AppCompatActivity() {
                 if (result.isSuccessful) {
                     Toast.makeText(this, "회원가입 성공", Toast.LENGTH_SHORT).show()
                     if (auth.currentUser!=null) {
-                        var intent = Intent(this, LoginActivity::class.java)
-                        startActivity(intent)
+                        var intentLogin = Intent(this, LoginActivity::class.java)
+                        startActivity(intentLogin)
                     }
-                } else {
-                    Toast.makeText(this, "회원가입 실패", Toast.LENGTH_SHORT).show()
+                } else if (result.exception?.message.isNullOrEmpty()) {
+                    Toast.makeText(this, "오류가 발생했습니다", Toast.LENGTH_SHORT).show()
+                }
+                else {
+                        Toast.makeText(this, "회원가입 실패", Toast.LENGTH_SHORT).show()
                 }
             }
             .addOnFailureListener {
