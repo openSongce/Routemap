@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "828472783790",
+    "project_id": "rootmap-f4696",
+    "storage_bucket": "rootmap-f4696.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:828472783790:android:a6e9b9346f65ef746f0e3f",
+        "android_client_info": {
+          "package_name": "com.example.rootmap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7E1F7D6ZrxkujnBVspcdSB8t5ujnv3_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
