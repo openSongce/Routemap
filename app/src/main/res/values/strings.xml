@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">rootmap</string>
+    <string name="default_web_client_id" translatable="false">828472783790-b43ul2cnegb29ah7ialflr4kt22f622s.apps.googleusercontent.com</string>
 </resources>
