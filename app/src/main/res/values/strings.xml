@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">rootmap</string>
+<<<<<<< HEAD
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+=======
+    <string name="default_web_client_id" translatable="false">828472783790-b43ul2cnegb29ah7ialflr4kt22f622s.apps.googleusercontent.com</string>
+>>>>>>> ac64d7af3a7a6f3af86e6fb756630ed9aaaf67e0
 </resources>
