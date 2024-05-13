@@ -19,8 +19,6 @@ class MainActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
 
         //binding.emailTv.text = auth.currentUser?.email
-
-
         val contextList= listOf(MenuFragment(),MenuFragment2(),MenuFragment3(),MenuFragment4())
         val adapter=HomeFragmentAdapter(this)
         adapter.fragmentList=contextList

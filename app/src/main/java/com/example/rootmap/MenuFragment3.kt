@@ -5,6 +5,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.example.rootmap.databinding.FragmentMenu2Binding
+import com.example.rootmap.databinding.FragmentMenu3Binding
+import com.example.rootmap.databinding.FragmentMenuBinding
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -20,6 +23,8 @@ class MenuFragment3 : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    //프래그먼트의 binding
+    lateinit var binding: FragmentMenu3Binding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +39,13 @@ class MenuFragment3 : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_menu3, container, false)
+        binding= FragmentMenu3Binding.inflate(inflater, container, false)
+
+        //여기부터 코드 작성
+
+
+        //
+        return binding.root
     }
 
     companion object {
