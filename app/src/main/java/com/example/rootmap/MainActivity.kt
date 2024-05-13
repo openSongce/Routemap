@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity() {
             tab.text=tabTitle[position]
         }.attach()
 
-
         binding.logoutBtn.setOnClickListener {
             auth.signOut() // 로그아웃 처리
             val intent = Intent(this, LoginActivity::class.java)
