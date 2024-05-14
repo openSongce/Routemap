@@ -48,7 +48,7 @@ class MenuFragment4 : Fragment() {
         auth = FirebaseAuth.getInstance()
         
         //여기에 메뉴 리스트 작성
-        var dataArr = mutableListOf<MenuItem>(MenuItem("친구","people"),MenuItem("가계부","calculate"))
+        var dataArr = mutableListOf<MenuItem>(MenuItem("친구","friend"),MenuItem("가계부","calculate"))
         var adapter=MenuListAdapter()
         adapter.list=dataArr
         binding.menuListView.adapter=adapter

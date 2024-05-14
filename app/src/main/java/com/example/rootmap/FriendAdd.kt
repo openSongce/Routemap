@@ -47,24 +47,25 @@ class FriendAdd : Fragment() {
         //여기부터 코드 작성
         //inflate(this.layoutInflater).friendButton.text="취소"
         val also = FriendLayoutBinding.inflate(inflater, container, false)
-        /*
+
                 val data:MutableList<Friend>?=loadData()
-                var adapter=CustomAdapter()
+                var adapter=FriendAdapter()
                 //친구 데이터의 null 체크
                 if(data!=null){
                     //어댑터에 데이터 반환
                     adapter.list= data
                     //텍스트 뷰는 안보이게 설정
-                    binding.textView2.visibility=View.INVISIBLE
+
                 }else{
-                    binding.textView2.text="수락 대기 중인 친구 없음"
+                    binding.friendAddText.text="수락 대기 중인 친구 없음"
+                    binding.friendAddText.visibility=View.VISIBLE
                 }
 
 
                 binding.recyclerList.adapter=adapter
                 binding.recyclerList.layoutManager= LinearLayoutManager(this.activity)
                 also.friendButton.text="취소"
-        */
+
         //
         return binding.root
     }

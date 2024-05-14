@@ -11,8 +11,11 @@
         android:layout_width="80dp"
         android:layout_height="50dp"
         android:layout_weight="1"
+        android:filterTouchesWhenObscured="false"
+        android:hapticFeedbackEnabled="false"
         android:scaleType="centerCrop"
-        android:src="@drawable/test" />
+        android:src="@drawable/profile_img"
+        app:civ_circle_background_color="#FFFFFF" />
 
     <TextView
         android:id="@+id/friendName"
@@ -35,6 +38,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="액션" />
+        android:text="액션"
+        android:visibility="visible" />
 
 </LinearLayout>

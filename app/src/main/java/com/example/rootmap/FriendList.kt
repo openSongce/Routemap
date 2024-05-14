@@ -47,21 +47,21 @@ class FriendList<MutabelList> : Fragment() {
         //여기부터 코드 작성
         val data:MutableList<Friend>?=loadData()
         var adapter=FriendAdapter()
-        /*
+
         //친구 데이터의 null 체크
         if(data!=null){
             //어댑터에 데이터 반환
             adapter.list= data
-            //텍스트 뷰는 안보이게 설정
-            binding.textView2.visibility=View.INVISIBLE
         }else{
-            binding.textView2.text="친구 없음"
+            //텍스트 뷰는 보이게 설정
+            binding.friendListText.text="친구 없음"
+            binding.friendListText.visibility=View.VISIBLE
         }
 
 
         binding.recyclerList.adapter=adapter
         binding.recyclerList.layoutManager=LinearLayoutManager(this.activity)
-*/
+
         //
         return binding.root
     }

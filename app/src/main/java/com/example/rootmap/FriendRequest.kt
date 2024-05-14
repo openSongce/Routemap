@@ -46,25 +46,24 @@ class FriendRequest : Fragment() {
         //여기부터 코드 작성
         //버튼 수정
         //FriendLayoutBinding.inflate(LayoutInflater.from(parent.context),parent,false).
-/*
+
         val data:MutableList<Friend>?=loadData()
-        var adapter=CustomAdapter()
+        var adapter=FriendAdapter()
         //데이터의 null 체크
         if(data!=null){
             //어댑터에 데이터 반환
             adapter.list= data
-            //텍스트 뷰는 안보이게 설정
-            binding.textView2.visibility=View.INVISIBLE
-        }else{
-            binding.textView2.text="받은 요청 없음"
+        }else{  
+            //텍스트 뷰 보이게 설정
+            binding.friendRequestText.text="받은 요청 없음"
+            binding.friendRequestText.visibility=View.VISIBLE
         }
 
 
         binding.recyclerList.adapter=adapter
         binding.recyclerList.layoutManager= LinearLayoutManager(this.activity)
-
         //
-        */
+        
 
         return binding.root
     }
