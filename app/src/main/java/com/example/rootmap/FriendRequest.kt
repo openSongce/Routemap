@@ -63,7 +63,6 @@ class FriendRequest : Fragment() {
         binding.recyclerList.adapter=adapter
         binding.recyclerList.layoutManager= LinearLayoutManager(this.activity)
         //
-        
 
         return binding.root
     }
@@ -72,12 +71,15 @@ class FriendRequest : Fragment() {
         //파이어베이스로부터 친구 데이터 가져오기-> 상태값이 0인 데이터 선별
         //현재는 테스트 데이터 입력
         val data= mutableListOf<Friend>()
+
+        /*
         for(no in 1..10){
             val name="받은요청"
             val id="예시ID"
             var load= Friend(name,id)
             data.add(load)
         }
+        */
         return data
     }
 

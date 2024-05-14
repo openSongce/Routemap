@@ -50,6 +50,7 @@ class FriendAdd : Fragment() {
 
                 val data:MutableList<Friend>?=loadData()
                 var adapter=FriendAdapter()
+
                 //친구 데이터의 null 체크
                 if(data!=null){
                     //어댑터에 데이터 반환
