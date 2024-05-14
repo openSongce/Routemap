@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    android:gravity="center_vertical">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/picture"
+        android:layout_width="80dp"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/test" />
+
+    <TextView
+        android:id="@+id/friendName"
+        android:layout_width="191dp"
+        android:layout_height="80dp"
+        android:layout_weight="1"
+        android:gravity="center|center_horizontal|left|center_vertical"
+        android:text="친구닉네임" />
+
+    <TextView
+        android:id="@+id/friendId"
+        android:layout_width="93dp"
+        android:layout_height="80dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="ID" />
+
+    <Button
+        android:id="@+id/friendButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="액션" />
+
+</LinearLayout>
