@@ -45,16 +45,6 @@ class MenuFragment4 : Fragment() {
         binding= FragmentMenu4Binding.inflate(inflater, container, false)
 
         //여기부터 코드 작성
-        auth = FirebaseAuth.getInstance()
-        
-        //여기에 메뉴 리스트 작성
-        var dataArr = mutableListOf<MenuItem>(MenuItem("친구","friend"),MenuItem("가계부","money"))
-        var adapter=MenuListAdapter()
-        adapter.list=dataArr
-        binding.menuListView.adapter=adapter
-        binding.menuListView.layoutManager= LinearLayoutManager(this.activity)
-
-
 
         //
         return binding.root

@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Toast
+import android.window.OnBackInvokedDispatcher
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import com.example.rootmap.databinding.ActivityMainBinding
 import com.google.android.material.navigation.NavigationView
@@ -58,7 +60,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 Toast.makeText(this,"일정 클릭",Toast.LENGTH_SHORT).show()
             }
             R.id.menuFriend ->{
-                Toast.makeText(this,"친구 클릭",Toast.LENGTH_SHORT).show()
+                val intent = Intent(this,FriendActivity::class.java)
+                startActivity(intent)
             }
             R.id.menuLogout ->{
                 auth.signOut() // 로그아웃 처리
@@ -71,6 +74,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         }
         return false
+    }
+
+    override fun onBackPressed() {
+        if (binding.mainDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.mainDrawerLayout.closeDrawers()
+        } else {
+            super.onBackPressed()
+        }
     }
 
 
