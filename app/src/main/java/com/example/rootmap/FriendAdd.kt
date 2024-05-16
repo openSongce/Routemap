@@ -109,6 +109,7 @@ class FriendAdd : Fragment() {
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
     fun showDialog(binding: FragmentFriendAddBinding,text:String ){ //다이어로그로 팝업창 구현, 아래의 searchUser()에서 사용
+        //여기서 binding은 FriendAdd의 Binding, text는 신청보낼 유저 ID임
         val dBinding=DialogLayooutBinding.inflate(layoutInflater)
         dBinding.wButton.text="취소" //다이어로그의 텍스트 변경
         dBinding.bButton.text="신청"
@@ -116,11 +117,13 @@ class FriendAdd : Fragment() {
         val dialogBuild=AlertDialog.Builder(context).setView(dBinding.root)
         val dialog=dialogBuild.show()
         dBinding.bButton.setOnClickListener{//다이어로그 기능 설정
+            //검정 버튼의 기능 구현 ↓
             dialog.dismiss() //다이어로그 창 끄기
-            context?.hideKeyboard(binding.root)
+            context?.hideKeyboard(binding.root) //키보드 내리기 -> 키보드 사용안하는 사람은 사용X
             Toast.makeText(context,"신청보냄", Toast.LENGTH_SHORT).show()
         }
         dBinding.wButton.setOnClickListener{//취소버튼
+            //회색 버튼의 기능 구현 ↓
             dialog.dismiss()
         }
     }
