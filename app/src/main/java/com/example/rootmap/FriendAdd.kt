@@ -115,7 +115,7 @@ class FriendAdd : Fragment() {
         dBinding.bButton.text="신청"
         dBinding.content.text="${text} 유저에게 친구 신청을 보내겠습니까?"
         val dialogBuild=AlertDialog.Builder(context).setView(dBinding.root)
-        val dialog=dialogBuild.show()
+        val dialog=dialogBuild.show() //다이어로그 창 띄우기
         dBinding.bButton.setOnClickListener{//다이어로그 기능 설정
             //검정 버튼의 기능 구현 ↓
             dialog.dismiss() //다이어로그 창 끄기
