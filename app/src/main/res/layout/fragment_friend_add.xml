@@ -42,20 +42,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:src="@drawable/search" />
+
         <EditText
             android:id="@+id/searchFriendText"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:ems="10"
-            android:inputType="text" />
+            android:inputType="textEmailAddress" />
 
         <ImageView
-            android:id="@+id/searchButton"
-            android:layout_width="60dp"
+            android:id="@+id/sendButton"
+            android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:scaleType="fitCenter"
-            android:src="@drawable/search" />
+            android:src="@drawable/send" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
 import com.example.rootmap.databinding.FragmentFriendRequestBinding
+import com.google.firebase.ktx.Firebase
 
 //받은 요청 프래그먼트-내가 받은 친구요청 확인, 수락 or 거절 화면
 // TODO: Rename parameter arguments, choose names that match
@@ -26,7 +27,6 @@ class FriendRequest : Fragment() {
     private var param2: String? = null
     //프래그먼트의 binding
     lateinit var binding: FragmentFriendRequestBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -47,10 +47,10 @@ class FriendRequest : Fragment() {
         //버튼 수정
         //FriendLayoutBinding.inflate(LayoutInflater.from(parent.context),parent,false).
 
-        val data:MutableList<Friend>?=loadData()
+        var data:MutableList<Friend>?=loadData()
         var adapter=FriendAdapter()
         //데이터의 null 체크
-        if(data!=null){
+        if(!data.isNullOrEmpty()){
             //어댑터에 데이터 반환
             adapter.list= data
         }else{  
@@ -58,8 +58,6 @@ class FriendRequest : Fragment() {
             binding.friendRequestText.text="받은 요청 없음"
             binding.friendRequestText.visibility=View.VISIBLE
         }
-
-
         binding.recyclerList.adapter=adapter
         binding.recyclerList.layoutManager= LinearLayoutManager(this.activity)
         //
@@ -67,22 +65,13 @@ class FriendRequest : Fragment() {
         return binding.root
     }
 
-    fun loadData():MutableList<Friend>{
+    fun loadData():MutableList<Friend>?{
         //파이어베이스로부터 친구 데이터 가져오기-> 상태값이 0인 데이터 선별
-        //현재는 테스트 데이터 입력
         val data= mutableListOf<Friend>()
+        //데이터 받아오기
 
-        /*
-        for(no in 1..10){
-            val name="받은요청"
-            val id="예시ID"
-            var load= Friend(name,id)
-            data.add(load)
-        }
-        */
         return data
     }
-
     companion object {
         /**
          * Use this factory method to create a new instance of

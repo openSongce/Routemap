@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/userName"
+        android:id="@+id/menuUserName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="28dp"
@@ -26,13 +26,13 @@
         android:textColor="#000000"
         android:textSize="20dp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/smallText"
+        app:layout_constraintBottom_toTopOf="@+id/menuNickname"
         app:layout_constraintStart_toEndOf="@+id/header_icon"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
-        android:id="@+id/smallText"
+        android:id="@+id/menuNickname"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="28dp"
@@ -41,5 +41,5 @@
         android:textColor="#EB554C4C"
         android:textSize="15dp"
         app:layout_constraintStart_toEndOf="@+id/header_icon"
-        app:layout_constraintTop_toBottomOf="@+id/userName" />
+        app:layout_constraintTop_toBottomOf="@+id/menuUserName" />
 </androidx.constraintlayout.widget.ConstraintLayout>

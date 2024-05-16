@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
@@ -49,8 +50,9 @@ class FriendList<MutabelList> : Fragment() {
         var adapter=FriendAdapter()
 
         //친구 데이터의 null 체크
-        if(data!=null){
+        if(!data.isNullOrEmpty()){
             //어댑터에 데이터 반환
+           // Toast.makeText(context,"${data.get(0)}", Toast.LENGTH_SHORT).show()
             adapter.list= data
         }else{
             //텍스트 뷰는 보이게 설정
@@ -66,17 +68,21 @@ class FriendList<MutabelList> : Fragment() {
         return binding.root
     }
 
-    fun loadData():MutableList<Friend>{
+    fun loadData():MutableList<Friend>?{
         //파이어베이스로부터 친구 데이터 가져오기-> 상태값이 2(친구상태)인 데이터 선별
         //현재는 테스트 데이터 입력
         val data= mutableListOf<Friend>()
+        /*
         for(no in 1..30){
             val name="예시이름"
             val id="예시ID"
             var load= Friend(name,id)
             data.add(load)
         }
-        return data
+        */
+
+            return data
+
     }
 
     companion object {
