@@ -24,7 +24,7 @@ private const val ARG_PARAM2 = "param2"
  */
 class FriendList<MutabelList> : Fragment() {
     // TODO: Rename and change types of parameters
-    private var param1: String? = null
+    private var currentId: String? = null
     private var param2: String? = null
     //프래그먼트의 binding
     lateinit var binding:FragmentFriendListBinding
@@ -32,7 +32,7 @@ class FriendList<MutabelList> : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
+            currentId = it.getString("id")
             param2 = it.getString(ARG_PARAM2)
         }
     }
@@ -46,6 +46,7 @@ class FriendList<MutabelList> : Fragment() {
         binding= FragmentFriendListBinding.inflate(inflater, container, false)
 
         //여기부터 코드 작성
+        //Toast.makeText(context,currendId, Toast.LENGTH_SHORT).show()
         val data:MutableList<Friend>?=loadData()
         var adapter=FriendAdapter()
 
@@ -72,16 +73,9 @@ class FriendList<MutabelList> : Fragment() {
         //파이어베이스로부터 친구 데이터 가져오기-> 상태값이 2(친구상태)인 데이터 선별
         //현재는 테스트 데이터 입력
         val data= mutableListOf<Friend>()
-        /*
-        for(no in 1..30){
-            val name="예시이름"
-            val id="예시ID"
-            var load= Friend(name,id)
-            data.add(load)
-        }
-        */
+        //데이터 받아오기
 
-            return data
+        return data
 
     }
 

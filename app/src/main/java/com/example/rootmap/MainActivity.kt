@@ -4,11 +4,13 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.TextView
 import android.widget.Toast
 import android.window.OnBackInvokedDispatcher
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import com.example.rootmap.databinding.ActivityMainBinding
+import com.example.rootmap.databinding.HeaderBinding
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.auth.FirebaseAuth
@@ -19,13 +21,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      val binding by lazy {ActivityMainBinding.inflate(layoutInflater) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-      //  exampleBinding= ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val currentId=intent.getStringExtra("id") //intent에서 id 꺼내기
 
-        //val barBinding= DrawBarBinding.inflate(layoutInflater)
+        val navigation:NavigationView=findViewById(R.id.main_navigationView)
+        navigation.setNavigationItemSelectedListener(this)
+        val head=navigation.getHeaderView(0)
+        val userName:TextView=head.findViewById(R.id.menuUserName) //이름
+        userName.setText(currentId)
+        //닉네임
 
         auth = FirebaseAuth.getInstance()
-
         //binding.emailTv.text = auth.currentUser?.email
         val contextList= listOf(MenuFragment(),MenuFragment2(),MenuFragment3(),MenuFragment4())
         val adapter=HomeFragmentAdapter(this)
@@ -60,8 +66,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 Toast.makeText(this,"일정 클릭",Toast.LENGTH_SHORT).show()
             }
             R.id.menuFriend ->{
-                val intent = Intent(this,FriendActivity::class.java)
-                startActivity(intent)
+                val friendIntent = Intent(this,FriendActivity::class.java)
+                friendIntent.putExtra("id",intent.getStringExtra("id"))
+                startActivity(friendIntent)
             }
             R.id.menuLogout ->{
                 auth.signOut() // 로그아웃 처리
@@ -70,12 +77,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 startActivity(intent) // LoginActivity로 화면 전환
             }
 
-
-
         }
         return false
     }
-
     override fun onBackPressed() {
         if (binding.mainDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             binding.mainDrawerLayout.closeDrawers()

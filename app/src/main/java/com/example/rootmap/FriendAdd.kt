@@ -18,6 +18,9 @@ import com.example.rootmap.databinding.DialogLayooutBinding
 import com.example.rootmap.databinding.FragmentFriendAddBinding
 import com.example.rootmap.databinding.FriendLayoutBinding
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestore
 
 // TODO: Rename parameter arguments, choose names that match
@@ -32,16 +35,15 @@ private const val ARG_PARAM2 = "param2"
  */
 class FriendAdd : Fragment() {
     // TODO: Rename and change types of parameters
-    private var param1: String? = null
+    private var currentId: String? = null
     private var param2: String? = null
     val db=Firebase.firestore
     //프래그먼트의 binding
     lateinit var binding: FragmentFriendAddBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
+            currentId = it.getString("id")
             param2 = it.getString(ARG_PARAM2)
         }
     }
@@ -60,17 +62,24 @@ class FriendAdd : Fragment() {
         binding.sendButton.setOnClickListener {//보내기 버튼 클릭 시
             text= binding.searchFriendText.text.toString()
             //데이터베이터에서 해당 ID의 유저 검색
-            searchUser(binding,text)
-
+            when(text){
+                ""->Toast.makeText(context,"빈칸입니다.",Toast.LENGTH_SHORT).show()
+                currentId->Toast.makeText(context,"본인에게 친구신청은 불가능합니다.",Toast.LENGTH_SHORT).show()
+                else->searchUser(binding,text)
+            }
         }
         binding.searchFriendText.setOnEditorActionListener { v, actionId, event //키보드 엔터 사용시
             ->
             text= binding.searchFriendText.text.toString()
-            searchUser(binding,text)
+            when(text){
+                ""->Toast.makeText(context,"빈칸입니다.",Toast.LENGTH_SHORT).show()
+                currentId->Toast.makeText(context,"본인에게 친구신청은 불가능합니다.",Toast.LENGTH_SHORT).show()
+                else->searchUser(binding,text)
+            }
             true
         }
-        val also = FriendLayoutBinding.inflate(inflater, container, false)
 
+        val also = FriendLayoutBinding.inflate(inflater, container, false)
                 val data:MutableList<Friend>?=loadData()
                 var adapter=FriendAdapter()
 
@@ -108,7 +117,7 @@ class FriendAdd : Fragment() {
         val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
-    fun showDialog(binding: FragmentFriendAddBinding,text:String ){ //다이어로그로 팝업창 구현, 아래의 searchUser()에서 사용
+    fun showDialog(binding: FragmentFriendAddBinding,text:String,friendDb: CollectionReference){ //다이어로그로 팝업창 구현, 아래의 searchUser()에서 사용
         //여기서 binding은 FriendAdd의 Binding, text는 신청보낼 유저 ID임
         val dBinding=DialogLayooutBinding.inflate(layoutInflater)
         dBinding.wButton.text="취소" //다이어로그의 텍스트 변경
@@ -120,7 +129,32 @@ class FriendAdd : Fragment() {
             //검정 버튼의 기능 구현 ↓
             dialog.dismiss() //다이어로그 창 끄기
             context?.hideKeyboard(binding.root) //키보드 내리기 -> 키보드 사용안하는 사람은 사용X
-            Toast.makeText(context,"신청보냄", Toast.LENGTH_SHORT).show()
+            var dc_friend=friendDb.whereEqualTo("id",currentId)
+            dc_friend.get().addOnSuccessListener { document->
+                if(document.isEmpty){//신청 보내기
+                    friendDb.add(hashMapOf("id" to currentId,"state" to 0))//상대의 데이터에 추가
+                    db.collection("user").document(currentId.toString()).collection("friend").add(
+                        hashMapOf("id" to text,"state" to 1))//내 데이터에 추가
+                    Toast.makeText(context,"신청을 보냈습니다.", Toast.LENGTH_SHORT).show()
+                }else{//이미 데이터가 있는 경우
+                    val d_id=document.documents[0].id //문서 아이디 저장
+                    val state=friendDb.document(d_id).get().addOnSuccessListener{dc->
+                        val stateValue= dc.data?.get("state")
+                        when(stateValue){
+                             0->Toast.makeText(context,"이미 신청을 보낸 상태입니다.", Toast.LENGTH_SHORT).show()
+                             1->Toast.makeText(context,"이미 요청을 받았습니다. '받은 요청'탭에서 수락하세요.", Toast.LENGTH_SHORT).show()
+                             2->Toast.makeText(context,"이미 친구입니다.", Toast.LENGTH_SHORT).show()
+                        }
+
+                    }.addOnFailureListener{exception-> //DB접근에 실패했을때
+                        loadFail()
+                    }
+                   // Toast.makeText(context,"이미 ", Toast.LENGTH_SHORT).show()
+                }
+            }.addOnFailureListener {exception-> //DB접근에 실패했을때
+                loadFail()
+            }
+          //  Toast.makeText(context,"신청보냄", Toast.LENGTH_SHORT).show()
         }
         dBinding.wButton.setOnClickListener{//취소버튼
             //회색 버튼의 기능 구현 ↓
@@ -129,17 +163,20 @@ class FriendAdd : Fragment() {
     }
     fun searchUser(binding:FragmentFriendAddBinding,text:String){
         //데이터베이터에서 해당 ID의 유저 검색
-        val data=db.collection("friend").whereEqualTo("id",text) //필드의 id값이 text인 유저(문서)를 data에 저장
-        data.get().addOnSuccessListener { document-> //DB접근 성공하였을 때
-            if(!document.isEmpty){//해당 유저가 존재할 때 && 본인이 아님
-                //본인 계정으로 신청정보가 없는 경우
-                showDialog(binding,text)
+        val userData=db.collection("user").whereEqualTo("id",text) //필드의 id값이 text인 유저(문서)를 data에 저장
+        userData.get().addOnSuccessListener { document-> //DB접근 성공하였을 때
+            if(!document.isEmpty){//해당 유저가 존재할 때
+                val friendQuery=db.collection("user").document(document.documents[0].id).collection("friend")
+                showDialog(binding,text,friendQuery)//1명만 존재하기때문에
             }else{
                 Toast.makeText(context,"해당 유저는 존재하지 않아 신청을 보낼 수 없습니다.", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener{exception-> //DB접근에 실패했을때
-            Toast.makeText(context,"데이터 로드에 실패했습니다.", Toast.LENGTH_SHORT).show()
+            loadFail()
         }
+    }
+    fun loadFail(){
+        Toast.makeText(context,"데이터 로드에 실패했습니다.", Toast.LENGTH_SHORT).show()
     }
 
 
