@@ -47,36 +47,11 @@ class FriendList<MutabelList> : Fragment() {
 
         //여기부터 코드 작성
         //Toast.makeText(context,currendId, Toast.LENGTH_SHORT).show()
-        val data:MutableList<Friend>?=loadData()
-        var adapter=FriendAdapter()
-
-        //친구 데이터의 null 체크
-        if(!data.isNullOrEmpty()){
-            //어댑터에 데이터 반환
-           // Toast.makeText(context,"${data.get(0)}", Toast.LENGTH_SHORT).show()
-            adapter.list= data
-        }else{
-            //텍스트 뷰는 보이게 설정
-            binding.friendListText.text="친구 없음"
-            binding.friendListText.visibility=View.VISIBLE
-        }
-
-
+        var adapter=FriendAdapter("List",currentId.toString())
         binding.recyclerList.adapter=adapter
-        binding.recyclerList.layoutManager=LinearLayoutManager(this.activity)
+        binding.recyclerList.layoutManager= LinearLayoutManager(activity)
 
-        //
         return binding.root
-    }
-
-    fun loadData():MutableList<Friend>?{
-        //파이어베이스로부터 친구 데이터 가져오기-> 상태값이 2(친구상태)인 데이터 선별
-        //현재는 테스트 데이터 입력
-        val data= mutableListOf<Friend>()
-        //데이터 받아오기
-
-        return data
-
     }
 
     companion object {

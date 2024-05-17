@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,16 +13,25 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
 import com.example.rootmap.databinding.DialogLayooutBinding
 import com.example.rootmap.databinding.FragmentFriendAddBinding
 import com.example.rootmap.databinding.FriendLayoutBinding
+import com.google.android.material.navigation.NavigationView
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseException
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -81,38 +91,12 @@ class FriendAdd : Fragment() {
             true
         }
         //수락 대기 중인 리스트
-        val also = FriendLayoutBinding.inflate(inflater, container, false)
-                val data:MutableList<Friend>?=loadData(myDb)
-                var adapter=FriendAdapter()
-
-                //친구 데이터의 null 체크
-                if(!data.isNullOrEmpty()){
-                    //어댑터에 데이터 반환
-                    adapter.list= data
-                }else{
-                    binding.friendAddText.text="수락 대기 중인 친구 없음"
-                    binding.friendAddText.visibility=View.VISIBLE
-                }
-                binding.recyclerList.adapter=adapter
-                binding.recyclerList.layoutManager= LinearLayoutManager(this.activity)
-                also.friendButton.text="취소"
-
-        //
+        var adapter=FriendAdapter("Add",currentId.toString())
+        binding.recyclerList.adapter=adapter
+        binding.recyclerList.layoutManager= LinearLayoutManager(activity)
         return binding.root
     }
-    fun loadData(myDb:CollectionReference):MutableList<Friend>?{
-        //파이어베이스로부터 친구 데이터 가져오기-> 상태값이 1(본인이 요청)인 데이터 선별
-        //현재는 테스트 데이터 입력
-        val data= mutableListOf<Friend>()
-        for(no in 1..5){
-            val name="친구요청"
-            val id="예시ID"
-            var load= Friend(name,id)
-            data.add(load)
-        }
-        //데이터 받아오기
-        return data
-    }
+
     fun Context.hideKeyboard(view: View) {
         val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
@@ -180,6 +164,8 @@ class FriendAdd : Fragment() {
     fun loadFail(){
         Toast.makeText(context,"데이터 로드에 실패했습니다.", Toast.LENGTH_SHORT).show()
     }
+
+
 
     companion object {
         /**

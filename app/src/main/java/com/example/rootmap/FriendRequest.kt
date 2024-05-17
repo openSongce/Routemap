@@ -21,7 +21,7 @@ private const val ARG_PARAM2 = "param2"
  * Use the [FriendRequest.newInstance] factory method to
  * create an instance of this fragment.
  */
-class FriendRequest : Fragment() {
+class FriendRequest: Fragment() {
     // TODO: Rename and change types of parameters
     private var currentId: String? = null
     private var param2: String? = null
@@ -43,34 +43,11 @@ class FriendRequest : Fragment() {
         //binding 지정
         binding= FragmentFriendRequestBinding.inflate(inflater, container, false)
 
-        //여기부터 코드 작성
-        //버튼 수정
-        //FriendLayoutBinding.inflate(LayoutInflater.from(parent.context),parent,false).
-
-        var data:MutableList<Friend>?=loadData()
-        var adapter=FriendAdapter()
-        //데이터의 null 체크
-        if(!data.isNullOrEmpty()){
-            //어댑터에 데이터 반환
-            adapter.list= data
-        }else{  
-            //텍스트 뷰 보이게 설정
-            binding.friendRequestText.text="받은 요청 없음"
-            binding.friendRequestText.visibility=View.VISIBLE
-        }
+        var adapter=FriendAdapter("Request",currentId.toString())
         binding.recyclerList.adapter=adapter
-        binding.recyclerList.layoutManager= LinearLayoutManager(this.activity)
-        //
+        binding.recyclerList.layoutManager= LinearLayoutManager(activity)
 
         return binding.root
-    }
-
-    fun loadData():MutableList<Friend>?{
-        //파이어베이스로부터 친구 데이터 가져오기-> 상태값이 0인 데이터 선별
-        val data= mutableListOf<Friend>()
-        //데이터 받아오기
-
-        return data
     }
     companion object {
         /**
