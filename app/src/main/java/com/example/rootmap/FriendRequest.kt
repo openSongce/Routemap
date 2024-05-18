@@ -1,16 +1,35 @@
 package com.example.rootmap
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.Toast
+import androidx.core.view.isInvisible
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
+import com.example.rootmap.databinding.FragmentFriendListBinding
 import com.example.rootmap.databinding.FragmentFriendRequestBinding
-import com.google.firebase.ktx.Firebase
+import com.example.rootmap.databinding.FriendLayoutBinding
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseException
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 
-//받은 요청 프래그먼트-내가 받은 친구요청 확인, 수락 or 거절 화면
+//친구 리스트 프래그먼트-현재 자신과 친구 상태인 유저의 리스트를 출력 등의 기능을 가진 화면
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
@@ -18,20 +37,25 @@ private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
- * Use the [FriendRequest.newInstance] factory method to
+ * Use the [FriendList.newInstance] factory method to
  * create an instance of this fragment.
  */
-class FriendRequest: Fragment() {
+class FriendRequest : Fragment() {
     // TODO: Rename and change types of parameters
     private var currentId: String? = null
-    private var param2: String? = null
+    private var mode: String? = null
+
     //프래그먼트의 binding
-    lateinit var binding: FragmentFriendRequestBinding
+    val binding by lazy { FragmentFriendRequestBinding.inflate(layoutInflater) }
+    val db = Firebase.firestore
+    lateinit var myDb: CollectionReference
+    val data: MutableList<Friend> = mutableListOf()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             currentId = it.getString("id")
-            param2 = it.getString(ARG_PARAM2)
+            mode = it.getString("mode")
         }
     }
 
@@ -41,14 +65,48 @@ class FriendRequest: Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         //binding 지정
-        binding= FragmentFriendRequestBinding.inflate(inflater, container, false)
-
-        var adapter=FriendAdapter("Request",currentId.toString())
-        binding.recyclerList.adapter=adapter
-        binding.recyclerList.layoutManager= LinearLayoutManager(activity)
-
+        //여기부터 코드 작성
+        //Toast.makeText(context,currendId, Toast.LENGTH_SHORT).show()
+        myDb = db.collection("user").document(currentId.toString()).collection("friend")
         return binding.root
     }
+
+    @SuppressLint("ResourceType")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        var reAdapter = FriendAdapter(currentId.toString())
+        viewLifecycleOwner.lifecycleScope.async {
+            loadData()
+            reAdapter.list = data
+
+            Log.d("data", data.size.toString())
+            binding.recyclerList.adapter = reAdapter
+            binding.recyclerList.layoutManager = LinearLayoutManager(context)
+            if (data.isEmpty()) {
+                binding.friendRequestText.text = "받은 요청이 없습니다."
+                binding.friendRequestText.visibility = View.VISIBLE
+            }
+        }
+
+        //f_binding.friendButton.text="fdsf"
+        super.onViewCreated(view, savedInstanceState)
+    }
+
+    suspend fun loadData(): Boolean {
+        return try {
+            val fr_add = myDb.whereEqualTo("state", "0").get().await()
+            for (fr in fr_add.documents) {
+                var id = fr.data?.get("id").toString() //친구 id
+                val fr_data = db.collection("user").document(id).get().await()
+                var load = Friend(fr_data.data?.get("name").toString(), id)
+                data.add(load)
+            }
+            Log.d("load_check_re",data.size.toString())
+            true
+        } catch (e: FirebaseException) {
+            false
+        }
+    }
+
     companion object {
         /**
          * Use this factory method to create a new instance of
@@ -56,16 +114,18 @@ class FriendRequest: Fragment() {
          *
          * @param param1 Parameter 1.
          * @param param2 Parameter 2.
-         * @return A new instance of fragment FriendRequest.
+         * @return A new instance of fragment FriendList.
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            FriendRequest().apply {
+            FriendList().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)
                 }
             }
     }
+
+
 }

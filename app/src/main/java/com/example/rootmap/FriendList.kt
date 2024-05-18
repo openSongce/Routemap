@@ -1,15 +1,28 @@
 package com.example.rootmap
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.isInvisible
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
 import com.example.rootmap.databinding.FragmentFriendListBinding
+import com.example.rootmap.databinding.FragmentFriendRequestBinding
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseException
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 
 //친구 리스트 프래그먼트-현재 자신과 친구 상태인 유저의 리스트를 출력 등의 기능을 가진 화면
 // TODO: Rename parameter arguments, choose names that match
@@ -22,18 +35,21 @@ private const val ARG_PARAM2 = "param2"
  * Use the [FriendList.newInstance] factory method to
  * create an instance of this fragment.
  */
-class FriendList<MutabelList> : Fragment() {
+class FriendList : Fragment() {
     // TODO: Rename and change types of parameters
     private var currentId: String? = null
-    private var param2: String? = null
-    //프래그먼트의 binding
-    lateinit var binding:FragmentFriendListBinding
+    private var mode: String? = null
 
+    //프래그먼트의 binding
+    val binding by lazy { FragmentFriendListBinding.inflate(layoutInflater) }
+    val db = Firebase.firestore
+    lateinit var myDb: CollectionReference
+    val data: MutableList<Friend> = mutableListOf()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             currentId = it.getString("id")
-            param2 = it.getString(ARG_PARAM2)
+            mode = it.getString("mode")
         }
     }
 
@@ -43,15 +59,45 @@ class FriendList<MutabelList> : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         //binding 지정
-        binding= FragmentFriendListBinding.inflate(inflater, container, false)
-
+        myDb = db.collection("user").document(currentId.toString()).collection("friend")
+        return binding.root
         //여기부터 코드 작성
         //Toast.makeText(context,currendId, Toast.LENGTH_SHORT).show()
-        var adapter=FriendAdapter("List",currentId.toString())
-        binding.recyclerList.adapter=adapter
-        binding.recyclerList.layoutManager= LinearLayoutManager(activity)
+    }
 
-        return binding.root
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+        var listAdapter = FriendAdapter(currentId.toString())
+        viewLifecycleOwner.lifecycleScope.async {
+
+            loadData()
+            listAdapter.list = data
+
+            Log.d("data", data.size.toString())
+            binding.recyclerList.adapter = listAdapter
+            binding.recyclerList.layoutManager = LinearLayoutManager(context)
+            if (data.isEmpty()) {
+                binding.friendListText.text = "친구가 없습니다."
+                binding.friendListText.visibility = View.VISIBLE
+            }
+        }
+        super.onViewCreated(view, savedInstanceState)
+    }
+    suspend fun loadData(): Boolean {
+        return try {
+            val fr_add = myDb.whereEqualTo("state", "2").get().await()
+            for (fr in fr_add.documents) {
+                var id = fr.data?.get("id").toString() //친구 id
+                val fr_data = db.collection("user").document(id).get().await()
+                var load = Friend(fr_data.data?.get("name").toString(), id)
+                data.add(load)
+            }
+            Log.d("list_test", "try")
+            true
+        } catch (e: FirebaseException) {
+            Log.d("list_test", "error")
+            false
+        }
     }
 
     companion object {
@@ -66,7 +112,7 @@ class FriendList<MutabelList> : Fragment() {
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            FriendList<Any>().apply {
+            FriendList().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)
