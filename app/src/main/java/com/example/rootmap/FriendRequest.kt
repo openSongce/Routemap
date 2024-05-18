@@ -7,26 +7,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.Toast
-import androidx.core.view.isInvisible
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
-import com.example.rootmap.databinding.FragmentFriendListBinding
 import com.example.rootmap.databinding.FragmentFriendRequestBinding
-import com.example.rootmap.databinding.FriendLayoutBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 
 //친구 리스트 프래그먼트-현재 자신과 친구 상태인 유저의 리스트를 출력 등의 기능을 가진 화면
@@ -50,6 +39,7 @@ class FriendRequest : Fragment() {
     val db = Firebase.firestore
     lateinit var myDb: CollectionReference
     val data: MutableList<Friend> = mutableListOf()
+    lateinit var reAdapter:FriendAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,15 +58,17 @@ class FriendRequest : Fragment() {
         //여기부터 코드 작성
         //Toast.makeText(context,currendId, Toast.LENGTH_SHORT).show()
         myDb = db.collection("user").document(currentId.toString()).collection("friend")
+        reAdapter = FriendAdapter()
         return binding.root
     }
 
     @SuppressLint("ResourceType")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        var reAdapter = FriendAdapter(currentId.toString())
         viewLifecycleOwner.lifecycleScope.async {
             loadData()
             reAdapter.list = data
+            reAdapter.myid=currentId.toString()
+            reAdapter.mode="Request"
 
             Log.d("data", data.size.toString())
             binding.recyclerList.adapter = reAdapter
@@ -86,11 +78,9 @@ class FriendRequest : Fragment() {
                 binding.friendRequestText.visibility = View.VISIBLE
             }
         }
-
         //f_binding.friendButton.text="fdsf"
         super.onViewCreated(view, savedInstanceState)
     }
-
     suspend fun loadData(): Boolean {
         return try {
             val fr_add = myDb.whereEqualTo("state", "0").get().await()

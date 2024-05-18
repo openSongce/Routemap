@@ -31,7 +31,7 @@
                 android:layout_height="40dp"
                 android:layout_margin="10dp"
                 android:layout_weight="1"
-                android:backgroundTint="#AFAFAF"
+                android:backgroundTint="@color/gray"
                 android:backgroundTintMode="src_atop"
                 android:text="버튼값"
                 android:textColor="@color/black" />

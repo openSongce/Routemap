@@ -2,15 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/friendView"
     android:layout_width="match_parent"
     android:layout_height="80dp"
     android:gravity="center_vertical">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/picture"
-        android:layout_width="80dp"
+        android:layout_width="70dp"
         android:layout_height="50dp"
-        android:layout_weight="1"
+        android:layout_weight="0"
         android:filterTouchesWhenObscured="false"
         android:hapticFeedbackEnabled="false"
         android:scaleType="centerCrop"
@@ -19,8 +20,9 @@
 
     <TextView
         android:id="@+id/friendName"
-        android:layout_width="191dp"
+        android:layout_width="wrap_content"
         android:layout_height="80dp"
+        android:layout_marginLeft="10dp"
         android:layout_weight="1"
         android:gravity="center|center_horizontal|left|center_vertical"
         android:text="친구닉네임" />
@@ -29,15 +31,29 @@
         android:id="@+id/friendId"
         android:layout_width="wrap_content"
         android:layout_height="80dp"
-        android:layout_weight="1"
+        android:layout_weight="0"
         android:gravity="center"
         android:text="ID" />
 
     <Button
         android:id="@+id/friendButton"
-        android:layout_width="wrap_content"
+        android:layout_width="70dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="5dp"
+        android:layout_weight="0"
+        android:backgroundTint="@color/gray"
+        android:text="액션"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/friendButton2"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="10dp"
+        android:layout_weight="0"
+        android:backgroundTint="@color/black"
         android:text="액션"
         android:visibility="visible" />
 

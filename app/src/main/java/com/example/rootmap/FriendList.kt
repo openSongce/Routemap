@@ -6,22 +6,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.core.view.isInvisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
 import com.example.rootmap.databinding.FragmentFriendListBinding
-import com.example.rootmap.databinding.FragmentFriendRequestBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 
 //친구 리스트 프래그먼트-현재 자신과 친구 상태인 유저의 리스트를 출력 등의 기능을 가진 화면
@@ -45,6 +38,7 @@ class FriendList : Fragment() {
     val db = Firebase.firestore
     lateinit var myDb: CollectionReference
     val data: MutableList<Friend> = mutableListOf()
+    lateinit var listAdapter:FriendAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -60,6 +54,7 @@ class FriendList : Fragment() {
         // Inflate the layout for this fragment
         //binding 지정
         myDb = db.collection("user").document(currentId.toString()).collection("friend")
+        listAdapter = FriendAdapter()
         return binding.root
         //여기부터 코드 작성
         //Toast.makeText(context,currendId, Toast.LENGTH_SHORT).show()
@@ -67,12 +62,12 @@ class FriendList : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        var listAdapter = FriendAdapter(currentId.toString())
-        viewLifecycleOwner.lifecycleScope.async {
 
+        viewLifecycleOwner.lifecycleScope.async {
             loadData()
             listAdapter.list = data
-
+            listAdapter.mode="List"
+            listAdapter.myid=currentId.toString()
             Log.d("data", data.size.toString())
             binding.recyclerList.adapter = listAdapter
             binding.recyclerList.layoutManager = LinearLayoutManager(context)
@@ -80,6 +75,8 @@ class FriendList : Fragment() {
                 binding.friendListText.text = "친구가 없습니다."
                 binding.friendListText.visibility = View.VISIBLE
             }
+           // var test=listAdapter.binding
+          //  test.friendButton2.text="fd"
         }
         super.onViewCreated(view, savedInstanceState)
     }
