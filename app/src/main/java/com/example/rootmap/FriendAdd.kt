@@ -118,7 +118,7 @@ class FriendAdd : Fragment() {
             for (fr in fr_add.documents) {
                 var id = fr.data?.get("id").toString() //친구 id
                 val fr_data = db.collection("user").document(id).get().await()
-                var load = Friend(fr_data.data?.get("name").toString(), id)
+                var load = Friend(fr_data.data?.get("nickname").toString(), id)
                 data.add(load)
             }
             Log.d("load_check_add", data.size.toString())
@@ -127,8 +127,6 @@ class FriendAdd : Fragment() {
             false
         }
     }
-
-
     fun Context.hideKeyboard(view: View) {
         val inputMethodManager =
             getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -209,7 +207,6 @@ class FriendAdd : Fragment() {
             dialog.dismiss()
         }
     }
-
     fun searchUser(text: String) {
         //데이터베이터에서 해당 ID의 유저 검색
         val userData =
@@ -228,12 +225,9 @@ class FriendAdd : Fragment() {
             loadFail()
         }
     }
-
     fun loadFail() {
         Toast.makeText(context, "데이터 로드에 실패했습니다.", Toast.LENGTH_SHORT).show()
     }
-
-
     companion object {
         /**
          * Use this factory method to create a new instance of
@@ -252,5 +246,6 @@ class FriendAdd : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+
     }
 }

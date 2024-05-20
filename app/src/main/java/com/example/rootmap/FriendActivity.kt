@@ -40,9 +40,6 @@ class FriendActivity : AppCompatActivity() {
     }
     override fun onResume() {
         super.onResume()
-        adapter.notifyDataSetChanged()
     }
-   public fun refresh(){
-       adapter.notifyDataSetChanged()
-   }
+
 }

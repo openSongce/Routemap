@@ -3,34 +3,54 @@ package com.example.rootmap
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
 import android.window.OnBackInvokedDispatcher
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.lifecycle.lifecycleScope
+import com.example.myapplication.Friend
 import com.example.rootmap.databinding.ActivityMainBinding
 import com.example.rootmap.databinding.HeaderBinding
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener{
     //private lateinit var binding: ActivityMainBinding
     private lateinit var auth: FirebaseAuth
      val binding by lazy {ActivityMainBinding.inflate(layoutInflater) }
+    lateinit var name:String
+    lateinit var nickname:String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         val currentId=intent.getStringExtra("id") //intent에서 id 꺼내기
-
         val navigation:NavigationView=findViewById(R.id.main_navigationView)
         navigation.setNavigationItemSelectedListener(this)
         val head=navigation.getHeaderView(0)
-        val userName:TextView=head.findViewById(R.id.menuUserName) //이름
-        userName.setText(currentId)
-        //닉네임
+        val userName:TextView=head.findViewById(R.id.menuUserName)
+        val userNickame:TextView=head.findViewById(R.id.menuNickname)
 
+        CoroutineScope(Dispatchers.Main).async{
+            if (currentId != null) {
+            loadMyData(currentId)
+        }
+            userName.setText(name) //이름
+            userNickame.setText(nickname)
+        }
         auth = FirebaseAuth.getInstance()
         //binding.emailTv.text = auth.currentUser?.email
         val contextList= listOf(MenuFragment(),MenuFragment2(),MenuFragment3(),MenuFragment4())
@@ -49,6 +69,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         binding.mainNavigationView.setNavigationItemSelectedListener(this) //드로우 사이드 메뉴바 리스너 등록
+        var bundle = Bundle()
+        bundle.putString("id", currentId)
+        for (i in 0..3) {
+            contextList[i].arguments = bundle
+        }
     }
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         //사이드 메뉴 항목 클릭 이벤트 구현
@@ -76,7 +101,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent) // LoginActivity로 화면 전환
             }
-
         }
         return false
     }
@@ -85,6 +109,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             binding.mainDrawerLayout.closeDrawers()
         } else {
             super.onBackPressed()
+        }
+    }
+    suspend fun loadMyData(id:String):Boolean{
+        return try {
+            val mydb= Firebase.firestore.collection("user").document(id).get().await()
+            name=mydb.data?.get("name").toString()
+            nickname=mydb.data?.get("nickname").toString()
+            true
+        } catch (e: FirebaseException) {
+            Log.d("load_error", "error")
+            false
         }
     }
 

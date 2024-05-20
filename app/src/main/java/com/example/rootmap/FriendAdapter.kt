@@ -22,6 +22,7 @@ class FriendAdapter(): RecyclerView.Adapter<FriendHolder>() {
     var list = mutableListOf<Friend>()
     var myid: String = "id"
     var mode: String = "De"
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendHolder {
         val binding =
             FriendLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -53,7 +54,7 @@ class FriendHolder(
     }
     fun setFriend(friend: Friend) {
         //해당 binding화면에 친구 정보 제공
-        binding.friendName.text = friend.name
+        binding.friendName.text = friend.nickname
         binding.friendId.text = friend.id
         var frid = friend.id
         when (mode) {

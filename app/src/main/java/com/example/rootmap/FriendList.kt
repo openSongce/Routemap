@@ -62,7 +62,6 @@ class FriendList : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-
         viewLifecycleOwner.lifecycleScope.async {
             loadData()
             listAdapter.list = data
@@ -86,7 +85,7 @@ class FriendList : Fragment() {
             for (fr in fr_add.documents) {
                 var id = fr.data?.get("id").toString() //친구 id
                 val fr_data = db.collection("user").document(id).get().await()
-                var load = Friend(fr_data.data?.get("name").toString(), id)
+                var load = Friend(fr_data.data?.get("nickname").toString(), id)
                 data.add(load)
             }
             Log.d("list_test", "try")
