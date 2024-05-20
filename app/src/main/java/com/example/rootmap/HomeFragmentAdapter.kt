@@ -14,4 +14,7 @@ class HomeFragmentAdapter(fragmentActivity: FragmentActivity): FragmentStateAdap
     override fun createFragment(position: Int): Fragment {
         return fragmentList[position]
     }
+
+
+
 }

@@ -1,15 +1,19 @@
 package com.example.rootmap
 
 import android.R
+import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
+import android.text.Editable
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.compose.ui.graphics.Color
@@ -62,9 +66,10 @@ class MenuFragment4 : Fragment() {
         //여기부터 코드 작성
         binding = FragmentMenu4Binding.inflate(inflater, container, false)
         auth = FirebaseAuth.getInstance()
+        var id=id.toString()
         binding.userId.text = id
         viewLifecycleOwner.lifecycleScope.async {
-            loadMyData(id.toString())
+            loadMyData(id)
             binding.userName.text = name
             binding.userNickname.text = nickname
         }
@@ -77,9 +82,44 @@ class MenuFragment4 : Fragment() {
         binding.secessionButton.setOnClickListener {
             showDialog("secession")
         }
+        binding.imageButton.setOnClickListener{
+            binding.imageButton.visibility=View.INVISIBLE
+            binding.saveButton.visibility=View.VISIBLE
+            binding.userNickname.visibility=View.GONE
+            binding.nickChange.visibility=View.VISIBLE
+            binding.userName.visibility=View.GONE
+            binding.nameChange.visibility=View.VISIBLE
+
+            binding.nickChange.setText(nickname)
+            binding.nameChange.setText(name)
+            binding.saveButton.setOnClickListener {
+                var nameText=binding.nameChange.text.toString()
+                var nickText=binding.nickChange.text.toString()
+                Firebase.firestore.collection("user").document(id).update(mapOf<String,String>("name" to nameText,"nickname" to nickText))
+                binding.imageButton.visibility=View.VISIBLE
+                binding.saveButton.visibility=View.INVISIBLE
+                binding.userNickname.visibility=View.VISIBLE
+                binding.nickChange.visibility=View.GONE
+                binding.userName.visibility=View.VISIBLE
+                binding.nameChange.visibility=View.GONE
+
+                context?.hideKeyboard(binding.root)
+                viewLifecycleOwner.lifecycleScope.async {
+                    loadMyData(id)
+                    binding.userName.text = name
+                    binding.userNickname.text = nickname
+                }
+            }
+        }
+
 
         //
         return binding.root
+    }
+    fun Context.hideKeyboard(view: View) {
+        val inputMethodManager =
+            getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
     suspend fun loadMyData(id: String): Boolean {

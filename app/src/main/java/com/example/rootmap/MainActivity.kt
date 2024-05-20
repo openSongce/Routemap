@@ -51,6 +51,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             userName.setText(name) //이름
             userNickame.setText(nickname)
         }
+
+
         auth = FirebaseAuth.getInstance()
         //binding.emailTv.text = auth.currentUser?.email
         val contextList= listOf(MenuFragment(),MenuFragment2(),MenuFragment3(),MenuFragment4())
@@ -66,6 +68,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         //좌측 상단의 버튼 클릭-> 사이드메뉴 나옴
         binding.menuButton.setOnClickListener(){
             binding.mainDrawerLayout.openDrawer((GravityCompat.START))
+            CoroutineScope(Dispatchers.Main).async{
+                if (currentId != null) {
+                    loadMyData(currentId)
+                }
+                userName.setText(name) //이름
+                userNickame.setText(nickname)
+            }
+
         }
 
         binding.mainNavigationView.setNavigationItemSelectedListener(this) //드로우 사이드 메뉴바 리스너 등록

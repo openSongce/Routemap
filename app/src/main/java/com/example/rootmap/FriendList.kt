@@ -1,14 +1,18 @@
 package com.example.rootmap
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
+import com.example.rootmap.databinding.DialogLayooutBinding
 import com.example.rootmap.databinding.FragmentFriendListBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
@@ -39,12 +43,18 @@ class FriendList : Fragment() {
     lateinit var myDb: CollectionReference
     val data: MutableList<Friend> = mutableListOf()
     lateinit var listAdapter:FriendAdapter
+    lateinit var mg:FragmentManager
+    lateinit var fr:Fragment
+    init{
+        instance = this
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             currentId = it.getString("id")
             mode = it.getString("mode")
         }
+
     }
 
     override fun onCreateView(
@@ -59,26 +69,60 @@ class FriendList : Fragment() {
         //여기부터 코드 작성
         //Toast.makeText(context,currendId, Toast.LENGTH_SHORT).show()
     }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         viewLifecycleOwner.lifecycleScope.async {
-            loadData()
-            listAdapter.list = data
+            refresh()
             listAdapter.mode="List"
             listAdapter.myid=currentId.toString()
-            Log.d("data", data.size.toString())
+
             binding.recyclerList.adapter = listAdapter
             binding.recyclerList.layoutManager = LinearLayoutManager(context)
+
+        }
+        mg= requireFragmentManager()
+        fr=this
+        super.onViewCreated(view, savedInstanceState)
+    }
+
+    override fun onResume() {
+        super.onResume()
+    }
+    fun refresh(){
+        data.clear()
+        viewLifecycleOwner.lifecycleScope.async {
+            loadData()
+            listAdapter.list = data
             if (data.isEmpty()) {
                 binding.friendListText.text = "친구가 없습니다."
                 binding.friendListText.visibility = View.VISIBLE
+            }else{
+                binding.friendListText.visibility = View.INVISIBLE
             }
-           // var test=listAdapter.binding
-          //  test.friendButton2.text="fd"
+            listAdapter?.notifyDataSetChanged()
         }
-        super.onViewCreated(view, savedInstanceState)
     }
+
+
+    fun showAction(frid:String){
+        val dBinding = DialogLayooutBinding.inflate(layoutInflater)
+        dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
+        dBinding.bButton.text = "확인"
+        dBinding.content.text = "아직 기능 없음"
+        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        val dialog = dialogBuild.show() //다이어로그 창 띄우기
+        var id=currentId.toString()
+        dBinding.bButton.setOnClickListener {
+            //검정 버튼의 기능 구현 ↓
+            refresh()
+            dialog.dismiss()
+        }
+        dBinding.wButton.setOnClickListener {//취소버튼
+            //회색 버튼의 기능 구현 ↓
+            dialog.dismiss()
+        }
+    }
+
     suspend fun loadData(): Boolean {
         return try {
             val fr_add = myDb.whereEqualTo("state", "2").get().await()
@@ -114,6 +158,10 @@ class FriendList : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+        private var instance: FriendList? = null
+        fun getInstance():FriendList?{
+            return instance
+        }
     }
 
 

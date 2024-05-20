@@ -1,6 +1,7 @@
 package com.example.rootmap
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -10,6 +11,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
+import com.example.rootmap.databinding.DialogLayooutBinding
 import com.example.rootmap.databinding.FragmentFriendRequestBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
@@ -41,6 +43,10 @@ class FriendRequest : Fragment() {
     val data: MutableList<Friend> = mutableListOf()
     lateinit var reAdapter:FriendAdapter
 
+    init{
+        instance = this
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -59,27 +65,90 @@ class FriendRequest : Fragment() {
         //Toast.makeText(context,currendId, Toast.LENGTH_SHORT).show()
         myDb = db.collection("user").document(currentId.toString()).collection("friend")
         reAdapter = FriendAdapter()
+        data.clear()
         return binding.root
     }
 
     @SuppressLint("ResourceType")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewLifecycleOwner.lifecycleScope.async {
-            loadData()
-            reAdapter.list = data
+            refresh()
             reAdapter.myid=currentId.toString()
             reAdapter.mode="Request"
 
-            Log.d("data", data.size.toString())
             binding.recyclerList.adapter = reAdapter
             binding.recyclerList.layoutManager = LinearLayoutManager(context)
+        }
+        super.onViewCreated(view, savedInstanceState)
+    }
+    fun refresh(){
+        data.clear()
+        viewLifecycleOwner.lifecycleScope.async {
+            loadData()
+            reAdapter.list = data
             if (data.isEmpty()) {
                 binding.friendRequestText.text = "받은 요청이 없습니다."
                 binding.friendRequestText.visibility = View.VISIBLE
+            }else{
+                binding.friendRequestText.visibility = View.INVISIBLE
             }
+            reAdapter?.notifyDataSetChanged()
         }
-        //f_binding.friendButton.text="fdsf"
-        super.onViewCreated(view, savedInstanceState)
+
+    }
+    fun showAccept(frid:String){
+        val dBinding = DialogLayooutBinding.inflate(layoutInflater)
+        dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
+        dBinding.bButton.text = "확인"
+        dBinding.content.text = "수락하시겠습니까?"
+        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        val dialog = dialogBuild.show() //다이어로그 창 띄우기
+        var id=currentId.toString()
+        dBinding.bButton.setOnClickListener {
+            //검정 버튼의 기능 구현 ↓
+            db.collection("user").document(id).collection("friend").document(frid)
+                .update("state", "2").addOnSuccessListener {
+                    Log.d("button_test", "변경")
+                }.addOnFailureListener {
+                    Log.d("button_test", "실패")
+                }//내 데이터 변경
+            db.collection("user").document(frid).collection("friend").document(id)
+                .update("state", "2") //친구 데이터 변경
+           refresh()
+            (activity as FriendActivity).init()
+            dialog.dismiss()
+        }
+        dBinding.wButton.setOnClickListener {//취소버튼
+            //회색 버튼의 기능 구현 ↓
+            dialog.dismiss()
+        }
+    }
+    fun showCancle(frid: String) {
+        val dBinding = DialogLayooutBinding.inflate(layoutInflater)
+        dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
+        dBinding.bButton.text = "확인"
+        dBinding.content.text = "수락하시겠습니까?"
+        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        val dialog = dialogBuild.show() //다이어로그 창 띄우기
+        var id = currentId.toString()
+        dBinding.bButton.setOnClickListener {
+            //검정 버튼의 기능 구현 ↓
+            data.clear()
+            db.collection("user").document(id).collection("friend").document(frid)
+                .delete()
+            db.collection("user").document(frid).collection("friend").document(id)
+                .delete()
+            viewLifecycleOwner.lifecycleScope.async {
+                loadData()
+                reAdapter.list = data
+                reAdapter?.notifyDataSetChanged()
+            }
+            dialog.dismiss()
+        }
+        dBinding.wButton.setOnClickListener {//취소버튼
+            //회색 버튼의 기능 구현 ↓
+            dialog.dismiss()
+        }
     }
     suspend fun loadData(): Boolean {
         return try {
@@ -115,6 +184,10 @@ class FriendRequest : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+        private var instance: FriendRequest? = null
+        fun getInstance():FriendRequest?{
+            return instance
+        }
     }
 
 

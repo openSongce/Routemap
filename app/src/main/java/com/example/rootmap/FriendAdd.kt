@@ -22,6 +22,7 @@ import com.google.firebase.FirebaseException
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 
 // TODO: Rename parameter arguments, choose names that match
@@ -40,7 +41,11 @@ class FriendAdd : Fragment() {
     private var param2: String? = null
     val db = Firebase.firestore
     val data: MutableList<Friend> = mutableListOf()
-    lateinit var addAdapter:FriendAdapter
+    lateinit var addAdapter: FriendAdapter
+
+    init {
+        instance = this
+    }
 
     //프래그먼트의 binding
     val binding by lazy { FragmentFriendAddBinding.inflate(layoutInflater) }
@@ -52,6 +57,7 @@ class FriendAdd : Fragment() {
             currentId = it.getString("id")
             param2 = it.getString(ARG_PARAM2)
         }
+
     }
 
     override fun onCreateView(
@@ -95,19 +101,15 @@ class FriendAdd : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
         viewLifecycleOwner.lifecycleScope.async {
-            loadData()
-            addAdapter.list = data
+            refresh()
             addAdapter.myid = currentId.toString()
             addAdapter.mode = "Add"
-            Log.d("data", data.size.toString())
 
             binding.recyclerList.adapter = addAdapter
             binding.recyclerList.layoutManager = LinearLayoutManager(context)
-            if (data.isEmpty()) {
-                binding.friendAddText.text = "???"
-                binding.friendAddText.visibility = View.VISIBLE
-            }
+
 
         }
         super.onViewCreated(view, savedInstanceState)
@@ -127,6 +129,30 @@ class FriendAdd : Fragment() {
             false
         }
     }
+    fun showCancle(frid: String) {
+        val dBinding = DialogLayooutBinding.inflate(layoutInflater)
+        dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
+        dBinding.bButton.text = "확인"
+        dBinding.content.text = "삭제하시겠습니까?"
+        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        val dialog = dialogBuild.show() //다이어로그 창 띄우기
+        var id = currentId.toString()
+        dBinding.bButton.setOnClickListener {
+            //검정 버튼의 기능 구현 ↓
+
+            db.collection("user").document(id).collection("friend").document(frid)
+                .delete()
+            db.collection("user").document(frid).collection("friend").document(id)
+                .delete()
+            refresh()
+            dialog.dismiss()
+        }
+        dBinding.wButton.setOnClickListener {//취소버튼
+            //회색 버튼의 기능 구현 ↓
+            dialog.dismiss()
+        }
+    }
+
     fun Context.hideKeyboard(view: View) {
         val inputMethodManager =
             getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -156,6 +182,7 @@ class FriendAdd : Fragment() {
                     myDb.document(text).set(
                         hashMapOf("id" to text, "state" to "1")
                     )//내 데이터에 추가
+                    refresh()
                     Toast.makeText(this.context, "신청보냄", Toast.LENGTH_SHORT).show()
                 } else {//이미 데이터가 있는 경우
                     // val d_id=document.documents[0].id //문서 아이디 저장
@@ -207,6 +234,21 @@ class FriendAdd : Fragment() {
             dialog.dismiss()
         }
     }
+     fun refresh(){
+        data.clear()
+        viewLifecycleOwner.lifecycleScope.async {
+            loadData()
+            addAdapter.list = data
+            if (data.isEmpty()) {
+                binding.friendAddText.text = "???"
+                binding.friendAddText.visibility = View.VISIBLE
+            }else{
+                binding.friendAddText.visibility = View.INVISIBLE
+            }
+            addAdapter?.notifyDataSetChanged()
+        }
+    }
+
     fun searchUser(text: String) {
         //데이터베이터에서 해당 ID의 유저 검색
         val userData =
@@ -225,9 +267,11 @@ class FriendAdd : Fragment() {
             loadFail()
         }
     }
+
     fun loadFail() {
         Toast.makeText(context, "데이터 로드에 실패했습니다.", Toast.LENGTH_SHORT).show()
     }
+
     companion object {
         /**
          * Use this factory method to create a new instance of
@@ -246,6 +290,12 @@ class FriendAdd : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+
+        private var instance: FriendAdd? = null
+        fun getInstance(): FriendAdd? {
+            return instance
+        }
+
 
     }
 }

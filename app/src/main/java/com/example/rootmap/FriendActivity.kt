@@ -2,6 +2,10 @@ package com.example.rootmap
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
+import androidx.viewpager2.widget.ViewPager2
 import com.example.rootmap.databinding.ActivityFriendBinding
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -13,10 +17,11 @@ class FriendActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        val friendContextList = listOf(FriendList(), FriendRequest(), FriendAdd())
+        var friendContextList = listOf(FriendList(), FriendRequest(), FriendAdd())
         adapter = HomeFragmentAdapter(this)
         adapter.fragmentList = friendContextList
         binding.viewPager.adapter = adapter
+
 
         var bundle = Bundle()
         bundle.putString("id", intent.getStringExtra("id"))
@@ -32,14 +37,15 @@ class FriendActivity : AppCompatActivity() {
         binding.button2.setOnClickListener { //뒤로가기 버튼
             super.onBackPressed()
         }
-        binding.rebutton.setOnClickListener { //새로고침
-            finish() //인텐트 종료
-            val intent = intent //인텐트
-            startActivity(intent) //액티비티 열기
-        }
     }
     override fun onResume() {
         super.onResume()
+        adapter.notifyDataSetChanged()
+    }
+    fun init(){
+         finish() //인텐트 종료
+         val intent = intent //인텐트
+         startActivity(intent) //액티비티 열기
     }
 
 }

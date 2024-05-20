@@ -51,7 +51,20 @@
             android:layout_height="match_parent"
             android:layout_marginRight="50dp"
             android:gravity="center_horizontal|center_vertical"
-            android:text="바람의 무도사" />
+            android:text="바람의 무도사"
+            android:visibility="visible" />
+
+        <EditText
+            android:id="@+id/nickChange"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginRight="50dp"
+            android:layout_weight="0"
+            android:autoText="false"
+            android:ems="10"
+            android:gravity="center_horizontal|center_vertical"
+            android:inputType="text"
+            android:visibility="gone" />
     </LinearLayout>
 
     <LinearLayout
@@ -82,7 +95,17 @@
             android:layout_marginRight="50dp"
             android:layout_marginBottom="0dp"
             android:gravity="center_horizontal|center_vertical"
-            android:text="홍길동" />
+            android:text="홍길동"
+            android:visibility="visible" />
+
+        <EditText
+            android:id="@+id/nameChange"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginRight="50dp"
+            android:gravity="center_horizontal|center_vertical"
+            android:inputType="text"
+            android:visibility="gone" />
 
     </LinearLayout>
 
@@ -144,6 +167,19 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <ImageButton
+        android:id="@+id/imageButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="10dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toTopOf="@+id/icon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/edit" />
+
     <Button
         android:id="@+id/secessionButton"
         android:layout_width="wrap_content"
@@ -157,5 +193,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:backgroundTint="@color/custum_color"
+        android:text="저장"
+        android:textColor="@color/white"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout4" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
