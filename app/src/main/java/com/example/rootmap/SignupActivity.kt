@@ -62,13 +62,12 @@ class SignupActivity : AppCompatActivity() {
 
     fun saveUserData(user: FirebaseUser, password: String) {
         val userData = hashMapOf(
-            "email" to user.email,
+            "id" to user.email,
             "nickname" to nicknameSignup.text.toString(),
-            "name" to nameSignup.text.toString(),
-            "password" to password // 비밀번호 저장 (보안에 매우 취약하므로 실제 앱에서는 사용하지 않도록)
+            "name" to nameSignup.text.toString()
         )
 
-        db.collection("user").document(user.uid)
+        db.collection("user").document(user.email.toString())
             .set(userData)
             .addOnSuccessListener {
                 Toast.makeText(this, "회원가입 성공", Toast.LENGTH_SHORT).show()
