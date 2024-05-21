@@ -6,16 +6,15 @@
     android:layout_height="match_parent"
     tools:context=".MenuFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:id="@+id/textView1"
+    <!-- Spinner for city selection -->
+    <Spinner
+        android:id="@+id/citySpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="메뉴1"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        android:entries="@array/city_array"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

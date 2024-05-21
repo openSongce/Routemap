@@ -5,7 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
+import android.widget.ArrayAdapter
 import com.example.rootmap.databinding.FragmentMenuBinding
 
 // TODO: Rename parameter arguments, choose names that match
@@ -22,8 +22,9 @@ class MenuFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
-    //프래그먼트의 binding
-    lateinit var binding:FragmentMenuBinding
+
+    // 프래그먼트의 binding
+    private lateinit var binding: FragmentMenuBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,12 +39,16 @@ class MenuFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        binding= FragmentMenuBinding.inflate(inflater, container, false)
+        binding = FragmentMenuBinding.inflate(inflater, container, false)
 
-        //여기부터 코드 작성
+        // 도시 목록을 정의
+        val cityList = resources.getStringArray(R.array.city_array)
 
+        // ArrayAdapter를 생성하여 Spinner에 연결
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, cityList)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.citySpinner.adapter = adapter
 
-        //
         return binding.root
     }
 
