@@ -15,6 +15,8 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
+import android.Manifest
+import androidx.core.app.ActivityCompat
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var emailEt: EditText

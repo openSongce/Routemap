@@ -16,7 +16,9 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.graphics.Color
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,6 +30,15 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.async
 import kotlinx.coroutines.tasks.await
+import android.Manifest
+import android.app.Activity.RESULT_OK
+import android.content.pm.PackageManager
+import android.provider.MediaStore
+import androidx.activity.result.ActivityResultLauncher
+import java.io.File
+import android.net.Uri
+import com.bumptech.glide.Glide
+import com.google.firebase.storage.FirebaseStorage
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -46,9 +57,13 @@ class MenuFragment4 : Fragment() {
     private lateinit var auth: FirebaseAuth
 
     //프래그먼트의 binding
-    lateinit var binding: FragmentMenu4Binding
+    val binding by lazy { FragmentMenu4Binding.inflate(layoutInflater) }
     lateinit var name: String
     lateinit var nickname: String
+     lateinit var storagePermission:ActivityResultLauncher<String>
+    lateinit var galleryLauncher: ActivityResultLauncher<String>
+    var fdStrage:FirebaseStorage=FirebaseStorage.getInstance()
+    var changePhotoUri:Uri?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,9 +79,9 @@ class MenuFragment4 : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         //여기부터 코드 작성
-        binding = FragmentMenu4Binding.inflate(inflater, container, false)
         auth = FirebaseAuth.getInstance()
-        var id=id.toString()
+
+        var id = id.toString()
         binding.userId.text = id
         viewLifecycleOwner.lifecycleScope.async {
             loadMyData(id)
@@ -82,26 +97,55 @@ class MenuFragment4 : Fragment() {
         binding.secessionButton.setOnClickListener {
             showDialog("secession")
         }
-        binding.imageButton.setOnClickListener{
-            binding.imageButton.visibility=View.INVISIBLE
-            binding.saveButton.visibility=View.VISIBLE
-            binding.userNickname.visibility=View.GONE
-            binding.nickChange.visibility=View.VISIBLE
-            binding.userName.visibility=View.GONE
-            binding.nameChange.visibility=View.VISIBLE
+        binding.passwordButton.setOnClickListener { 
+            //비밀번호 변경 기능 구현하기
+        }
+        var fileName=id.replace(".","")
+        viewLifecycleOwner.lifecycleScope.async {
+            loadImg(fileName)
+        }
+        galleryLauncher=registerForActivityResult(ActivityResultContracts.GetContent()){uri->
+            binding.icon.setImageURI(uri)
+            changePhotoUri=uri
+        }
+        storagePermission=registerForActivityResult(ActivityResultContracts.RequestPermission()){ isGranted->
+            if (isGranted){
+                openGallery()
+            }else{
+                Toast.makeText(context,"이미지 권한이 필요한 작업입니다.",Toast.LENGTH_SHORT).show()
+            }
+        }
+        binding.imageButton.setOnClickListener {
+            binding.imageButton.visibility = View.INVISIBLE
+            binding.saveButton.visibility = View.VISIBLE
+            binding.userNickname.visibility = View.GONE
+            binding.nickChange.visibility = View.VISIBLE
+            binding.userName.visibility = View.GONE
+            binding.nameChange.visibility = View.VISIBLE
 
+            binding.icon.setOnClickListener {
+                  storagePermission.launch(Manifest.permission.READ_MEDIA_IMAGES)
+            }
             binding.nickChange.setText(nickname)
             binding.nameChange.setText(name)
+
+            //저장
             binding.saveButton.setOnClickListener {
-                var nameText=binding.nameChange.text.toString()
-                var nickText=binding.nickChange.text.toString()
-                Firebase.firestore.collection("user").document(id).update(mapOf<String,String>("name" to nameText,"nickname" to nickText))
-                binding.imageButton.visibility=View.VISIBLE
-                binding.saveButton.visibility=View.INVISIBLE
-                binding.userNickname.visibility=View.VISIBLE
-                binding.nickChange.visibility=View.GONE
-                binding.userName.visibility=View.VISIBLE
-                binding.nameChange.visibility=View.GONE
+                var nameText = binding.nameChange.text.toString()
+                var nickText = binding.nickChange.text.toString()
+                Firebase.firestore.collection("user").document(id)
+                    .update(mapOf<String, String>("name" to nameText, "nickname" to nickText))
+                binding.imageButton.visibility = View.VISIBLE
+                binding.saveButton.visibility = View.INVISIBLE
+                binding.userNickname.visibility = View.VISIBLE
+                binding.nickChange.visibility = View.GONE
+                binding.userName.visibility = View.VISIBLE
+                binding.nameChange.visibility = View.GONE
+
+                //프로필 이미지 변경 저장
+                if(changePhotoUri!=null){
+                    fdStrage.reference.child("profile").child("${fileName}.png").putFile(changePhotoUri!!)
+                }
 
                 context?.hideKeyboard(binding.root)
                 viewLifecycleOwner.lifecycleScope.async {
@@ -111,15 +155,18 @@ class MenuFragment4 : Fragment() {
                 }
             }
         }
-
-
         //
         return binding.root
     }
+
     fun Context.hideKeyboard(view: View) {
         val inputMethodManager =
             getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    fun openGallery(){
+            galleryLauncher.launch("image/*")
     }
 
     suspend fun loadMyData(id: String): Boolean {
@@ -130,6 +177,18 @@ class MenuFragment4 : Fragment() {
             true
         } catch (e: FirebaseException) {
             Log.d("load_error", "error")
+            false
+        }
+    }
+    suspend fun loadImg(id:String):Boolean{
+        return try {
+            fdStrage.reference.child("profile/${id}.png").downloadUrl.addOnSuccessListener {uri->
+                Glide.with(this).load(uri).into(binding.icon)
+            }.await()
+            true
+        } catch (e: FirebaseException) {
+            Log.d("img_error", "error")
+          //  photoUri=null
             false
         }
     }

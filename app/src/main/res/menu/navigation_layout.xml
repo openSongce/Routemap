@@ -18,6 +18,11 @@
         android:icon="@drawable/plans"
         android:title="여행 일정" />
     <item
+        android:id="@+id/menuMoney"
+        android:icon="@drawable/plans"
+        android:title="가계부" />
+
+    <item
     android:id="@+id/menuFriend"
     android:icon="@drawable/friend"
     android:title="친구목록" />
