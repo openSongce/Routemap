@@ -91,9 +91,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     Glide.with(this@MainActivity).load(fileUri).into(userProfile)
                 }
             }
-
         }
-
         binding.mainNavigationView.setNavigationItemSelectedListener(this) //드로우 사이드 메뉴바 리스너 등록
         var bundle = Bundle()
         bundle.putString("id", currentId)

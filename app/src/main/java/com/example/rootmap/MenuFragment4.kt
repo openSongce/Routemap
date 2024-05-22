@@ -64,6 +64,7 @@ class MenuFragment4 : Fragment() {
     lateinit var galleryLauncher: ActivityResultLauncher<String>
     var fdStrage:FirebaseStorage=FirebaseStorage.getInstance()
     var changePhotoUri:Uri?=null
+    var enableTouch=false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,6 +101,11 @@ class MenuFragment4 : Fragment() {
         binding.passwordButton.setOnClickListener { 
             //비밀번호 변경 기능 구현하기
         }
+        binding.icon.setOnClickListener {
+            if(enableTouch){
+                storagePermission.launch(Manifest.permission.READ_MEDIA_IMAGES)
+            }
+        }
         var fileName=id.replace(".","")
         viewLifecycleOwner.lifecycleScope.async {
             loadImg(fileName)
@@ -123,9 +129,8 @@ class MenuFragment4 : Fragment() {
             binding.userName.visibility = View.GONE
             binding.nameChange.visibility = View.VISIBLE
 
-            binding.icon.setOnClickListener {
-                  storagePermission.launch(Manifest.permission.READ_MEDIA_IMAGES)
-            }
+            enableTouch=true
+
             binding.nickChange.setText(nickname)
             binding.nameChange.setText(name)
 
@@ -146,7 +151,7 @@ class MenuFragment4 : Fragment() {
                 if(changePhotoUri!=null){
                     fdStrage.reference.child("profile").child("${fileName}.png").putFile(changePhotoUri!!)
                 }
-
+                enableTouch=false
                 context?.hideKeyboard(binding.root)
                 viewLifecycleOwner.lifecycleScope.async {
                     loadMyData(id)
