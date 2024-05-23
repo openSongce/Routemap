@@ -23,7 +23,9 @@ data class Header(
 @Root(name = "body", strict = false)
 data class Body(
     @field:Element(name = "items", required = false)
-    var items: Items? = null
+    var items: Items? = null,
+    @field:Element(name = "totalCount", required = false)
+    var totalCount: String? = null
 )
 
 @Root(name = "items", strict = false)

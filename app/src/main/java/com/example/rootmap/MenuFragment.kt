@@ -28,6 +28,9 @@ class MenuFragment : Fragment() {
     private lateinit var binding: FragmentMenuBinding
     private lateinit var apiService: TouristApiService
     private var currentAreaCode = 1
+    private var retryCount = 0
+    private val maxRetries = 5
+    private var totalPages = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +77,7 @@ class MenuFragment : Fragment() {
                     9 -> 32
                     else -> 1
                 }
+                retryCount = 0 // 스피너가 선택될 때마다 재시도 카운트 초기화
                 fetchTouristInfo(currentAreaCode)
             }
 
@@ -84,6 +88,7 @@ class MenuFragment : Fragment() {
 
         // SwipeRefreshLayout 설정
         binding.swipeRefreshLayout.setOnRefreshListener {
+            retryCount = 0 // 새로고침 시 재시도 카운트 초기화
             fetchTouristInfo(currentAreaCode, randomPage = true)
         }
 
@@ -95,7 +100,12 @@ class MenuFragment : Fragment() {
     }
 
     private fun fetchTouristInfo(areaCode: Int, randomPage: Boolean = false) {
-        val pageNo = if (randomPage) Random.nextInt(1, 100) else 1
+        if (retryCount >= maxRetries) {
+            binding.swipeRefreshLayout.isRefreshing = false
+            return
+        }
+
+        val pageNo = if (randomPage) Random.nextInt(1, totalPages + 1) else 1
         apiService.getTouristInfo(
             numOfRows = 10,
             pageNo = pageNo,
@@ -107,13 +117,23 @@ class MenuFragment : Fragment() {
         ).enqueue(object : Callback<TouristResponse> {
             override fun onResponse(call: Call<TouristResponse>, response: Response<TouristResponse>) {
                 if (response.isSuccessful) {
+                    val totalCount = response.body()?.body?.totalCount?.toIntOrNull() ?: 0
+                    totalPages = (totalCount / 10) + 1
+
+                    Log.d("totalCount", "Total count: ${totalCount}")
+
                     val items = response.body()?.body?.items?.item ?: emptyList()
                     Log.d("API_SUCCESS", "Fetched ${items.size} items")
-                    items.forEach { Log.d("API_ITEM", "Item: ${it.title}, ${it.addr1}, ${it.addr2}, ${it.firstimage}") }
-                    val adapter = TouristAdapter(items)
-                    binding.recyclerView.adapter = adapter
+                    if (items.isNotEmpty()) {
+                        val adapter = TouristAdapter(items)
+                        binding.recyclerView.adapter = adapter
+                    } else {
+                        Log.d("API_SUCCESS", "No items found")
+                        retryFetchTouristInfo(areaCode) // 데이터가 없으면 재시도
+                    }
                 } else {
                     Log.e("API_ERROR", "Response code: ${response.code()}")
+                    retryFetchTouristInfo(areaCode) // 에러 발생 시 재시도
                 }
                 binding.swipeRefreshLayout.isRefreshing = false
             }
@@ -121,9 +141,15 @@ class MenuFragment : Fragment() {
             override fun onFailure(call: Call<TouristResponse>, t: Throwable) {
                 // 에러 처리
                 Log.e("API_FAILURE", "Failed to fetch data", t)
+                retryFetchTouristInfo(areaCode) // 실패 시 재시도
                 binding.swipeRefreshLayout.isRefreshing = false
             }
         })
+    }
+
+    private fun retryFetchTouristInfo(areaCode: Int) {
+        retryCount++
+        fetchTouristInfo(areaCode, randomPage = true)
     }
 
     companion object {
