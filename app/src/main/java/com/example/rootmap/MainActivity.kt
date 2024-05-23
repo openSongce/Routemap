@@ -67,7 +67,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         auth = FirebaseAuth.getInstance()
         //binding.emailTv.text = auth.currentUser?.email
-        val contextList = listOf(MenuFragment(), MenuFragment2(), MenuFragment3(), MenuFragment4())
+        val contextList = listOf(
+            MenuFragment.newInstance("param1_value", "param2_value"),
+            MenuFragment2.newInstance("param1_value", "param2_value"),
+            MenuFragment3.newInstance("param1_value", "param2_value"),
+            MenuFragment4.newInstance("param1_value", "param2_value")
+        )
         val adapter = HomeFragmentAdapter(this)
         adapter.fragmentList = contextList
         binding.viewPager.adapter = adapter
@@ -95,8 +100,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         binding.mainNavigationView.setNavigationItemSelectedListener(this) //드로우 사이드 메뉴바 리스너 등록
         var bundle = Bundle()
         bundle.putString("id", currentId)
-        for (i in 0..3) {
-            contextList[i].arguments = bundle
+        for (fragment in contextList) {
+            fragment.arguments = bundle
         }
     }
 
