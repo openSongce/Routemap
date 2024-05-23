@@ -9,12 +9,14 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.rootmap.databinding.FragmentMenuBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory
+import kotlin.random.Random
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -25,6 +27,7 @@ class MenuFragment : Fragment() {
 
     private lateinit var binding: FragmentMenuBinding
     private lateinit var apiService: TouristApiService
+    private var currentAreaCode = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +61,7 @@ class MenuFragment : Fragment() {
 
         binding.citySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val areaCode = when (position) {
+                currentAreaCode = when (position) {
                     0 -> 1
                     1 -> 2
                     2 -> 3
@@ -71,13 +74,18 @@ class MenuFragment : Fragment() {
                     9 -> 32
                     else -> 1
                 }
-                fetchTouristInfo(areaCode)
+                fetchTouristInfo(currentAreaCode)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        // SwipeRefreshLayout 설정
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            fetchTouristInfo(currentAreaCode, randomPage = true)
+        }
 
         // 드롭다운 메뉴의 기본값을 서울로 설정하고 초기 데이터 로드
         binding.citySpinner.setSelection(0) // 서울이 0번째 인덱스에 있다고 가정
@@ -86,10 +94,11 @@ class MenuFragment : Fragment() {
         return binding.root
     }
 
-    private fun fetchTouristInfo(areaCode: Int) {
+    private fun fetchTouristInfo(areaCode: Int, randomPage: Boolean = false) {
+        val pageNo = if (randomPage) Random.nextInt(1, 100) else 1
         apiService.getTouristInfo(
             numOfRows = 10,
-            pageNo = 1,
+            pageNo = pageNo,
             mobileOS = "AND",
             mobileApp = "MobileApp",
             contentTypeId = 12,
@@ -106,11 +115,13 @@ class MenuFragment : Fragment() {
                 } else {
                     Log.e("API_ERROR", "Response code: ${response.code()}")
                 }
+                binding.swipeRefreshLayout.isRefreshing = false
             }
 
             override fun onFailure(call: Call<TouristResponse>, t: Throwable) {
                 // 에러 처리
                 Log.e("API_FAILURE", "Failed to fetch data", t)
+                binding.swipeRefreshLayout.isRefreshing = false
             }
         })
     }

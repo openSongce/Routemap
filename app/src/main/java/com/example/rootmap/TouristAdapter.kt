@@ -3,29 +3,22 @@ package com.example.rootmap
 import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
+import com.example.rootmap.databinding.ItemTouristBinding
 
 class TouristAdapter(private val items: List<TouristItem>) : RecyclerView.Adapter<TouristAdapter.TouristViewHolder>() {
 
-    inner class TouristViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val title: TextView = view.findViewById(R.id.title)
-        val addr1: TextView = view.findViewById(R.id.addr1)
-        val addr2: TextView = view.findViewById(R.id.addr2)
-        val image: ImageView = view.findViewById(R.id.image)
-
+    inner class TouristViewHolder(private val binding: ItemTouristBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: TouristItem) {
-            title.text = item.title
-            addr1.text = item.addr1
-            addr2.text = item.addr2 ?: ""
+            binding.title.text = item.title
+            binding.addr1.text = item.addr1
+            binding.addr2.text = item.addr2 ?: ""
 
             val imageUrl = item.firstimage?.replace("http://", "https://")
 
@@ -36,7 +29,7 @@ class TouristAdapter(private val items: List<TouristItem>) : RecyclerView.Adapte
                     .fallback(R.drawable.map)     // 이미지 URL이 null인 경우 보여줄 이미지
 
                 Log.d("TouristAdapter", "Loading image URL: $imageUrl")
-                Glide.with(itemView.context)
+                Glide.with(binding.root.context)
                     .setDefaultRequestOptions(requestOptions)
                     .load(imageUrl)
                     .listener(object : RequestListener<Drawable> {
@@ -61,18 +54,18 @@ class TouristAdapter(private val items: List<TouristItem>) : RecyclerView.Adapte
                             return false
                         }
                     })
-                    .into(image)
+                    .into(binding.image)
             } else {
                 // 이미지가 없는 경우 기본 이미지를 설정
-                image.setImageResource(R.drawable.map)
+                binding.image.setImageResource(R.drawable.map)
                 Log.d("TouristAdapter", "Image URL is null or empty")
             }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TouristViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_tourist, parent, false)
-        return TouristViewHolder(view)
+        val binding = ItemTouristBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return TouristViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: TouristViewHolder, position: Int) {
