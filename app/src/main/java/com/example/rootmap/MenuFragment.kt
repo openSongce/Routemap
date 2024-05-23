@@ -1,6 +1,7 @@
 package com.example.rootmap
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -98,14 +99,18 @@ class MenuFragment : Fragment() {
             override fun onResponse(call: Call<TouristResponse>, response: Response<TouristResponse>) {
                 if (response.isSuccessful) {
                     val items = response.body()?.body?.items?.item ?: emptyList()
+                    Log.d("API_SUCCESS", "Fetched ${items.size} items")
+                    items.forEach { Log.d("API_ITEM", "Item: ${it.title}, ${it.addr1}, ${it.addr2}, ${it.firstimage}") }
                     val adapter = TouristAdapter(items)
                     binding.recyclerView.adapter = adapter
+                } else {
+                    Log.e("API_ERROR", "Response code: ${response.code()}")
                 }
             }
 
             override fun onFailure(call: Call<TouristResponse>, t: Throwable) {
                 // 에러 처리
-                t.printStackTrace()
+                Log.e("API_FAILURE", "Failed to fetch data", t)
             }
         })
     }

@@ -1,4 +1,3 @@
-// TouristApiService.kt
 package com.example.rootmap
 
 import retrofit2.Call

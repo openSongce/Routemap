@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+    id("kotlin-kapt") // kapt 플러그인 추가
 }
 
 android {
@@ -37,9 +38,8 @@ android {
             listOf(
                 "META-INF/LICENSE.md",
                 "META-INF/LICENSE-notice.md",
-                "META-INF/NOTICE.md",
-
-        )
+                "META-INF/NOTICE.md"
+            )
         )
     }
     compileOptions {
@@ -49,7 +49,6 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-
 }
 
 dependencies {
@@ -64,24 +63,24 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage-ktx:19.0.0")
-    implementation ("com.firebaseui:firebase-ui-storage:7.2.0")
-    implementation ("de.hdodenhof:circleimageview:3.1.0")
+    implementation("com.firebaseui:firebase-ui-storage:7.2.0")
+    implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation("androidx.databinding:databinding-compiler:8.4.0")
     implementation("androidx.media3:media3-common:1.3.1")
     implementation("com.google.ar.sceneform:filament-android:1.17.1")
-    implementation ("androidx.legacy:legacy-support-v4:1.0.0")
+    implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.compose.ui:ui-android:1.6.7")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.3")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.3.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.3.3")
     implementation("androidx.activity:activity-ktx:1.3.1")
     implementation("androidx.fragment:fragment-ktx:1.3.1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("com.github.bumptech.glide:glide:4.12.0")
-    annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
-    implementation ("androidx.recyclerview:recyclerview:1.2.1")
-    implementation ("com.squareup.retrofit2:converter-simplexml:2.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.github.bumptech.glide:glide:4.12.0")
+    kapt("com.github.bumptech.glide:compiler:4.12.0")
+    implementation("androidx.recyclerview:recyclerview:1.2.1")
+    implementation("com.squareup.retrofit2:converter-simplexml:2.9.0")
 }
