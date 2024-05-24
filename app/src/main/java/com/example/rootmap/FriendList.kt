@@ -108,12 +108,16 @@ class FriendList : Fragment() {
         val dBinding = DialogLayooutBinding.inflate(layoutInflater)
         dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
         dBinding.bButton.text = "확인"
-        dBinding.content.text = "아직 기능 없음"
+        dBinding.content.text = "해당 유저를 친구에서 삭제하시겠습니까?"
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
         val dialog = dialogBuild.show() //다이어로그 창 띄우기
         var id=currentId.toString()
         dBinding.bButton.setOnClickListener {
             //검정 버튼의 기능 구현 ↓
+            db.collection("user").document(id).collection("friend").document(frid)
+                .delete()
+            db.collection("user").document(frid).collection("friend").document(id)
+                .delete()
             refresh()
             dialog.dismiss()
         }
