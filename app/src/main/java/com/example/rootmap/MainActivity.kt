@@ -40,6 +40,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     lateinit var nickname: String
     var fdStrage: FirebaseStorage = FirebaseStorage.getInstance()
     var fileUri: Uri? = null
+    var backPressedTime:Long =0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -148,7 +150,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (binding.mainDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             binding.mainDrawerLayout.closeDrawers()
         } else {
-            super.onBackPressed()
+            if(backPressedTime+3000> System.currentTimeMillis()){
+                super.onBackPressed()
+                finish()
+            }else{
+                Toast.makeText(this,"한번 더 뒤로가기를 누르면 종료됩니다.",Toast.LENGTH_SHORT).show()
+            }
+            backPressedTime=System.currentTimeMillis()
         }
     }
 

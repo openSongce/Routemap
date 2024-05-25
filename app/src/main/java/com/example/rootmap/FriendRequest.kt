@@ -54,7 +54,6 @@ class FriendRequest : Fragment() {
             mode = it.getString("mode")
         }
     }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

@@ -14,12 +14,11 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.FragmentMenuBinding
 import com.example.rootmap.databinding.DialogTouristDetailBinding
-import com.squareup.moshi.Moshi
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.converter.simplexml.SimpleXmlConverterFactory
 import kotlin.random.Random
 
 private const val ARG_PARAM1 = "param1"
@@ -46,10 +45,9 @@ class MenuFragment : Fragment() {
         }
 
         // Retrofit 초기화
-        val moshi = Moshi.Builder().build()
         val retrofit = Retrofit.Builder()
             .baseUrl("https://apis.data.go.kr/B551011/KorService1/")
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(SimpleXmlConverterFactory.create())
             .build()
 
         apiService = retrofit.create(TouristApiService::class.java)
@@ -116,6 +114,7 @@ class MenuFragment : Fragment() {
 
         // 드롭다운 메뉴의 기본값을 서울로 설정하고 초기 데이터 로드
         binding.citySpinner.setSelection(0) // 서울이 0번째 인덱스에 있다고 가정
+        selectButton(binding.btnTourist) // 관광지 버튼을 선택된 상태로 설정
         fetchTouristInfo(1, 12) // 서울의 지역 코드는 1, 관광지는 12
 
         return binding.root
@@ -123,11 +122,15 @@ class MenuFragment : Fragment() {
 
     private fun setupButton(button: Button, contentTypeId: Int) {
         button.setOnClickListener {
-            clearButtonSelection()
-            button.setTextColor(ContextCompat.getColor(requireContext(), R.color.selected_button_text))
-            selectedButton = button
+            selectButton(button)
             fetchTouristInfo(currentAreaCode, contentTypeId)
         }
+    }
+
+    private fun selectButton(button: Button) {
+        clearButtonSelection()
+        button.setTextColor(ContextCompat.getColor(requireContext(), R.color.selected_button_text))
+        selectedButton = button
     }
 
     private fun clearButtonSelection() {
