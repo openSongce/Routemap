@@ -63,7 +63,8 @@ class FriendHolder(
 
     init {
         when (mode) { //버튼 텍스트와 기능 설정
-            "List" -> {//일단 완
+            "List" -> {
+                binding.friendButton2.text = "삭제"
                 binding.friendButton2.setOnClickListener {// 버튼 기능
                     FriendList.getInstance()?.showAction(binding.friendId.text.toString())
                 }
