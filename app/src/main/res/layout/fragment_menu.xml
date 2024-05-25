@@ -1,35 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/swipeRefreshLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MenuFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <!-- 도시 선택 -->
+    <Spinner
+        android:id="@+id/citySpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <Spinner
-            android:id="@+id/citySpinner"
+    <!-- 관광 타입 선택 -->
+    <HorizontalScrollView
+        android:id="@+id/horizontalScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/citySpinner"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
 
+            <Button
+                android:id="@+id/btnTourist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="관광지" />
+
+            <Button
+                android:id="@+id/btnCulture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="문화시설" />
+
+            <Button
+                android:id="@+id/btnFestival"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="축제공연행사" />
+
+            <Button
+                android:id="@+id/btnCourse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="여행코스" />
+
+            <Button
+                android:id="@+id/btnLeisure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="레포츠" />
+
+            <Button
+                android:id="@+id/btnLodging"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="숙박" />
+
+            <Button
+                android:id="@+id/btnShopping"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="쇼핑" />
+
+            <Button
+                android:id="@+id/btnRestaurant"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="음식점" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- 새로 고침 기능 -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/horizontalScrollView">
+
+        <!-- 관광 정보 -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="20dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/citySpinner" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
