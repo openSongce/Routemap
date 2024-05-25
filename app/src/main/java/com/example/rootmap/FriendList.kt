@@ -84,10 +84,6 @@ class FriendList : Fragment() {
         fr=this
         super.onViewCreated(view, savedInstanceState)
     }
-
-    override fun onResume() {
-        super.onResume()
-    }
     fun refresh(){
         data.clear()
         viewLifecycleOwner.lifecycleScope.async {

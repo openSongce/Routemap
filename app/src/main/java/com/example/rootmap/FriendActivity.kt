@@ -38,10 +38,6 @@ class FriendActivity : AppCompatActivity() {
             super.onBackPressed()
         }
     }
-    override fun onResume() {
-        super.onResume()
-        adapter.notifyDataSetChanged()
-    }
     fun init(){
          finish() //인텐트 종료
          val intent = intent //인텐트
