@@ -11,7 +11,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
-import com.example.rootmap.databinding.DialogLayooutBinding
+import com.example.rootmap.databinding.DialogLayoutBinding
 import com.example.rootmap.databinding.FragmentFriendRequestBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
@@ -97,7 +97,7 @@ class FriendRequest : Fragment() {
 
     }
     fun showAccept(frid:String){
-        val dBinding = DialogLayooutBinding.inflate(layoutInflater)
+        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
         dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
         dBinding.bButton.text = "확인"
         dBinding.content.text = "수락하시겠습니까?"
@@ -124,7 +124,7 @@ class FriendRequest : Fragment() {
         }
     }
     fun showCancle(frid: String) {
-        val dBinding = DialogLayooutBinding.inflate(layoutInflater)
+        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
         dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
         dBinding.bButton.text = "확인"
         dBinding.content.text = "수락하시겠습니까?"

@@ -20,7 +20,7 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import com.example.rootmap.databinding.DialogLayooutBinding
+import com.example.rootmap.databinding.DialogLayoutBinding
 import com.google.firebase.FirebaseException
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.CoroutineScope
