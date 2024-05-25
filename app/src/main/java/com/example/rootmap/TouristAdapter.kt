@@ -12,7 +12,10 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.example.rootmap.databinding.ItemTouristBinding
 
-class TouristAdapter(private val items: List<TouristItem>) : RecyclerView.Adapter<TouristAdapter.TouristViewHolder>() {
+class TouristAdapter(
+    private val items: List<TouristItem>,
+    private val onItemClick: (TouristItem) -> Unit
+) : RecyclerView.Adapter<TouristAdapter.TouristViewHolder>() {
 
     inner class TouristViewHolder(private val binding: ItemTouristBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: TouristItem) {
@@ -59,6 +62,10 @@ class TouristAdapter(private val items: List<TouristItem>) : RecyclerView.Adapte
                 // 이미지가 없는 경우 기본 이미지를 설정
                 binding.image.setImageResource(R.drawable.map)
                 Log.d("TouristAdapter", "Image URL is null or empty")
+            }
+
+            binding.root.setOnClickListener {
+                onItemClick(item)
             }
         }
     }

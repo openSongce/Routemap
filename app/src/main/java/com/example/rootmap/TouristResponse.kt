@@ -36,6 +36,9 @@ data class Items(
 
 @Root(name = "item", strict = false)
 data class TouristItem(
+    @field:Element(name = "contentid", required = false)
+    var contentid: String? = null,
+
     @field:Element(name = "addr1", required = false)
     var addr1: String? = null,
 

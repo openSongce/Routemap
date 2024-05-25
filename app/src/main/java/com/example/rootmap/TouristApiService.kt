@@ -15,4 +15,13 @@ interface TouristApiService {
         @Query("areaCode") areaCode: Int,
         @Query("serviceKey") serviceKey: String
     ): Call<TouristResponse>
+
+    @GET("detailIntro1")
+    fun getTouristDetail(
+        @Query("contentId") contentId: Int,
+        @Query("contentTypeId") contentTypeId: Int,
+        @Query("MobileOS") mobileOS: String,
+        @Query("MobileApp") mobileApp: String,
+        @Query("serviceKey") serviceKey: String
+    ): Call<TouristDetailResponse>
 }
