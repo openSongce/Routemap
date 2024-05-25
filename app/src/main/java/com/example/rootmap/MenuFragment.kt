@@ -7,10 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.rootmap.databinding.FragmentMenuBinding
 import com.example.rootmap.databinding.DialogTouristDetailBinding
 import retrofit2.Call
@@ -34,6 +35,7 @@ class MenuFragment : Fragment() {
     private var retryCount = 0
     private val maxRetries = 5
     private var totalPages = 1
+    private var selectedButton: Button? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,14 +95,14 @@ class MenuFragment : Fragment() {
         }
 
         // 관광 타입 버튼 클릭 리스너 설정
-        binding.btnTourist.setOnClickListener { fetchTouristInfo(currentAreaCode, 12) }
-        binding.btnCulture.setOnClickListener { fetchTouristInfo(currentAreaCode, 14) }
-        binding.btnFestival.setOnClickListener { fetchTouristInfo(currentAreaCode, 15) }
-        binding.btnCourse.setOnClickListener { fetchTouristInfo(currentAreaCode, 25) }
-        binding.btnLeisure.setOnClickListener { fetchTouristInfo(currentAreaCode, 28) }
-        binding.btnLodging.setOnClickListener { fetchTouristInfo(currentAreaCode, 32) }
-        binding.btnShopping.setOnClickListener { fetchTouristInfo(currentAreaCode, 38) }
-        binding.btnRestaurant.setOnClickListener { fetchTouristInfo(currentAreaCode, 39) }
+        setupButton(binding.btnTourist, 12)
+        setupButton(binding.btnCulture, 14)
+        setupButton(binding.btnFestival, 15)
+        setupButton(binding.btnCourse, 25)
+        setupButton(binding.btnLeisure, 28)
+        setupButton(binding.btnLodging, 32)
+        setupButton(binding.btnShopping, 38)
+        setupButton(binding.btnRestaurant, 39)
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -112,9 +114,27 @@ class MenuFragment : Fragment() {
 
         // 드롭다운 메뉴의 기본값을 서울로 설정하고 초기 데이터 로드
         binding.citySpinner.setSelection(0) // 서울이 0번째 인덱스에 있다고 가정
+        selectButton(binding.btnTourist) // 관광지 버튼을 선택된 상태로 설정
         fetchTouristInfo(1, 12) // 서울의 지역 코드는 1, 관광지는 12
 
         return binding.root
+    }
+
+    private fun setupButton(button: Button, contentTypeId: Int) {
+        button.setOnClickListener {
+            selectButton(button)
+            fetchTouristInfo(currentAreaCode, contentTypeId)
+        }
+    }
+
+    private fun selectButton(button: Button) {
+        clearButtonSelection()
+        button.setTextColor(ContextCompat.getColor(requireContext(), R.color.selected_button_text))
+        selectedButton = button
+    }
+
+    private fun clearButtonSelection() {
+        selectedButton?.setTextColor(ContextCompat.getColor(requireContext(), R.color.default_button_text))
     }
 
     private fun fetchTouristInfo(areaCode: Int, contentTypeId: Int, randomPage: Boolean = false) {

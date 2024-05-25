@@ -5,4 +5,7 @@
     <color name="custum_color">#ADCDFE</color>
     <color name="gray">#AFAFAF</color>
     <color name="red">#FF980606</color>
+
+    <color name="default_button_text">#000000</color>
+    <color name="selected_button_text">#FFFFFF</color>
 </resources>

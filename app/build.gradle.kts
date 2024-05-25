@@ -83,4 +83,8 @@ dependencies {
     kapt("com.github.bumptech.glide:compiler:4.12.0")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("com.squareup.retrofit2:converter-simplexml:2.9.0")
+    implementation("org.simpleframework:simple-xml:2.7.1")
+    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation("com.squareup.moshi:moshi:1.12.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
 }

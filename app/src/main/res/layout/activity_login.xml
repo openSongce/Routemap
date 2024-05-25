@@ -9,14 +9,13 @@
         android:id="@+id/email_et"
         android:layout_width="244dp"
         android:layout_height="54dp"
-        android:layout_marginStart="83dp"
         android:layout_marginTop="230dp"
-        android:layout_marginEnd="84dp"
+        android:layout_marginBottom="25dp"
         android:ems="10"
         android:hint="이메일"
         android:inputType="textEmailAddress"
+        app:layout_constraintBottom_toTopOf="@+id/pwd_et"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -31,7 +30,6 @@
         android:inputType="textPassword"
         app:layout_constraintBottom_toBottomOf="@+id/loginBtn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.493"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/email_et" />
 
