@@ -1,5 +1,7 @@
 package com.example.rootmap
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,7 +10,9 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,6 +27,7 @@ import kotlin.random.Random
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
+private const val LOCATION_PERMISSION_REQUEST_CODE = 1
 
 class MenuFragment : Fragment() {
     private var param1: String? = null
@@ -36,6 +41,7 @@ class MenuFragment : Fragment() {
     private val maxRetries = 5
     private var totalPages = 1
     private var selectedButton: Button? = null
+    private lateinit var locationService: LocationService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -117,7 +123,22 @@ class MenuFragment : Fragment() {
         selectButton(binding.btnTourist) // 관광지 버튼을 선택된 상태로 설정
         fetchTouristInfo(1, 12) // 서울의 지역 코드는 1, 관광지는 12
 
+        // LocationService 초기화 및 위치 정보 가져오기
+        locationService = LocationService(requireContext())
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
+        } else {
+            fetchLocation()
+        }
+
         return binding.root
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            fetchLocation()
+        }
     }
 
     private fun setupButton(button: Button, contentTypeId: Int) {
@@ -239,7 +260,16 @@ class MenuFragment : Fragment() {
         fetchTouristInfo(areaCode, contentTypeId, randomPage = true)
     }
 
-    companion object {
+    private fun fetchLocation() {
+        locationService.fetchLocation { latitude, longitude ->
+            activity?.runOnUiThread {
+                val tvLocation = binding.root.findViewById<TextView>(R.id.tvLocation)
+                tvLocation.text = "위도: $latitude, 경도: $longitude"
+            }
+        }
+    }
+
+        companion object {
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             MenuFragment().apply {
