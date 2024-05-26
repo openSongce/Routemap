@@ -1,29 +1,25 @@
 package com.example.rootmap
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import com.example.rootmap.databinding.FragmentMenu2Binding
-import com.example.rootmap.databinding.FragmentMenuBinding
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+private const val ARG_PARAM1 = "param1_board"
+private const val ARG_PARAM2 = "param2_board"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [MenuFragment2.newInstance] factory method to
- * create an instance of this fragment.
- */
 class MenuFragment2 : Fragment() {
-    // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
-    //프래그먼트의 binding
     lateinit var binding: FragmentMenu2Binding
+
+    private val selectedLocations = mutableListOf<String>()
+    private val selectedDurations = mutableListOf<String>()
+    private val selectedThemes = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,26 +33,74 @@ class MenuFragment2 : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        binding= FragmentMenu2Binding.inflate(inflater, container, false)
+        binding = FragmentMenu2Binding.inflate(inflater, container, false)
 
-        //여기부터 코드 작성
+        // DrawerLayout 열기
+        binding.filterButton.setOnClickListener {
+            binding.drawerLayout.openDrawer(binding.scrollView)
+        }
 
+        // DrawerLayout 닫기 및 확인 버튼 클릭 이벤트
+        binding.confirmButton.setOnClickListener {
+            selectedLocations.clear()
+            selectedDurations.clear()
+            selectedThemes.clear()
 
-        //
+            // 여행지 선택 확인
+            checkAndAddAll(binding.sideMenu.findViewById(R.id.locations_container), selectedLocations)
+            checkAndAddAll(binding.sideMenu.findViewById(R.id.durations_container), selectedDurations)
+            checkAndAddAll(binding.sideMenu.findViewById(R.id.themes_container), selectedThemes)
+
+            binding.drawerLayout.closeDrawer(binding.scrollView)
+            updateSelectedOptions()
+        }
+
+        // 여행지, 여행일, 테마 체크박스 동적 생성
+        addCheckBoxes(
+            R.array.locations_array,
+            binding.sideMenu.findViewById(R.id.locations_container)
+        )
+        addCheckBoxes(
+            R.array.durations_array,
+            binding.sideMenu.findViewById(R.id.durations_container)
+        )
+        addCheckBoxes(
+            R.array.themes_array,
+            binding.sideMenu.findViewById(R.id.themes_container)
+        )
+
         return binding.root
     }
 
+    private fun checkAndAddAll(container: ViewGroup, list: MutableList<String>) {
+        for (i in 0 until container.childCount) {
+            val checkBox = container.getChildAt(i) as CheckBox
+            checkAndAdd(checkBox, list)
+        }
+    }
+
+    private fun checkAndAdd(checkBox: CheckBox, list: MutableList<String>) {
+        if (checkBox.isChecked) {
+            list.add(checkBox.text.toString())
+        }
+    }
+
+    private fun updateSelectedOptions() {
+        val selectedOptions = "여행지: ${selectedLocations.joinToString(", ")}\n여행일: ${selectedDurations.joinToString(", ")}\n테마: ${selectedThemes.joinToString(", ")}"
+        binding.selectedOptionsTextView.text = selectedOptions
+    }
+
+    private fun addCheckBoxes(arrayResId: Int, container: ViewGroup) {
+        val items = resources.getStringArray(arrayResId)
+        for (item in items) {
+            val checkBox = CheckBox(context).apply {
+                text = item
+            }
+            container.addView(checkBox)
+        }
+    }
+
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment MenuFragment2.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             MenuFragment2().apply {
