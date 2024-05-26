@@ -44,17 +44,13 @@ class MenuFragment2 : Fragment() {
 
         // DrawerLayout 닫기 및 확인 버튼 클릭 이벤트
         binding.confirmButton.setOnClickListener {
-            selectedLocations.clear()
-            selectedDurations.clear()
-            selectedThemes.clear()
+            applyFilters()
+        }
 
-            // 여행지 선택 확인
-            checkAndAddAll(binding.sideMenu.findViewById(R.id.locations_container), selectedLocations)
-            checkAndAddAll(binding.sideMenu.findViewById(R.id.durations_container), selectedDurations)
-            checkAndAddAll(binding.sideMenu.findViewById(R.id.themes_container), selectedThemes)
-
-            binding.drawerLayout.closeDrawer(binding.scrollView)
-            updateSelectedOptions()
+        // 초기화 버튼 클릭 이벤트
+        binding.resetButton.setOnClickListener {
+            resetFilters()
+            applyFilters()
         }
 
         // DrawerListener 설정
@@ -91,6 +87,34 @@ class MenuFragment2 : Fragment() {
         )
 
         return binding.root
+    }
+
+    private fun applyFilters() {
+        selectedLocations.clear()
+        selectedDurations.clear()
+        selectedThemes.clear()
+
+        // 여행지 선택 확인
+        checkAndAddAll(binding.sideMenu.findViewById(R.id.locations_container), selectedLocations)
+        checkAndAddAll(binding.sideMenu.findViewById(R.id.durations_container), selectedDurations)
+        checkAndAddAll(binding.sideMenu.findViewById(R.id.themes_container), selectedThemes)
+
+        binding.drawerLayout.closeDrawer(binding.scrollView)
+        updateSelectedOptions()
+    }
+
+    private fun resetFilters() {
+        // 모든 체크박스 초기화
+        clearAllCheckBoxes(binding.sideMenu.findViewById(R.id.locations_container))
+        clearAllCheckBoxes(binding.sideMenu.findViewById(R.id.durations_container))
+        clearAllCheckBoxes(binding.sideMenu.findViewById(R.id.themes_container))
+    }
+
+    private fun clearAllCheckBoxes(container: ViewGroup) {
+        for (i in 0 until container.childCount) {
+            val checkBox = container.getChildAt(i) as CheckBox
+            checkBox.isChecked = false
+        }
     }
 
     private fun checkAndAddAll(container: ViewGroup, list: MutableList<String>) {
@@ -132,3 +156,4 @@ class MenuFragment2 : Fragment() {
             }
     }
 }
+
