@@ -80,7 +80,7 @@ class MenuFragment3 : Fragment() {
         mapview.start(lifecycleCallback, readyCallback)
 
         binding.addButton.setOnClickListener {
-
+            Toast.makeText(context,"클릭",Toast.LENGTH_SHORT).show()
         }
         binding.locationButton.setOnClickListener {
 
