@@ -43,7 +43,6 @@ class FriendList : Fragment() {
     lateinit var myDb: CollectionReference
     val data: MutableList<Friend> = mutableListOf()
     lateinit var listAdapter:FriendAdapter
-    lateinit var mg:FragmentManager
     lateinit var fr:Fragment
     init{
         instance = this
@@ -80,7 +79,6 @@ class FriendList : Fragment() {
             binding.recyclerList.layoutManager = LinearLayoutManager(context)
 
         }
-        mg= requireFragmentManager()
         fr=this
         super.onViewCreated(view, savedInstanceState)
     }
