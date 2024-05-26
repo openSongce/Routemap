@@ -5,9 +5,16 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.example.rootmap.databinding.FragmentMenu2Binding
 import com.example.rootmap.databinding.FragmentMenu3Binding
 import com.example.rootmap.databinding.FragmentMenuBinding
+import com.kakao.vectormap.KakaoMap
+import com.kakao.vectormap.KakaoMapReadyCallback
+import com.kakao.vectormap.LatLng
+import com.kakao.vectormap.MapLifeCycleCallback
+import com.kakao.vectormap.MapView
+import java.lang.Exception
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -20,17 +27,44 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class MenuFragment3 : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var mapview: MapView
+    private var zoomlevel = 13
+    private var startpositon = LatLng.from(37.394660,127.111182)
+
     //프래그먼트의 binding
     lateinit var binding: FragmentMenu3Binding
+
+    private val readyCallback = object: KakaoMapReadyCallback(){
+        override fun onMapReady(p0: KakaoMap) {}
+        override fun getPosition(): LatLng {
+            return startpositon
+        }
+
+        override fun getZoomLevel(): Int {
+            return zoomlevel
+        }
+    }
+
+    private val lifecycleCallback = object: MapLifeCycleCallback(){
+        override fun onMapDestroy() {
+
+        }
+        override fun onMapResumed() {
+            super.onMapResumed()
+        }
+
+        override fun onMapPaused() {
+            super.onMapPaused()
+        }
+
+        override fun onMapError(p0: Exception?) {
+            Toast.makeText(context,"map error!", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
         }
     }
 
@@ -42,8 +76,8 @@ class MenuFragment3 : Fragment() {
         binding= FragmentMenu3Binding.inflate(inflater, container, false)
 
         //여기부터 코드 작성
-
-
+        mapview = binding.mapView.findViewById(R.id.map_view)
+        mapview.start(lifecycleCallback, readyCallback)
         //
         return binding.root
     }
