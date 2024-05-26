@@ -37,7 +37,9 @@ class MenuFragment2 : Fragment() {
 
         // DrawerLayout 열기
         binding.filterButton.setOnClickListener {
-            binding.drawerLayout.openDrawer(binding.scrollView)
+            if (!binding.drawerLayout.isDrawerOpen(binding.scrollView)) {
+                binding.drawerLayout.openDrawer(binding.scrollView)
+            }
         }
 
         // DrawerLayout 닫기 및 확인 버튼 클릭 이벤트
@@ -54,6 +56,25 @@ class MenuFragment2 : Fragment() {
             binding.drawerLayout.closeDrawer(binding.scrollView)
             updateSelectedOptions()
         }
+
+        // DrawerListener 설정
+        binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+                // Do nothing
+            }
+
+            override fun onDrawerOpened(drawerView: View) {
+                // Do nothing
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                // Do nothing
+            }
+
+            override fun onDrawerStateChanged(newState: Int) {
+                // Handle drawer state changes if necessary
+            }
+        })
 
         // 여행지, 여행일, 테마 체크박스 동적 생성
         addCheckBoxes(
