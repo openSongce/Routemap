@@ -16,7 +16,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
 import android.Manifest
+import android.util.Log
 import androidx.core.app.ActivityCompat
+import com.kakao.vectormap.KakaoMapSdk
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var emailEt: EditText
@@ -83,6 +85,8 @@ class LoginActivity : AppCompatActivity() {
             val signInIntent = googleSignInClient.signInIntent
             googleSignInLauncher.launch(signInIntent)
         }
+
+        Log.d("Hash key", KakaoMapSdk.INSTANCE.hashKey) // Logcat에 'Hash key' 필터로 디버그 해시키 얻을수 있음
     }
 
     private fun login(email: String, password: String) {
