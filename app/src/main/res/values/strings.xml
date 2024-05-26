@@ -15,4 +15,42 @@
         <item>경기도</item>
         <item>강원도</item>
     </string-array>
+
+    <!-- 여행지 문자열 배열 -->
+    <string-array name="locations_array">
+        <item>서울</item>
+        <item>인천</item>
+        <item>대전</item>
+        <item>대구</item>
+        <item>광주</item>
+        <item>부산</item>
+        <item>울산</item>
+        <item>세종특별자치시</item>
+        <item>경기도</item>
+        <item>강원도</item>
+    </string-array>
+
+    <!-- 여행일 문자열 배열 -->
+    <string-array name="durations_array">
+        <item>당일치기</item>
+        <item>1박 2일</item>
+        <item>주말 여행(2박 3일)</item>
+        <item>짧은 휴가(3~4일)</item>
+        <item>긴 휴가(5일 이상)</item>
+    </string-array>
+
+    <!-- 테마 문자열 배열 -->
+    <string-array name="themes_array">
+        <item>나홀로</item>
+        <item>가족</item>
+        <item>우정</item>
+        <item>커플</item>
+        <item>힐링</item>
+        <item>음식 탐방</item>
+        <item>액티비티</item>
+        <item>문화 탐방</item>
+        <item>자연 탐험</item>
+        <item>역사 탐방</item>
+        <item>레저 스포츠</item>
+    </string-array>
 </resources>
