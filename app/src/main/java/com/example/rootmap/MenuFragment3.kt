@@ -32,7 +32,7 @@ class MenuFragment3 : Fragment() {
     private var startpositon = LatLng.from(37.394660,127.111182)
 
     //프래그먼트의 binding
-    lateinit var binding: FragmentMenu3Binding
+    val binding by lazy { FragmentMenu3Binding.inflate(layoutInflater) }
 
     private val readyCallback = object: KakaoMapReadyCallback(){
         override fun onMapReady(p0: KakaoMap) {}
@@ -73,7 +73,7 @@ class MenuFragment3 : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        binding= FragmentMenu3Binding.inflate(inflater, container, false)
+      //  binding= FragmentMenu3Binding.inflate(inflater, container, false)
 
         //여기부터 코드 작성
         mapview = binding.mapView.findViewById(R.id.map_view)
