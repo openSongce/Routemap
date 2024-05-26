@@ -20,7 +20,6 @@ import android.content.pm.PackageManager
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.ActivityCompat
-import com.kakao.vectormap.KakaoMapSdk
 import java.security.MessageDigest
 
 class LoginActivity : AppCompatActivity() {

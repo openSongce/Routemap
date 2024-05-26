@@ -78,6 +78,13 @@ class MenuFragment3 : Fragment() {
         //여기부터 코드 작성
         mapview = binding.mapView.findViewById(R.id.map_view)
         mapview.start(lifecycleCallback, readyCallback)
+
+        binding.addButton.setOnClickListener {
+            Toast.makeText(context,"클릭",Toast.LENGTH_SHORT).show()
+        }
+        binding.locationButton.setOnClickListener {
+
+        }
         //
         return binding.root
     }
