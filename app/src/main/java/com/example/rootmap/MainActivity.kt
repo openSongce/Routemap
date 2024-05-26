@@ -129,7 +129,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
             R.id.menuMoney -> {
-                Toast.makeText(this, "가계부 클릭", Toast.LENGTH_SHORT).show()
+                val expenditureIntent = Intent(this, ExpenditureActivity::class.java)
+                startActivity(expenditureIntent)
             }
 
             R.id.menuFriend -> {
