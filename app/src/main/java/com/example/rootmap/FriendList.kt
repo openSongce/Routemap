@@ -12,7 +12,7 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
-import com.example.rootmap.databinding.DialogLayooutBinding
+import com.example.rootmap.databinding.DialogLayoutBinding
 import com.example.rootmap.databinding.FragmentFriendListBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
@@ -99,7 +99,7 @@ class FriendList : Fragment() {
 
 
     fun showAction(frid:String){
-        val dBinding = DialogLayooutBinding.inflate(layoutInflater)
+        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
         dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
         dBinding.bButton.text = "확인"
         dBinding.content.text = "해당 유저를 친구에서 삭제하시겠습니까?"

@@ -15,7 +15,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
-import com.example.rootmap.databinding.DialogLayooutBinding
+import com.example.rootmap.databinding.DialogLayoutBinding
 import com.example.rootmap.databinding.FragmentFriendAddBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
@@ -130,7 +130,7 @@ class FriendAdd : Fragment() {
         }
     }
     fun showCancle(frid: String) {
-        val dBinding = DialogLayooutBinding.inflate(layoutInflater)
+        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
         dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
         dBinding.bButton.text = "확인"
         dBinding.content.text = "삭제하시겠습니까?"
@@ -164,7 +164,7 @@ class FriendAdd : Fragment() {
         friendDb: CollectionReference
     ) { //다이어로그로 팝업창 구현, 아래의 searchUser()에서 사용
         //여기서 binding은 FriendAdd의 Binding, text는 신청보낼 유저 ID임
-        val dBinding = DialogLayooutBinding.inflate(layoutInflater)
+        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
         dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
         dBinding.bButton.text = "신청"
         dBinding.content.text = "${text} 유저에게 친구 신청을 보내겠습니까?"

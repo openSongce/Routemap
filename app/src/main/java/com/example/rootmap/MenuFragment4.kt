@@ -22,7 +22,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.rootmap.databinding.DialogLayooutBinding
+import com.example.rootmap.databinding.DialogLayoutBinding
 import com.example.rootmap.databinding.FragmentMenu4Binding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
@@ -199,7 +199,7 @@ class MenuFragment4 : Fragment() {
     }
 
     fun showDialog(mode: String) {
-        val dBinding = DialogLayooutBinding.inflate(layoutInflater)
+        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
         dBinding.wButton.text = "아니요" //다이어로그의 텍스트 변경
         dBinding.bButton.text = "네"
         if (mode == "logout") {

@@ -10,6 +10,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+
+        maven {
+            setUrl("https://devrepo.kakao.com/nexus/repository/kakaomap-releases/")
+        } //카카오맵 v2저장소
     }
 }
 

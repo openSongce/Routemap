@@ -24,6 +24,7 @@ import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.FirebaseStorage
+import com.kakao.vectormap.KakaoMapSdk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -52,6 +53,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val userName: TextView = head.findViewById(R.id.menuUserName)
         val userNickame: TextView = head.findViewById(R.id.menuNickname)
         val userProfile: ImageView = head.findViewById(R.id.header_icon)
+        KakaoMapSdk.init(this, "adbabacb6eeba95fa1b0adf991f6505c")
 
         CoroutineScope(Dispatchers.Main).async {
             if (currentId != null) {
