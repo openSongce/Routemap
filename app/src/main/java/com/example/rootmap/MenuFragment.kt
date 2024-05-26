@@ -60,7 +60,7 @@ class MenuFragment : Fragment() {
         binding = FragmentMenuBinding.inflate(inflater, container, false)
 
         // 도시 목록을 정의
-        val cityList = resources.getStringArray(R.array.city_array)
+        val cityList = resources.getStringArray(R.array.locations_array)
 
         // ArrayAdapter를 생성하여 Spinner에 연결
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, cityList)

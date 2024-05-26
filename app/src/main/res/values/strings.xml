@@ -3,19 +3,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="default_web_client_id" translatable="false">828472783790-b43ul2cnegb29ah7ialflr4kt22f622s.apps.googleusercontent.com</string>
 
-    <string-array name="city_array">
-        <item>서울</item>
-        <item>인천</item>
-        <item>대전</item>
-        <item>대구</item>
-        <item>광주</item>
-        <item>부산</item>
-        <item>울산</item>
-        <item>세종특별자치시</item>
-        <item>경기도</item>
-        <item>강원도</item>
-    </string-array>
-
     <!-- 여행지 문자열 배열 -->
     <string-array name="locations_array">
         <item>서울</item>
