@@ -18,14 +18,14 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintVertical_bias="1.0" />
+            app:layout_constraintVertical_bias="0.0" />
 
     <EditText
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:inputType="text"
-            android:id="@+id/editTextText2"
-            android:background="#FFFFFFFF"
+            android:id="@+id/searchText"
+            android:background="#FFFFFF"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imageView2"
             android:layout_marginTop="80dp"
@@ -39,13 +39,35 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:id="@+id/imageView2"
-            android:background="#FFFFFFFF"
+            android:background="#FFFFFF"
             app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintEnd_toStartOf="@+id/editTextText2"
+            app:layout_constraintEnd_toStartOf="@+id/searchText"
             android:layout_marginTop="80dp"
             android:layout_marginStart="40dp" />
+
+    <ImageButton
+            android:src="@drawable/routemake"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:id="@+id/addButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="5dp"
+            android:tint="@color/custum_color"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    <ImageButton
+            android:src="@drawable/location"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:id="@+id/locationButton"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="5dp"
+            android:scaleType="centerCrop"
+            android:background="@color/custum_color"
+            android:tint="#FFFFFF"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
