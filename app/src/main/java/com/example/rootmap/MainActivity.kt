@@ -80,6 +80,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val adapter = HomeFragmentAdapter(this)
         adapter.fragmentList = contextList
         binding.viewPager.adapter = adapter
+        binding.viewPager.setUserInputEnabled(false);
 
         //하단에 탭 바 구성, 클릭 시 해당 프레그먼트로 이동
         val tabTitle = listOf<String>("메인", "게시판", "지도", "마이페이지")
