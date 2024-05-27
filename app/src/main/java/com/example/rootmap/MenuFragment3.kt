@@ -1,30 +1,23 @@
 package com.example.rootmap
 
 import android.Manifest
-import android.location.GnssAntennaInfo.Listener
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.example.rootmap.databinding.FragmentMenu2Binding
 import com.example.rootmap.databinding.FragmentMenu3Binding
-import com.example.rootmap.databinding.FragmentMenuBinding
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
 import kotlinx.coroutines.async
-import java.lang.Exception
-import javax.security.auth.callback.Callback
-import kotlin.coroutines.suspendCoroutine
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -38,11 +31,10 @@ private const val ARG_PARAM2 = "param2"
  */
 class MenuFragment3 : Fragment() {
     private lateinit var mapview: MapView
-    private var zoomlevel = 13
-  // private var startpositon = LatLng.from(37.394660,127.111182)
-    lateinit var locationPermission: ActivityResultLauncher<String>
+    private var zoomlevel = 17
+    lateinit var locationPermission: ActivityResultLauncher<Array<String>>
     private lateinit var locationService: LocationService
-    var startpositon:LatLng? = null
+    lateinit var startpositon:LatLng
 
     //프래그먼트의 binding
     val binding by lazy { FragmentMenu3Binding.inflate(layoutInflater) }
@@ -74,6 +66,7 @@ class MenuFragment3 : Fragment() {
             Toast.makeText(context,"map error!", Toast.LENGTH_SHORT).show()
         }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -88,22 +81,19 @@ class MenuFragment3 : Fragment() {
       //  binding= FragmentMenu3Binding.inflate(inflater, container, false)
         locationService = LocationService(requireContext())
         //여기부터 코드 작성
-        locationPermission=registerForActivityResult(ActivityResultContracts.RequestPermission()){ isGranted->
-            if (isGranted){
-                fetchLocation()
+         locationPermission= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {result->
+            if (result.any { permission -> !permission.value }) {
+                Toast.makeText(this.context, "위치 권한을 승인하여야 사용할 수 있습니다.", Toast.LENGTH_SHORT).show()
             }else{
-                Toast.makeText(context,"위치 권한을 승인하여야 사용할 수 있습니다.",Toast.LENGTH_SHORT).show()
+                fetchLocation()
             }
         }
-        locationPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         mapview = binding.mapView.findViewById(R.id.map_view)
         viewLifecycleOwner.lifecycleScope.async{
-            fetchLocation()
-            if(startpositon!=null){
+           locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
+          // val style = KakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.ic_mark)))
 
-            }
         }
-
         binding.addButton.setOnClickListener {
             Toast.makeText(context,"클릭",Toast.LENGTH_SHORT).show()
         }
@@ -121,6 +111,8 @@ class MenuFragment3 : Fragment() {
             mapview.start(lifecycleCallback, readyCallback)
         }
     }
+    
+
 
     companion object {
         /**
