@@ -36,6 +36,11 @@ import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
 import kotlinx.coroutines.async
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -55,7 +60,7 @@ class MenuFragment3 : Fragment() {
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     var kakaomap: KakaoMap?=null
     lateinit var startCamera: CameraPosition
-    val routeData: MutableList<Route> = mutableListOf()
+    val locationData: MutableList<SearchLocation> = mutableListOf()
     //프래그먼트의 binding
     val binding by lazy { FragmentMenu3Binding.inflate(layoutInflater) }
     lateinit var listAdapter: RouteListAdapter
@@ -65,11 +70,15 @@ class MenuFragment3 : Fragment() {
     lateinit var layers: LabelLayer
     var clickMarker: Label?=null
     var currendtMarker:Label?=null
+    lateinit var searchText:String
     private val readyCallback = object: KakaoMapReadyCallback(){
         override fun onMapReady(kakaoMap: KakaoMap) {
             //현재 위치에 라벨
             kakaomap=kakaoMap
             var layer=kakaoMap.labelManager?.layer
+            if (layer != null) {
+                layers=layer
+            }
             val style = kakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
                 R.drawable.mylocation
             )))
@@ -120,7 +129,9 @@ class MenuFragment3 : Fragment() {
             Toast.makeText(context,"map error!", Toast.LENGTH_SHORT).show()
         }
     }
-
+    init{
+        instance = this
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -164,11 +175,17 @@ class MenuFragment3 : Fragment() {
         binding.searchText.setOnEditorActionListener{ v, actionId, event //키보드 엔터 사용시
             ->
             context?.hideKeyboard(binding.root)
-            binding.recyclerView2.visibility=View.VISIBLE
-            binding.disButton.visibility=View.VISIBLE
-            binding.disButton.setOnClickListener {
-                binding.recyclerView2.visibility=View.GONE
-                binding.disButton.visibility=View.GONE
+            searchText=binding.searchText.text.toString()
+            if(searchText==""){
+                Toast.makeText(context, "빈칸입니다.", Toast.LENGTH_SHORT).show()
+            }else{
+                binding.recyclerView2.visibility=View.VISIBLE
+                binding.disButton.visibility=View.VISIBLE
+                binding.disButton.setOnClickListener {
+                    binding.recyclerView2.visibility=View.GONE
+                    binding.disButton.visibility=View.GONE
+                }
+                searchKeyword(searchText)
             }
             true
         }
@@ -179,7 +196,7 @@ class MenuFragment3 : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewLifecycleOwner.lifecycleScope.async {
             loadData()
-            listAdapter.list=routeData
+            listAdapter.list=locationData
             binding.recyclerView2.adapter = listAdapter
             binding.recyclerView2.layoutManager = LinearLayoutManager(context)
         }
@@ -194,6 +211,50 @@ class MenuFragment3 : Fragment() {
             getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
+
+    private fun searchKeyword(text:String){
+        val retrofit = Retrofit.Builder() // Retrofit 구성
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val api = retrofit.create(KakaoAPI::class.java) // 통신 인터페이스를 객체로 생성
+        val call = api.getSearchKeyword(API_KEY, text) // 검색 조건 입력
+        // API 서버에 요청
+        call.enqueue(object: Callback<ResultSearchKeyword> {
+            override fun onResponse(call: Call<ResultSearchKeyword>, response: Response<ResultSearchKeyword>) {
+// 통신 성공
+                addItemsAndMarkers(response.body())
+            }
+
+            override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
+// 통신 실패
+                Log.w("LocalSearch", "통신 실패: ${t.message}")
+            }
+        })
+    }
+
+
+    private fun addItemsAndMarkers(searchResult: ResultSearchKeyword?) {
+        if (!searchResult?.documents.isNullOrEmpty()) {
+// 검색 결과 있음
+            locationData.clear() // 리스트 초기화
+            layers
+            for (document in searchResult!!.documents) {
+            // 결과를 리사이클러 뷰에 추가
+                val item = SearchLocation(document.place_name,
+                    document.road_address_name,document.x.toDouble(),
+                    document.y.toDouble())
+                locationData.add(item)
+            }
+            listAdapter.list=locationData
+            listAdapter.notifyDataSetChanged()
+        } else {
+// 검색 결과 없음
+            Toast.makeText(this.context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
     @SuppressLint("MissingPermission")
     private fun getLocation() {
         fusedLocationProviderClient.getCurrentLocation(PRIORITY_HIGH_ACCURACY, null)
@@ -210,9 +271,12 @@ class MenuFragment3 : Fragment() {
             }
     }
     fun loadData(){
+        /*
         for(i in 0..1){
-            routeData.add(Route("이름","주소"))
+            locationData.add(Route("이름","주소"))
         }
+
+         */
     }
     companion object {
         /**
@@ -232,5 +296,11 @@ class MenuFragment3 : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+        const val BASE_URL = "https://dapi.kakao.com/"
+        const val API_KEY = "KakaoAK 95ce0663a74fa2702f06bed9a3025342"
+        private var instance: MenuFragment3? = null
+        fun getInstance():MenuFragment3?{
+            return instance
+        }
     }
 }

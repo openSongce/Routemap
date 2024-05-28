@@ -13,7 +13,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.tasks.await
 
 class RouteListAdapter() : RecyclerView.Adapter<Holder>()  {
-    var list = mutableListOf<Route>()
+    var list = mutableListOf<SearchLocation>()
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val binding =
             RoutelistLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -34,10 +35,8 @@ class Holder(
     val binding: RoutelistLayoutBinding,
 ) :
     RecyclerView.ViewHolder(binding.root) {
-    fun setData(route: Route) {
-        binding.locationName.text=route.name
-        binding.locationName.text=route.adress
+    fun setData(searchLocation: SearchLocation) {
+        binding.locationName.text=searchLocation.name
+        binding.locationAdress.text=searchLocation.adress
     }
-
-
 }
