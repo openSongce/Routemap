@@ -1,6 +1,12 @@
 package com.example.rootmap
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context.LOCATION_SERVICE
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,9 +15,12 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.rootmap.databinding.FragmentMenu3Binding
+import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
+import com.google.android.gms.location.LocationServices
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
@@ -33,8 +42,8 @@ class MenuFragment3 : Fragment() {
     private lateinit var mapview: MapView
     private var zoomlevel = 17
     lateinit var locationPermission: ActivityResultLauncher<Array<String>>
-    private lateinit var locationService: LocationService
     lateinit var startpositon:LatLng
+
 
     //프래그먼트의 binding
     val binding by lazy { FragmentMenu3Binding.inflate(layoutInflater) }
@@ -73,25 +82,27 @@ class MenuFragment3 : Fragment() {
         }
     }
 
+
+    @SuppressLint("MissingPermission")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-      //  binding= FragmentMenu3Binding.inflate(inflater, container, false)
-        locationService = LocationService(requireContext())
+        //  binding= FragmentMenu3Binding.inflate(inflater, container, false)
         //여기부터 코드 작성
-         locationPermission= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {result->
+        locationPermission= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {result->
             if (result.any { permission -> !permission.value }) {
                 Toast.makeText(this.context, "위치 권한을 승인하여야 사용할 수 있습니다.", Toast.LENGTH_SHORT).show()
             }else{
-                fetchLocation()
+                getLocation()
             }
         }
-        mapview = binding.mapView.findViewById(R.id.map_view)
+        //mapview = binding.mapView.findViewById(R.id.map_view)
+        mapview=binding.mapViewId
         viewLifecycleOwner.lifecycleScope.async{
-           locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
-          // val style = KakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.ic_mark)))
+            locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION))
+            // val style = KakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.ic_mark)))
 
         }
         binding.addButton.setOnClickListener {
@@ -100,18 +111,29 @@ class MenuFragment3 : Fragment() {
         binding.locationButton.setOnClickListener {
 
         }
+
         //
         return binding.root
     }
-    private fun fetchLocation(){
-        locationService.fetchLocation { latitude, longitude ->
-            startpositon=LatLng.from(latitude,longitude)
-            Log.d("test","${latitude}, ${longitude}")
-            binding.progressBar.visibility=View.GONE
-            mapview.start(lifecycleCallback, readyCallback)
-        }
+    @SuppressLint("MissingPermission")
+    private fun getLocation() {
+        val fusedLocationProviderClient =
+            LocationServices.getFusedLocationProviderClient(this.context)
+
+        fusedLocationProviderClient.getCurrentLocation(PRIORITY_HIGH_ACCURACY, null)
+            .addOnSuccessListener { success: Location? ->
+                success?.let { location ->
+                    Log.d("GmapViewFragment2","${location.latitude}, ${location.longitude}")
+                    startpositon= LatLng.from(location.latitude, location.longitude)
+                     binding.progressBar.visibility=View.GONE
+                    mapview.start(lifecycleCallback, readyCallback)
+                }
+            }
+            .addOnFailureListener { fail ->
+
+            }
     }
-    
+
 
 
     companion object {
