@@ -6,7 +6,6 @@ import android.app.Activity
 import android.content.Context
 import android.location.Location
 import android.os.Bundle
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,10 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.myapplication.Friend
 import com.example.rootmap.databinding.FragmentMenu3Binding
-import com.google.android.gms.common.SignInButton.ButtonSize
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationServices
@@ -32,14 +28,13 @@ import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
-import com.kakao.vectormap.MapView
 import com.kakao.vectormap.camera.CameraPosition
-import com.kakao.vectormap.label.LabelOptions
-import com.kakao.vectormap.label.LabelStyle
-import com.kakao.vectormap.label.LabelStyles
 import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelLayer
+import com.kakao.vectormap.label.LabelOptions
+import com.kakao.vectormap.label.LabelStyle
+import com.kakao.vectormap.label.LabelStyles
 import kotlinx.coroutines.async
 
 
@@ -69,6 +64,7 @@ class MenuFragment3 : Fragment() {
     private var currentId: String? = null
     lateinit var layers: LabelLayer
     var clickMarker: Label?=null
+    var currendtMarker:Label?=null
     private val readyCallback = object: KakaoMapReadyCallback(){
         override fun onMapReady(kakaoMap: KakaoMap) {
             //현재 위치에 라벨
@@ -79,7 +75,9 @@ class MenuFragment3 : Fragment() {
             )))
             if(startpositon!=null){
                 val options = LabelOptions.from(startpositon).setStyles(style)
-                layer?.addLabel(options)
+                currendtMarker=layer?.addLabel(options)
+                //val trackingManager = kakaoMap.trackingManager
+                //trackingManager!!.startTracking(currendtMarker)
             }
             startCamera= kakaoMap.getCameraPosition()!!
             //지도 클릭 시 이벤트 구현
