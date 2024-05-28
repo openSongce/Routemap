@@ -2,11 +2,7 @@ package com.example.rootmap
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context.LOCATION_SERVICE
-import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,10 +11,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.rootmap.databinding.FragmentMenu3Binding
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationServices
 import com.kakao.vectormap.KakaoMap
@@ -26,7 +22,14 @@ import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
+import com.kakao.vectormap.label.Label
+import com.kakao.vectormap.label.LabelLayer
+import com.kakao.vectormap.label.LabelOptions
+import com.kakao.vectormap.label.LabelStyle
+import com.kakao.vectormap.label.LabelStyles
+import com.kakao.vectormap.label.TrackingManager
 import kotlinx.coroutines.async
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -42,18 +45,28 @@ class MenuFragment3 : Fragment() {
     private lateinit var mapview: MapView
     private var zoomlevel = 17
     lateinit var locationPermission: ActivityResultLauncher<Array<String>>
-    lateinit var startpositon:LatLng
+    var startpositon:LatLng?=null
+    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
 
     //프래그먼트의 binding
     val binding by lazy { FragmentMenu3Binding.inflate(layoutInflater) }
 
     private val readyCallback = object: KakaoMapReadyCallback(){
-        override fun onMapReady(p0: KakaoMap) {}
+        override fun onMapReady(kakaoMap: KakaoMap) {
+            //현재 위치에 라벨
+            var layer=kakaoMap.labelManager?.layer
+            val style = kakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
+                R.drawable.mylocation
+            )))
+            if(startpositon!=null){
+                val options = LabelOptions.from(startpositon).setStyles(style)
+                layer?.addLabel(options)
+            }
+        }
         override fun getPosition(): LatLng {
             return startpositon!!
         }
-
         override fun getZoomLevel(): Int {
             return zoomlevel
         }
@@ -80,6 +93,8 @@ class MenuFragment3 : Fragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
         }
+        fusedLocationProviderClient =
+            LocationServices.getFusedLocationProviderClient(this.context)
     }
 
 
@@ -99,12 +114,19 @@ class MenuFragment3 : Fragment() {
             }
         }
         //mapview = binding.mapView.findViewById(R.id.map_view)
-        mapview=binding.mapViewId
+       // mapview=binding.mapViewId
+      //  var layer:LabelLayer= KakaoMap.getLabelManager().getLayer()
         viewLifecycleOwner.lifecycleScope.async{
             locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION))
-            // val style = KakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.ic_mark)))
+          /*
+          //  var layer:LabelLayer= KakaoMap.getLabelManager().getLayer()
+            val centerLabel = layer.addLabel(
+                LabelOptions.from("centerLabel", startpositon)).setStyles(LabelStyle.from(R.drawable.red_dot_marker).setAnchorPoint(0.5f, 0.5f))
+                .setRank(1)
 
+           */
         }
+
         binding.addButton.setOnClickListener {
             Toast.makeText(context,"클릭",Toast.LENGTH_SHORT).show()
         }
@@ -115,18 +137,19 @@ class MenuFragment3 : Fragment() {
         //
         return binding.root
     }
+     override fun onPause() {
+        super.onPause()
+         //fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+    }
     @SuppressLint("MissingPermission")
     private fun getLocation() {
-        val fusedLocationProviderClient =
-            LocationServices.getFusedLocationProviderClient(this.context)
-
         fusedLocationProviderClient.getCurrentLocation(PRIORITY_HIGH_ACCURACY, null)
             .addOnSuccessListener { success: Location? ->
                 success?.let { location ->
-                    Log.d("GmapViewFragment2","${location.latitude}, ${location.longitude}")
+                    Log.d("location_test","${location.latitude}, ${location.longitude}")
                     startpositon= LatLng.from(location.latitude, location.longitude)
-                     binding.progressBar.visibility=View.GONE
-                    mapview.start(lifecycleCallback, readyCallback)
+                    binding.progressBar.visibility=View.GONE
+                    binding.mapViewId.start(lifecycleCallback, readyCallback)
                 }
             }
             .addOnFailureListener { fail ->
