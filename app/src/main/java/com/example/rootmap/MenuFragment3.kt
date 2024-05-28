@@ -2,6 +2,8 @@ package com.example.rootmap
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
 import android.location.Location
 import android.os.Bundle
 import android.os.Looper
@@ -9,6 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,6 +25,9 @@ import com.google.android.gms.common.SignInButton.ButtonSize
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationServices
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.firestore
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
@@ -46,7 +52,6 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class MenuFragment3 : Fragment() {
-    private lateinit var mapview: MapView
     private var zoomlevel = 17
     lateinit var locationPermission: ActivityResultLauncher<Array<String>>
     var startpositon:LatLng?=null
@@ -57,7 +62,9 @@ class MenuFragment3 : Fragment() {
     //프래그먼트의 binding
     val binding by lazy { FragmentMenu3Binding.inflate(layoutInflater) }
     lateinit var listAdapter: RouteListAdapter
-
+    val db = Firebase.firestore
+    lateinit var myDb: CollectionReference
+    private var currentId: String? = null
     private val readyCallback = object: KakaoMapReadyCallback(){
         override fun onMapReady(kakaoMap: KakaoMap) {
             //현재 위치에 라벨
@@ -100,6 +107,7 @@ class MenuFragment3 : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
+            currentId = it.getString("id")
         }
         fusedLocationProviderClient =
             LocationServices.getFusedLocationProviderClient(this.context)
@@ -111,8 +119,6 @@ class MenuFragment3 : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        //  binding= FragmentMenu3Binding.inflate(inflater, container, false)
         //여기부터 코드 작성
         locationPermission= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {result->
             if (result.any { permission -> !permission.value }) {
@@ -121,37 +127,32 @@ class MenuFragment3 : Fragment() {
                 getLocation()
             }
         }
-        //mapview = binding.mapView.findViewById(R.id.map_view)
-       // mapview=binding.mapViewId
-      //  var layer:LabelLayer= KakaoMap.getLabelManager().getLayer()
+        //DB
+        myDb = db.collection("user").document(currentId.toString()).collection("route")
         viewLifecycleOwner.lifecycleScope.async{
             locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION))
-          /*
-          //  var layer:LabelLayer= KakaoMap.getLabelManager().getLayer()
-            val centerLabel = layer.addLabel(
-                LabelOptions.from("centerLabel", startpositon)).setStyles(LabelStyle.from(R.drawable.red_dot_marker).setAnchorPoint(0.5f, 0.5f))
-                .setRank(1)
-
-           */
         }
 
         binding.addButton.setOnClickListener {
-            Toast.makeText(context,"클릭",Toast.LENGTH_SHORT).show()
-           // (binding.recyclerView2.layoutParams as RecyclerView.LayoutParams).height=250
-            binding.recyclerView2.visibility=View.VISIBLE
-            binding.disButton.visibility=View.VISIBLE
-            binding.disButton.setOnClickListener {
-                binding.recyclerView2.visibility=View.GONE
-                binding.disButton.visibility=View.GONE
-            }
+            Toast.makeText(this.context, "클릭", Toast.LENGTH_SHORT).show()
         }
         binding.locationButton.setOnClickListener {
             var cameraUpdate= CameraUpdateFactory.newCameraPosition(startCamera)
             var cameraZoom=CameraUpdateFactory.zoomTo(kakaomap.zoomLevel)
             kakaomap.moveCamera(cameraUpdate)
             kakaomap.moveCamera(cameraZoom)
-
       }
+        binding.searchText.setOnEditorActionListener{ v, actionId, event //키보드 엔터 사용시
+            ->
+            context?.hideKeyboard(binding.root)
+            binding.recyclerView2.visibility=View.VISIBLE
+            binding.disButton.visibility=View.VISIBLE
+            binding.disButton.setOnClickListener {
+                binding.recyclerView2.visibility=View.GONE
+                binding.disButton.visibility=View.GONE
+            }
+            true
+        }
         listAdapter= RouteListAdapter()
         //
         return binding.root
@@ -170,6 +171,11 @@ class MenuFragment3 : Fragment() {
         super.onPause()
          //fusedLocationProviderClient.removeLocationUpdates(locationCallback)
     }
+    fun Context.hideKeyboard(view: View) {
+        val inputMethodManager =
+            getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
     @SuppressLint("MissingPermission")
     private fun getLocation() {
         fusedLocationProviderClient.getCurrentLocation(PRIORITY_HIGH_ACCURACY, null)
@@ -185,7 +191,6 @@ class MenuFragment3 : Fragment() {
 
             }
     }
-
     fun loadData(){
         for(i in 0..1){
             routeData.add(Route("이름","주소"))

@@ -57,32 +57,52 @@
             android:layout_marginEnd="5dp"
             android:tint="@color/custum_color"
             android:background="@color/white"
+            android:layout_marginBottom="5dp"
             app:layout_constraintBottom_toTopOf="@+id/recyclerView2" />
 
     <Button
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:id="@+id/disButton"
-            app:layout_constraintBottom_toTopOf="@+id/recyclerView2"
-            app:layout_constraintEnd_toStartOf="@+id/addButton"
+
             android:backgroundTint="@color/custum_color"
             android:text="↓"
             android:textSize="25dp"
-            android:layout_marginRight="10dp"
             android:visibility="gone"
-            android:gravity="center_horizontal|center_vertical" />
+            android:gravity="center_horizontal|center_vertical"
+
+            app:layout_constraintEnd_toStartOf="@+id/listButton"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            app:layout_constraintBottom_toTopOf="@+id/recyclerView2" />
+
+    <ImageButton
+            android:src="@drawable/plans"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:id="@+id/listButton"
+            android:scaleType="centerCrop"
+            android:background="@color/custum_color"
+            android:tint="@color/white"
+
+            app:layout_constraintEnd_toStartOf="@+id/addButton"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            app:layout_constraintBottom_toTopOf="@+id/recyclerView2" />
 
     <ImageButton
             android:src="@drawable/location"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:id="@+id/locationButton"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="5dp"
+
             android:scaleType="centerCrop"
             android:background="@color/custum_color"
             android:tint="#FFFFFF"
-            app:layout_constraintBottom_toTopOf="@+id/recyclerView2" />
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginBottom="5dp"
+            app:layout_constraintBottom_toTopOf="@+id/recyclerView2"
+            android:layout_marginStart="5dp" />
 
     <ProgressBar
             style="?android:attr/progressBarStyle"
@@ -101,7 +121,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:id="@+id/recyclerView2"
-            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintHorizontal_bias="0.0"
             android:background="#FFFFFF"
             android:visibility="gone" />
 
