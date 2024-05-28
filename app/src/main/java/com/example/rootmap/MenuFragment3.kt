@@ -38,6 +38,8 @@ import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
 import com.kakao.vectormap.camera.CameraUpdateFactory
+import com.kakao.vectormap.label.Label
+import com.kakao.vectormap.label.LabelLayer
 import kotlinx.coroutines.async
 
 
@@ -56,7 +58,7 @@ class MenuFragment3 : Fragment() {
     lateinit var locationPermission: ActivityResultLauncher<Array<String>>
     var startpositon:LatLng?=null
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    lateinit var kakaomap: KakaoMap
+    var kakaomap: KakaoMap?=null
     lateinit var startCamera: CameraPosition
     val routeData: MutableList<Route> = mutableListOf()
     //프래그먼트의 binding
@@ -65,6 +67,8 @@ class MenuFragment3 : Fragment() {
     val db = Firebase.firestore
     lateinit var myDb: CollectionReference
     private var currentId: String? = null
+    lateinit var layers: LabelLayer
+    var clickMarker: Label?=null
     private val readyCallback = object: KakaoMapReadyCallback(){
         override fun onMapReady(kakaoMap: KakaoMap) {
             //현재 위치에 라벨
@@ -78,6 +82,21 @@ class MenuFragment3 : Fragment() {
                 layer?.addLabel(options)
             }
             startCamera= kakaoMap.getCameraPosition()!!
+            //지도 클릭 시 이벤트 구현
+            kakaoMap.setOnMapClickListener { kakaoMap, latLng, pointF, poi ->
+                //일단은 마크가 하나만 찍히도록 구현
+                val styles = kakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
+                    R.drawable.mylocation
+                )))
+                val options1 = LabelOptions.from(latLng).setStyles(styles)
+                if(clickMarker==null){ //이미 찍힌 마크가 없을 때
+                    clickMarker=layer?.addLabel(options1)
+                    Log.d("test","${latLng}")
+                }else{
+                    layer?.remove(clickMarker)
+                    clickMarker=layer?.addLabel(options1) //마크 삭제 후 새로 추가
+                }
+            }
         }
         override fun getPosition(): LatLng {
             return startpositon!!
@@ -137,10 +156,12 @@ class MenuFragment3 : Fragment() {
             Toast.makeText(this.context, "클릭", Toast.LENGTH_SHORT).show()
         }
         binding.locationButton.setOnClickListener {
-            var cameraUpdate= CameraUpdateFactory.newCameraPosition(startCamera)
-            var cameraZoom=CameraUpdateFactory.zoomTo(kakaomap.zoomLevel)
-            kakaomap.moveCamera(cameraUpdate)
-            kakaomap.moveCamera(cameraZoom)
+            if(kakaomap!=null){
+                var cameraUpdate= CameraUpdateFactory.newCameraPosition(startCamera)
+                var cameraZoom=CameraUpdateFactory.zoomTo(kakaomap!!.zoomLevel)
+                kakaomap!!.moveCamera(cameraUpdate)
+                kakaomap!!.moveCamera(cameraZoom)
+            }
       }
         binding.searchText.setOnEditorActionListener{ v, actionId, event //키보드 엔터 사용시
             ->
@@ -154,7 +175,6 @@ class MenuFragment3 : Fragment() {
             true
         }
         listAdapter= RouteListAdapter()
-        //
         return binding.root
     }
 
