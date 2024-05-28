@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -71,6 +72,8 @@ class MenuFragment3 : Fragment() {
     var clickMarker: Label?=null
     var currendtMarker:Label?=null
     lateinit var searchText:String
+    lateinit var userX:String
+    lateinit var userY:String
     private val readyCallback = object: KakaoMapReadyCallback(){
         override fun onMapReady(kakaoMap: KakaoMap) {
             //현재 위치에 라벨
@@ -139,9 +142,8 @@ class MenuFragment3 : Fragment() {
         }
         fusedLocationProviderClient =
             LocationServices.getFusedLocationProviderClient(this.context)
+        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
     }
-
-
     @SuppressLint("MissingPermission")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -218,7 +220,7 @@ class MenuFragment3 : Fragment() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val api = retrofit.create(KakaoAPI::class.java) // 통신 인터페이스를 객체로 생성
-        val call = api.getSearchKeyword(API_KEY, text) // 검색 조건 입력
+        val call = api.getSearchKeyword(API_KEY,text,userX,userY) // 검색 조건 입력
         // API 서버에 요청
         call.enqueue(object: Callback<ResultSearchKeyword> {
             override fun onResponse(call: Call<ResultSearchKeyword>, response: Response<ResultSearchKeyword>) {
@@ -260,7 +262,8 @@ class MenuFragment3 : Fragment() {
         fusedLocationProviderClient.getCurrentLocation(PRIORITY_HIGH_ACCURACY, null)
             .addOnSuccessListener { success: Location? ->
                 success?.let { location ->
-                    Log.d("location_test","${location.latitude}, ${location.longitude}")
+                    userX=location.longitude.toString()
+                    userY=location.latitude.toString()
                     startpositon= LatLng.from(location.latitude, location.longitude)
                     binding.progressBar.visibility=View.GONE
                     binding.mapViewId.start(lifecycleCallback, readyCallback)
