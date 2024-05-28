@@ -14,7 +14,11 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.myapplication.Friend
 import com.example.rootmap.databinding.FragmentMenu3Binding
+import com.google.android.gms.common.SignInButton.ButtonSize
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationServices
@@ -49,10 +53,10 @@ class MenuFragment3 : Fragment() {
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     lateinit var kakaomap: KakaoMap
     lateinit var startCamera: CameraPosition
-
-
+    val routeData: MutableList<Route> = mutableListOf()
     //프래그먼트의 binding
     val binding by lazy { FragmentMenu3Binding.inflate(layoutInflater) }
+    lateinit var listAdapter: RouteListAdapter
 
     private val readyCallback = object: KakaoMapReadyCallback(){
         override fun onMapReady(kakaoMap: KakaoMap) {
@@ -133,13 +137,34 @@ class MenuFragment3 : Fragment() {
 
         binding.addButton.setOnClickListener {
             Toast.makeText(context,"클릭",Toast.LENGTH_SHORT).show()
+           // (binding.recyclerView2.layoutParams as RecyclerView.LayoutParams).height=250
+            binding.recyclerView2.visibility=View.VISIBLE
+            binding.disButton.visibility=View.VISIBLE
+            binding.disButton.setOnClickListener {
+                binding.recyclerView2.visibility=View.GONE
+                binding.disButton.visibility=View.GONE
+            }
         }
         binding.locationButton.setOnClickListener {
             var cameraUpdate= CameraUpdateFactory.newCameraPosition(startCamera)
+            var cameraZoom=CameraUpdateFactory.zoomTo(kakaomap.zoomLevel)
             kakaomap.moveCamera(cameraUpdate)
-        }
+            kakaomap.moveCamera(cameraZoom)
+
+      }
+        listAdapter= RouteListAdapter()
         //
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        viewLifecycleOwner.lifecycleScope.async {
+            loadData()
+            listAdapter.list=routeData
+            binding.recyclerView2.adapter = listAdapter
+            binding.recyclerView2.layoutManager = LinearLayoutManager(context)
+        }
+        super.onViewCreated(view, savedInstanceState)
     }
      override fun onPause() {
         super.onPause()
@@ -160,12 +185,12 @@ class MenuFragment3 : Fragment() {
 
             }
     }
-    private fun startLocationUpdates() {
 
+    fun loadData(){
+        for(i in 0..1){
+            routeData.add(Route("이름","주소"))
+        }
     }
-
-
-
     companion object {
         /**
          * Use this factory method to create a new instance of

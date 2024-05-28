@@ -56,8 +56,21 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="5dp"
             android:tint="@color/custum_color"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:background="@color/white" />
+            android:background="@color/white"
+            app:layout_constraintBottom_toTopOf="@+id/recyclerView2" />
+
+    <Button
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:id="@+id/disButton"
+            app:layout_constraintBottom_toTopOf="@+id/recyclerView2"
+            app:layout_constraintEnd_toStartOf="@+id/addButton"
+            android:backgroundTint="@color/custum_color"
+            android:text="↓"
+            android:textSize="25dp"
+            android:layout_marginRight="10dp"
+            android:visibility="gone"
+            android:gravity="center_horizontal|center_vertical" />
 
     <ImageButton
             android:src="@drawable/location"
@@ -69,7 +82,7 @@
             android:scaleType="centerCrop"
             android:background="@color/custum_color"
             android:tint="#FFFFFF"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toTopOf="@+id/recyclerView2" />
 
     <ProgressBar
             style="?android:attr/progressBarStyle"
@@ -80,5 +93,16 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/mapViewId"
             app:layout_constraintBottom_toBottomOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="0dp"
+            android:layout_height="300dp"
+            app:layout_constraintStart_toStartOf="@+id/mapViewId"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/recyclerView2"
+            app:layout_constraintHorizontal_bias="1.0"
+            android:background="#FFFFFF"
+            android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
