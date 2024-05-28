@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,12 +23,11 @@ import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
-import com.kakao.vectormap.label.Label
-import com.kakao.vectormap.label.LabelLayer
+import com.kakao.vectormap.camera.CameraPosition
 import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
-import com.kakao.vectormap.label.TrackingManager
+import com.kakao.vectormap.camera.CameraUpdateFactory
 import kotlinx.coroutines.async
 
 
@@ -47,6 +47,8 @@ class MenuFragment3 : Fragment() {
     lateinit var locationPermission: ActivityResultLauncher<Array<String>>
     var startpositon:LatLng?=null
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    lateinit var kakaomap: KakaoMap
+    lateinit var startCamera: CameraPosition
 
 
     //프래그먼트의 binding
@@ -55,6 +57,7 @@ class MenuFragment3 : Fragment() {
     private val readyCallback = object: KakaoMapReadyCallback(){
         override fun onMapReady(kakaoMap: KakaoMap) {
             //현재 위치에 라벨
+            kakaomap=kakaoMap
             var layer=kakaoMap.labelManager?.layer
             val style = kakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
                 R.drawable.mylocation
@@ -63,6 +66,7 @@ class MenuFragment3 : Fragment() {
                 val options = LabelOptions.from(startpositon).setStyles(style)
                 layer?.addLabel(options)
             }
+            startCamera= kakaoMap.getCameraPosition()!!
         }
         override fun getPosition(): LatLng {
             return startpositon!!
@@ -131,9 +135,9 @@ class MenuFragment3 : Fragment() {
             Toast.makeText(context,"클릭",Toast.LENGTH_SHORT).show()
         }
         binding.locationButton.setOnClickListener {
-
+            var cameraUpdate= CameraUpdateFactory.newCameraPosition(startCamera)
+            kakaomap.moveCamera(cameraUpdate)
         }
-
         //
         return binding.root
     }
@@ -155,6 +159,9 @@ class MenuFragment3 : Fragment() {
             .addOnFailureListener { fail ->
 
             }
+    }
+    private fun startLocationUpdates() {
+
     }
 
 
