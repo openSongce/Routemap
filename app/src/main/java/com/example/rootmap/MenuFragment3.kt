@@ -29,6 +29,7 @@ import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
+import com.kakao.vectormap.camera.CameraAnimation
 import com.kakao.vectormap.camera.CameraPosition
 import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.Label
@@ -54,10 +55,12 @@ private const val ARG_PARAM2 = "param2"
  * Use the [MenuFragment3.newInstance] factory method to
  * create an instance of this fragment.
  */
+// Logcat Debug 코드 "Map3"
 class MenuFragment3 : Fragment() {
     private var zoomlevel = 17
     lateinit var locationPermission: ActivityResultLauncher<Array<String>>
     var startpositon:LatLng?=null
+    var curPosition: LatLng?=null
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     var kakaomap: KakaoMap?=null
     lateinit var startCamera: CameraPosition
@@ -101,7 +104,7 @@ class MenuFragment3 : Fragment() {
                 val options1 = LabelOptions.from(latLng).setStyles(styles)
                 if(clickMarker==null){ //이미 찍힌 마크가 없을 때
                     clickMarker=layer?.addLabel(options1)
-                    Log.d("test","${latLng}")
+                    Log.d("Map3test","${latLng}")
                 }else{
                     layer?.remove(clickMarker)
                     clickMarker=layer?.addLabel(options1) //마크 삭제 후 새로 추가
@@ -168,10 +171,21 @@ class MenuFragment3 : Fragment() {
         }
         binding.locationButton.setOnClickListener {
             if(kakaomap!=null){
-                var cameraUpdate= CameraUpdateFactory.newCameraPosition(startCamera)
-                var cameraZoom=CameraUpdateFactory.zoomTo(kakaomap!!.zoomLevel)
-                kakaomap!!.moveCamera(cameraUpdate)
-                kakaomap!!.moveCamera(cameraZoom)
+                fusedLocationProviderClient.getCurrentLocation(PRIORITY_HIGH_ACCURACY, null)
+                    .addOnSuccessListener { success: Location? ->
+                        success?.let { location ->
+                            userX = location.longitude.toString()
+                            userY = location.latitude.toString()
+                            curPosition = LatLng.from(location.latitude, location.longitude)
+                            var cameraUpdate= CameraUpdateFactory.newCenterPosition(curPosition, zoomlevel)
+                            Log.d("Map3curLatLng", curPosition.toString())
+                            kakaomap!!.moveCamera(cameraUpdate, CameraAnimation.from(500, true, true)) //왜 현재위치로 갔다가 다시돌아오지?
+                            Log.d("Map3cameraUpdate", cameraUpdate.position.toString())
+                        }
+                    }
+                    .addOnFailureListener{
+
+                    }
             }
       }
         binding.searchText.setOnEditorActionListener{ v, actionId, event //키보드 엔터 사용시
@@ -267,6 +281,7 @@ class MenuFragment3 : Fragment() {
                     startpositon= LatLng.from(location.latitude, location.longitude)
                     binding.progressBar.visibility=View.GONE
                     binding.mapViewId.start(lifecycleCallback, readyCallback)
+                    Log.d("Map3init", "getLocation 호출" + startpositon.toString())
                 }
             }
             .addOnFailureListener { fail ->
