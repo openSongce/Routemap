@@ -162,11 +162,12 @@ class LoginActivity : AppCompatActivity() {
                 "nickname" to "닉네임을 설정해주세요",
                 "name" to "이름을 설정해주세요"
             )
-
-            db.collection("user").document(auth.currentUser?.email.toString())
+            var id=auth.currentUser?.email.toString()
+            db.collection("user").document(id)
                 .set(userData)
                 .addOnSuccessListener {
                     val intent = Intent(this, MainActivity::class.java)
+                    intent.putExtra("id", id)
                     startActivity(intent)
                     finish()
                 }
