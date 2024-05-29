@@ -70,7 +70,7 @@ class SignupActivity : AppCompatActivity() {
         db.collection("user").document(user.email.toString())
             .set(userData)
             .addOnSuccessListener {
-                Toast.makeText(this, "회원가입 성공", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "회원가입에 성공했습니다!", Toast.LENGTH_SHORT).show()
                 val intentLogin = Intent(this, LoginActivity::class.java)
                 startActivity(intentLogin)
             }

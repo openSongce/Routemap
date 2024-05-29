@@ -20,6 +20,8 @@ import android.content.pm.PackageManager
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.ActivityCompat
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 import java.security.MessageDigest
 
 class LoginActivity : AppCompatActivity() {
@@ -29,6 +31,8 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var signupBtn: Button
     private lateinit var auth: FirebaseAuth
     private lateinit var binding: ActivityLoginBinding
+    private lateinit var db: FirebaseFirestore
+    //val user = auth.currentUser
 
     // Google 로그인 클라이언트
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -50,11 +54,23 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
 
         emailEt = binding.emailEt
         passwordEt = binding.pwdEt
@@ -110,10 +126,12 @@ class LoginActivity : AppCompatActivity() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    val user = auth.currentUser
                     val intent = Intent(this, MainActivity::class.java)
-                    intent.putExtra("id",email)
+                    intent.putExtra("id", email)
                     startActivity(intent)
                     finish()
+                    Toast.makeText(this, "${user?.email}님 반갑습니다!", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(this, "로그인 실패", Toast.LENGTH_SHORT).show()
                 }
@@ -126,14 +144,32 @@ class LoginActivity : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
-                    // 로그인 성공 시 추가 작업 수행
-
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish()
+                    Toast.makeText(this, "User Email: ${user?.email}", Toast.LENGTH_SHORT).show()
+                    saveGoogleUserData(user) // 구글 로그인 성공 시 사용자 데이터를 저장
                 } else {
                     Toast.makeText(this, "Google Sign-In failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
+    }
+
+    private fun saveGoogleUserData(user: FirebaseUser?) {
+        user?.let { currentUser ->
+            val userData = hashMapOf(
+                "id" to currentUser.email,
+                "nickname" to "닉네임을 설정해주세요",
+                "name" to "이름을 설정해주세요"
+            )
+
+            db.collection("user").document(auth.currentUser?.email.toString())
+                .set(userData)
+                .addOnSuccessListener {
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "오류가 발생했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }
     }
 }
