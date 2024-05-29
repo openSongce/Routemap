@@ -3,6 +3,7 @@ package com.example.rootmap
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.location.Location
 import android.os.Bundle
@@ -12,17 +13,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.myapplication.Friend
+import com.example.rootmap.databinding.DialogLayoutBinding
 import com.example.rootmap.databinding.FragmentMenu3Binding
+import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseException
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.firestore
 import com.kakao.vectormap.KakaoMap
@@ -38,6 +44,7 @@ import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
 import kotlinx.coroutines.async
+import kotlinx.coroutines.tasks.await
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -68,6 +75,7 @@ class MenuFragment3 : Fragment() {
     //프래그먼트의 binding
     val binding by lazy { FragmentMenu3Binding.inflate(layoutInflater) }
     lateinit var listAdapter: RouteListAdapter
+    lateinit var routelistAdapter: MyDocumentAdapter
     val db = Firebase.firestore
     lateinit var myDb: CollectionReference
     private var currentId: String? = null
@@ -79,6 +87,7 @@ class MenuFragment3 : Fragment() {
     lateinit var userX:String
     lateinit var userY:String
     var layer: LabelLayer?=null
+    lateinit var dialog:AlertDialog
     private val readyCallback = object: KakaoMapReadyCallback(){
         override fun onMapReady(kakaoMap: KakaoMap) {
             //현재 위치에 라벨
@@ -205,18 +214,10 @@ class MenuFragment3 : Fragment() {
             true
         }
         listAdapter= RouteListAdapter()
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        viewLifecycleOwner.lifecycleScope.async {
-            loadData()
-            listAdapter.list=locationData
-            binding.recyclerView2.adapter = listAdapter
-            binding.recyclerView2.layoutManager = LinearLayoutManager(context)
-        }
-        //검색 결과 리스트 클릭 시 이벤트
+        routelistAdapter= MyDocumentAdapter()
+       //검색 리스트의 클릭 이벤트 구현
         listAdapter.setItemClickListener(object: RouteListAdapter.OnItemClickListener {
+            //검색 리스트 클릭 시
             override fun onClick(v: View, position: Int) {
                 var loc=LatLng.from(locationData[position].y, locationData[position].x)
                 val styles = kakaomap!!.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
@@ -231,14 +232,38 @@ class MenuFragment3 : Fragment() {
                 }
                 //지도 이동
                 if(kakaomap!=null){
-                       var cameraUpdate= CameraUpdateFactory.newCenterPosition(loc, zoomlevel)
-                      kakaomap!!.moveCamera(cameraUpdate, CameraAnimation.from(500, true, true))
+                    var cameraUpdate= CameraUpdateFactory.newCenterPosition(loc, zoomlevel)
+                    kakaomap!!.moveCamera(cameraUpdate, CameraAnimation.from(500, true, true))
 
                 }else{
                     Toast.makeText(context,"알 수 없는 오류가 발생했습니다. 재시도 해주세요.",Toast.LENGTH_SHORT).show()
                 }
             }
+            //검색 리스트의 경로 추가 버튼 클릭 시
+            override fun onButtonClick(v: View, position: Int) {
+                var loc=LatLng.from(locationData[position].y, locationData[position].x)
+                viewLifecycleOwner.lifecycleScope.async {
+                   routelistAdapter.list=loadMyList() //어댑터에 데이터 연결
+                   dialog=showDialog()
+                }
+            }
         })
+        routelistAdapter.setItemClickListener(object: MyDocumentAdapter.OnItemClickListener {
+            //내 경로 리스트의 추가 버튼 클릭 시 이벤트 구현
+            override fun onClick(v: View, position: Int) {
+                dialog.dismiss()
+                Toast.makeText(context,"추가 클릭 성공",Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        return binding.root
+    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        viewLifecycleOwner.lifecycleScope.async {
+            listAdapter.list=locationData
+            binding.recyclerView2.adapter = listAdapter
+            binding.recyclerView2.layoutManager = LinearLayoutManager(context)
+        }
         super.onViewCreated(view, savedInstanceState)
     }
      override fun onPause() {
@@ -292,6 +317,36 @@ class MenuFragment3 : Fragment() {
             Toast.makeText(this.context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
         }
     }
+    suspend fun loadMyList(): MutableList<MyRouteDocument> {
+        var list= mutableListOf<MyRouteDocument>()
+        return try {
+            val myList = myDb.get().await()
+            if(!myList.isEmpty){
+                for (doc in myList.documents) {
+                    //var id = fr.data?.get("id").toString() //친구 id
+                    //val fr_data = db.collection("user").document(id).get().await()
+                   // var load = Friend(fr_data.data?.get("nickname").toString(), id)
+                 //   data.add(load)
+                   list.add(MyRouteDocument(doc.data?.get("docName").toString(),doc.id))
+                }
+            }else{
+                Toast.makeText(context,"아직 경로가 없습니다. 새로운 경로를 만들어주세요.",Toast.LENGTH_SHORT).show()
+            }
+            list
+        } catch (e: FirebaseException) {
+            Log.d("list_test", "error")
+            list
+        }
+    }
+
+    private fun showDialog():AlertDialog{ //다이어로그로 팝업창 구현
+        val dBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
+        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        dBinding.listView.adapter = routelistAdapter
+        dBinding.listView.layoutManager = LinearLayoutManager(context)
+        val dialog = dialogBuild.show()
+        return dialog
+    }
 
 
     @SuppressLint("MissingPermission")
@@ -310,14 +365,6 @@ class MenuFragment3 : Fragment() {
             .addOnFailureListener { fail ->
 
             }
-    }
-    fun loadData(){
-        /*
-        for(i in 0..1){
-            locationData.add(Route("이름","주소"))
-        }
-
-         */
     }
     companion object {
         /**

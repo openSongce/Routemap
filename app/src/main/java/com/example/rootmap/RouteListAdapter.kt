@@ -41,10 +41,14 @@ class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>()  {
             binding.root.setOnClickListener {
                 itemClickListener.onClick(it, position)
             }
+            binding.addLcationBt.setOnClickListener {
+                itemClickListener.onButtonClick(it, position)
+            }
         }
         }
     interface OnItemClickListener {
         fun onClick(v: View, position: Int)
+        fun onButtonClick(v: View, position: Int)
     }
 
     fun setItemClickListener(onItemClickListener: OnItemClickListener) {
