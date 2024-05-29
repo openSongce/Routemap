@@ -253,6 +253,13 @@ class MenuFragment4 : Fragment() {
         }
         //해당 유저의 문서 삭제
         db.document(id).delete()
+            .addOnSuccessListener {
+                Log.d("Delete", "DocumentSnapshot successfully deleted!")
+            }
+            .addOnFailureListener { e ->
+                Log.w("Delete", "Error deleting document", e)
+                Toast.makeText(context, "Error deleting document: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         //유저 정보 auth에서 삭제
         var user = auth.currentUser;
         if (user != null) {

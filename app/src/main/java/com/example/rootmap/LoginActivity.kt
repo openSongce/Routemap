@@ -1,6 +1,7 @@
 package com.example.rootmap
 
 import android.content.Intent
+import android.content.Context
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -53,7 +54,7 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
-
+/*
     override fun onStart() {
         super.onStart()
         val currentUser = auth.currentUser
@@ -62,7 +63,7 @@ class LoginActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
-    }
+    }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,6 +121,7 @@ class LoginActivity : AppCompatActivity() {
             }
         }
         getAppKeyHash()
+
     }
 
     private fun login(email: String, password: String) {
@@ -137,6 +139,7 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
     }
+
 
     private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
