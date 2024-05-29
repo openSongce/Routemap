@@ -25,6 +25,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import java.security.MessageDigest
 
+
 class LoginActivity : AppCompatActivity() {
     private lateinit var emailEt: EditText
     private lateinit var passwordEt: EditText
@@ -33,7 +34,6 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var binding: ActivityLoginBinding
     private lateinit var db: FirebaseFirestore
-    //val user = auth.currentUser
 
     // Google 로그인 클라이언트
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -116,12 +116,10 @@ class LoginActivity : AppCompatActivity() {
                     Log.e("Hash key", something)
                 }
             } catch (e: Exception) {
-
                 Log.e("name not found", e.toString())
             }
         }
         getAppKeyHash()
-
     }
 
     private fun login(email: String, password: String) {
@@ -131,6 +129,14 @@ class LoginActivity : AppCompatActivity() {
                     val user = auth.currentUser
                     val intent = Intent(this, MainActivity::class.java)
                     intent.putExtra("id", email)
+
+                    // 로그인 상태 저장
+                    val sharedPreferences = getSharedPreferences("RootMapPrefs", Context.MODE_PRIVATE)
+                    with(sharedPreferences.edit()) {
+                        putBoolean("isLoggedIn", true)
+                        apply()
+                    }
+
                     startActivity(intent)
                     finish()
                     Toast.makeText(this, "${user?.email}님 반갑습니다!", Toast.LENGTH_SHORT).show()
@@ -140,36 +146,58 @@ class LoginActivity : AppCompatActivity() {
             }
     }
 
-
     private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
-                    Toast.makeText(this, "User Email: ${user?.email}", Toast.LENGTH_SHORT).show()
-                    saveGoogleUserData(user) // 구글 로그인 성공 시 사용자 데이터를 저장
+                    Toast.makeText(this, "${user?.email}님 반갑습니다!", Toast.LENGTH_SHORT).show()
+                    checkUserInFirestore(user) // 구글 로그인 성공 시 Firestore에서 사용자 존재 여부를 확인
                 } else {
                     Toast.makeText(this, "Google Sign-In failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
     }
 
-    private fun saveGoogleUserData(user: FirebaseUser?) {
+    private fun checkUserInFirestore(user: FirebaseUser?) {
+        user?.let { currentUser ->
+            val userDocRef = db.collection("user").document(currentUser.email.toString())
+            userDocRef.get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        // 문서가 존재하면 바로 MainActivity로 이동
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.putExtra("id", currentUser.email)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        // 문서가 존재하지 않으면 saveGoogleUserData() 메소드를 호출하여 사용자 데이터를 Firestore에 저장
+                        saveGoogleUserData(currentUser)
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "오류가 발생했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    private fun saveGoogleUserData(user: FirebaseUser?) { //계정이 등록되지 않은 경우 Firestore에 저장한다.
         user?.let { currentUser ->
             val userData = hashMapOf(
                 "id" to currentUser.email,
                 "nickname" to "닉네임을 설정해주세요",
                 "name" to "이름을 설정해주세요"
             )
-            var id=auth.currentUser?.email.toString()
-            db.collection("user").document(id)
+
+            db.collection("user").document(currentUser.email.toString())
                 .set(userData)
                 .addOnSuccessListener {
                     val intent = Intent(this, MainActivity::class.java)
-                    intent.putExtra("id", id)
+                    intent.putExtra("id", currentUser.email)
                     startActivity(intent)
                     finish()
+                    //Toast.makeText(this, "User Email: ${user?.email}", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(this, "오류가 발생했습니다: ${e.message}", Toast.LENGTH_SHORT).show()

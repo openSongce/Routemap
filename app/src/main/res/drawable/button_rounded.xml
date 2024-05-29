@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="50dp" />
+    <solid android:color="@color/custum_color" /> <!-- 버튼 배경색 (필요에 따라 변경 가능) -->
+</shape>
