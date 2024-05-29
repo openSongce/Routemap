@@ -74,17 +74,16 @@ class MenuFragment3 : Fragment() {
     lateinit var layers: LabelLayer
     var clickMarker: Label?=null
     var currendtMarker:Label?=null
+    var searchMarker:Label?=null
     lateinit var searchText:String
     lateinit var userX:String
     lateinit var userY:String
+    var layer: LabelLayer?=null
     private val readyCallback = object: KakaoMapReadyCallback(){
         override fun onMapReady(kakaoMap: KakaoMap) {
             //현재 위치에 라벨
             kakaomap=kakaoMap
-            var layer=kakaoMap.labelManager?.layer
-            if (layer != null) {
-                layers=layer
-            }
+            layer=kakaoMap.labelManager?.layer
             val style = kakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
                 R.drawable.mylocation
             )))
@@ -99,7 +98,7 @@ class MenuFragment3 : Fragment() {
             kakaoMap.setOnMapClickListener { kakaoMap, latLng, pointF, poi ->
                 //일단은 마크가 하나만 찍히도록 구현
                 val styles = kakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
-                    R.drawable.mylocation
+                    R.drawable.clicklocation
                 )))
                 val options1 = LabelOptions.from(latLng).setStyles(styles)
                 if(clickMarker==null){ //이미 찍힌 마크가 없을 때
@@ -184,7 +183,7 @@ class MenuFragment3 : Fragment() {
                         }
                     }
                     .addOnFailureListener{
-
+                        Toast.makeText(context,"알 수 없는 오류가 발생했습니다. 재시도 해주세요.",Toast.LENGTH_SHORT).show()
                     }
             }
       }
@@ -216,6 +215,30 @@ class MenuFragment3 : Fragment() {
             binding.recyclerView2.adapter = listAdapter
             binding.recyclerView2.layoutManager = LinearLayoutManager(context)
         }
+        //검색 결과 리스트 클릭 시 이벤트
+        listAdapter.setItemClickListener(object: RouteListAdapter.OnItemClickListener {
+            override fun onClick(v: View, position: Int) {
+                var loc=LatLng.from(locationData[position].y, locationData[position].x)
+                val styles = kakaomap!!.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
+                    R.drawable.clicklocation
+                )))
+                val options1 = LabelOptions.from(loc).setStyles(styles)
+                if(searchMarker==null){ //이미 찍힌 마크가 없을 때
+                    searchMarker=layer?.addLabel(options1)
+                }else{
+                    layer?.remove(searchMarker)
+                    searchMarker=layer?.addLabel(options1) //마크 삭제 후 새로 추가
+                }
+                //지도 이동
+                if(kakaomap!=null){
+                       var cameraUpdate= CameraUpdateFactory.newCenterPosition(loc, zoomlevel)
+                      kakaomap!!.moveCamera(cameraUpdate, CameraAnimation.from(500, true, true))
+
+                }else{
+                    Toast.makeText(context,"알 수 없는 오류가 발생했습니다. 재시도 해주세요.",Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
         super.onViewCreated(view, savedInstanceState)
     }
      override fun onPause() {
@@ -254,7 +277,7 @@ class MenuFragment3 : Fragment() {
         if (!searchResult?.documents.isNullOrEmpty()) {
 // 검색 결과 있음
             locationData.clear() // 리스트 초기화
-            layers
+           //layers
             for (document in searchResult!!.documents) {
             // 결과를 리사이클러 뷰에 추가
                 val item = SearchLocation(document.place_name,

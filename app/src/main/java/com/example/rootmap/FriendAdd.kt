@@ -240,7 +240,7 @@ class FriendAdd : Fragment() {
             loadData()
             addAdapter.list = data
             if (data.isEmpty()) {
-                binding.friendAddText.text = "???"
+                binding.friendAddText.text = "아직 신청을 보낸 기록이 없습니다."
                 binding.friendAddText.visibility = View.VISIBLE
             }else{
                 binding.friendAddText.visibility = View.INVISIBLE

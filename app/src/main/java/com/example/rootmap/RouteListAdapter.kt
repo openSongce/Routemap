@@ -1,7 +1,9 @@
 package com.example.rootmap
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rootmap.databinding.FragmentMenu3Binding
 import com.example.rootmap.databinding.RoutelistLayoutBinding
@@ -12,7 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.tasks.await
 
-class RouteListAdapter() : RecyclerView.Adapter<Holder>()  {
+class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>()  {
     var list = mutableListOf<SearchLocation>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
@@ -29,14 +31,28 @@ class RouteListAdapter() : RecyclerView.Adapter<Holder>()  {
         var screen = list.get(position)
         holder.setData(screen)
     }
-
-}
-class Holder(
-    val binding: RoutelistLayoutBinding,
-) :
-    RecyclerView.ViewHolder(binding.root) {
-    fun setData(searchLocation: SearchLocation) {
-        binding.locationName.text=searchLocation.name
-        binding.locationAdress.text=searchLocation.adress
+    inner class Holder(
+        val binding: RoutelistLayoutBinding,
+    ) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun setData(searchLocation: SearchLocation) {
+            binding.locationName.text=searchLocation.name
+            binding.locationAdress.text=searchLocation.adress
+            binding.root.setOnClickListener {
+                itemClickListener.onClick(it, position)
+            }
+        }
+        }
+    interface OnItemClickListener {
+        fun onClick(v: View, position: Int)
     }
-}
+
+    fun setItemClickListener(onItemClickListener: OnItemClickListener) {
+        this.itemClickListener = onItemClickListener
+    }
+
+    private lateinit var itemClickListener : OnItemClickListener
+    }
+
+
+
