@@ -54,16 +54,18 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
-/*
-    override fun onStart() {
+
+    override fun onStart() { //자동 로그인
         super.onStart()
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
+        auth = FirebaseAuth.getInstance()
+        val user = auth.currentUser
+        if (user != null) {
             val intent = Intent(this, MainActivity::class.java)
+            intent.putExtra("id", user.email)
             startActivity(intent)
             finish()
         }
-    }*/
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,11 +108,9 @@ class LoginActivity : AppCompatActivity() {
 
         fun getAppKeyHash() {
             try {
-                val info =
-                    packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES)
+                val info = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES)
                 for (signature in info.signatures) {
-                    var md: MessageDigest
-                    md = MessageDigest.getInstance("SHA")
+                    val md = MessageDigest.getInstance("SHA")
                     md.update(signature.toByteArray())
                     val something = String(Base64.encode(md.digest(), 0))
                     Log.e("Hash key", something)
@@ -197,7 +197,6 @@ class LoginActivity : AppCompatActivity() {
                     intent.putExtra("id", currentUser.email)
                     startActivity(intent)
                     finish()
-                    //Toast.makeText(this, "User Email: ${user?.email}", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(this, "오류가 발생했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
