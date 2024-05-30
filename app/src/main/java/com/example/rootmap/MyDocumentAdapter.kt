@@ -9,10 +9,11 @@ import com.example.rootmap.databinding.RoutelistLayoutBinding
 
 class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
     var list = mutableListOf<MyRouteDocument>()
+    lateinit var mode:String
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val binding =
             FriendLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return Holder(binding)
+        return Holder(binding,mode)
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
@@ -24,16 +25,24 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
     }
     inner class Holder(
         val binding: FriendLayoutBinding,
+        val mode:String
     ) :
         RecyclerView.ViewHolder(binding.root) {
         fun setData(myRouteDocument: MyRouteDocument) {
            // binding.friendName.text=myRouteDocument.docName
             binding.apply {
                 friendName.text=myRouteDocument.docName
-                friendButton2.text="추가"
                 picture.visibility=View.GONE
                 friendId.visibility=View.GONE
-                friendButton2.setOnClickListener {
+            }
+            if(mode=="View"){
+                binding.friendButton2.text="보기"
+                binding.friendButton2.setOnClickListener {
+                    itemClickListener.onListClick(it, position)
+                }
+            }else{
+                binding.friendButton2.text="추가"
+                binding.friendButton2.setOnClickListener {
                     itemClickListener.onClick(it, position)
                 }
             }
@@ -42,6 +51,7 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
     }
     interface OnItemClickListener {
         fun onClick(v: View, position: Int)
+        fun onListClick(v: View, position: Int)
     }
     fun setItemClickListener(onItemClickListener: OnItemClickListener) {
         this.itemClickListener = onItemClickListener
