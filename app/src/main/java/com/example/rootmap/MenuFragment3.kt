@@ -77,6 +77,7 @@ class MenuFragment3 : Fragment() {
     val binding by lazy { FragmentMenu3Binding.inflate(layoutInflater) }
     lateinit var listAdapter: RouteListAdapter
     lateinit var routelistAdapter: MyDocumentAdapter
+    lateinit var myRouteListAdapter: ListLocationAdapter
     val db = Firebase.firestore
     lateinit var myDb: CollectionReference
     private var currentId: String? = null
@@ -222,8 +223,10 @@ class MenuFragment3 : Fragment() {
             }
             true
         }
+        //리스트들을 위한 어댑터
         listAdapter= RouteListAdapter()
         routelistAdapter= MyDocumentAdapter()
+        myRouteListAdapter= ListLocationAdapter()
        //검색 리스트의 클릭 이벤트 구현
         listAdapter.setItemClickListener(object: RouteListAdapter.OnItemClickListener {
             //검색 리스트 클릭 시
@@ -258,6 +261,7 @@ class MenuFragment3 : Fragment() {
                 }
             }
         })
+        //유저가 만든 경로 모음의 리스트
         routelistAdapter.setItemClickListener(object: MyDocumentAdapter.OnItemClickListener {
             //내 경로 리스트의 추가 버튼 클릭 시 이벤트 구현
             override fun onClick(v: View, position: Int) {
@@ -381,9 +385,10 @@ class MenuFragment3 : Fragment() {
         dBinding.dialogListView.adapter = routelistAdapter
         dBinding.dialogListView.layoutManager = LinearLayoutManager(context)
         viewLifecycleOwner.lifecycleScope.async{
-            loadMyRouteData(id)
+            myRouteListAdapter.list=loadMyRouteData(id)
+            dBinding.dialogListView.adapter = myRouteListAdapter
+            dBinding.dialogListView.layoutManager = LinearLayoutManager(context)
             dBinding.editTextText.setText(routeName) //여행 이름 띄우기
-            //dBinding.dialogListView.adapter
         }
         val dialog = dialogBuild.show()
         return dialog
