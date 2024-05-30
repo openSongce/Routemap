@@ -199,7 +199,7 @@ class MenuFragment3 : Fragment() {
                             curPosition = LatLng.from(location.latitude, location.longitude)
                             var cameraUpdate= CameraUpdateFactory.newCenterPosition(curPosition, zoomlevel)
                             Log.d("Map3curLatLng", curPosition.toString())
-                            kakaomap!!.moveCamera(cameraUpdate, CameraAnimation.from(500, true, true)) //왜 현재위치로 갔다가 다시돌아오지?
+                            kakaomap!!.moveCamera(cameraUpdate, CameraAnimation.from(500, true, true))
                             Log.d("Map3cameraUpdate", cameraUpdate.position.toString())
                         }
                     }
@@ -208,6 +208,17 @@ class MenuFragment3 : Fragment() {
                     }
             }
       }
+        binding.disButton.setOnClickListener {
+            if (binding.recyclerView2.getVisibility() == View.VISIBLE){
+                binding.recyclerView2.visibility=View.GONE
+                binding.disButton.setText("↑")
+            }
+            else{
+                binding.recyclerView2.visibility=View.VISIBLE
+                binding.disButton.setText("↓")
+            }
+
+        }
         binding.searchText.setOnEditorActionListener{ v, actionId, event //키보드 엔터 사용시
             ->
             context?.hideKeyboard(binding.root)
@@ -217,10 +228,7 @@ class MenuFragment3 : Fragment() {
             }else{
                 binding.recyclerView2.visibility=View.VISIBLE
                 binding.disButton.visibility=View.VISIBLE
-                binding.disButton.setOnClickListener {
-                    binding.recyclerView2.visibility=View.GONE
-                    binding.disButton.visibility=View.GONE
-                }
+                binding.disButton.setText("↓")
                 searchKeyword(searchText)
             }
             true
