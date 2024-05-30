@@ -31,6 +31,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
 import com.kakao.vectormap.KakaoMap
@@ -359,11 +360,20 @@ class MenuFragment3 : Fragment() {
     }
     suspend fun loadMyRouteData(id:String): MutableList<MyLocation> {
         var list= mutableListOf<MyLocation>()
+        var dataList= mutableListOf<Map<String,*>>()
         return try {
-            val myList = myDb.document(id).get().await()
-            routeName=myList.data?.get("name").toString()
-
-            Log.d("list_test",list.size.toString())
+            var data: MutableMap<*, *>
+            myDb.document(id).get().addOnSuccessListener { documents->
+                routeName=documents.data?.get("name").toString()
+                data=documents.data as MutableMap<*,*>
+                dataList.addAll(data["routeList"] as List<Map<String,*>>)
+                dataList.forEach{
+                    Log.d("list_test", it["locationName"].toString())
+                    Log.d("list_test", "${it["adress"] as GeoPoint}")
+                    list.add(MyLocation(it["locationName"].toString(),it["adress"] as GeoPoint))
+                }
+            }.await()
+            Log.d("list_test", "사이즈:${list.size}")
             list
         } catch (e: FirebaseException) {
             Log.d("list_test", "error")
@@ -382,18 +392,17 @@ class MenuFragment3 : Fragment() {
     private fun showListDialog(id:String):AlertDialog{ //다이어로그로 팝업창 구현
         val dBinding = RouteaddLayoutBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
-        dBinding.dialogListView.adapter = routelistAdapter
-        dBinding.dialogListView.layoutManager = LinearLayoutManager(context)
         viewLifecycleOwner.lifecycleScope.async{
             myRouteListAdapter.list=loadMyRouteData(id)
-            dBinding.dialogListView.adapter = myRouteListAdapter
-            dBinding.dialogListView.layoutManager = LinearLayoutManager(context)
+            Log.d("list_test2", "사이즈:${myRouteListAdapter.list.size}")
+            Log.d("list_test2", "데이터:${myRouteListAdapter.list[1].name}")
             dBinding.editTextText.setText(routeName) //여행 이름 띄우기
         }
+        dBinding.dialogListView.adapter = myRouteListAdapter
+        dBinding.dialogListView.layoutManager = LinearLayoutManager(context)
         val dialog = dialogBuild.show()
         return dialog
     }
-
 
     @SuppressLint("MissingPermission")
     private fun getLocation() {

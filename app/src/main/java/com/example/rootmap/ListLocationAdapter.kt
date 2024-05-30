@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rootmap.databinding.FriendLayoutBinding
 import com.example.rootmap.databinding.LocationListLayoutBinding
+import com.example.rootmap.databinding.RouteaddLayoutBinding
 
 class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  {
     var list = mutableListOf<MyLocation>()
@@ -28,9 +29,9 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
         RecyclerView.ViewHolder(binding.root) {
         fun setData(myLocation: MyLocation) {
             binding.textView3.text=myLocation.name
-            binding.imageButton2.setOnClickListener {
-                itemClickListener.onClick(it, position)
-            }
+           // binding.imageButton2.setOnClickListener {
+            //    itemClickListener.onClick(it, position)
+           // }
         }
     }
     interface OnItemClickListener {

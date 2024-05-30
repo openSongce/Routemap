@@ -37,11 +37,11 @@
             android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:id="@+id/saveButton2"
-            tools:layout_editor_absoluteY="71dp"
             app:layout_constraintStart_toEndOf="@+id/cancleButton2"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginRight="5dp"
-            android:backgroundTint="@color/black" />
+            android:backgroundTint="@color/black"
+            app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
             android:layout_width="0dp"
@@ -49,23 +49,23 @@
             android:inputType="text"
             android:ems="10"
             android:id="@+id/editTextText"
-            tools:layout_editor_absoluteY="71dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintEnd_toStartOf="@+id/cancleButton2" />
+            app:layout_constraintEnd_toStartOf="@+id/cancleButton2"
+            app:layout_constraintTop_toTopOf="parent" />
 
     <Button
             android:text="취소"
             android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:id="@+id/cancleButton2"
-            tools:layout_editor_absoluteY="71dp"
             app:layout_constraintStart_toEndOf="@+id/editTextText"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintEnd_toStartOf="@+id/saveButton2"
             android:layout_marginRight="5dp"
             android:backgroundTint="@color/gray"
-            android:textColor="@color/black" />
+            android:textColor="@color/black"
+            app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"
@@ -74,9 +74,5 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/accountButton"
             app:layout_constraintTop_toBottomOf="@+id/editTextText"
-            android:layout_marginEnd="20dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="20dp"
             android:id="@+id/dialogListView" />
 </androidx.constraintlayout.widget.ConstraintLayout>
