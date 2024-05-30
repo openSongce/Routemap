@@ -31,6 +31,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
@@ -361,9 +362,8 @@ class MenuFragment3 : Fragment() {
         return try {
             val myList = myDb.document(id).get().await()
             routeName=myList.data?.get("name").toString()
-            arrayOf(myList.data?.get("routeList")).forEach {
 
-            }
+            Log.d("list_test",list.size.toString())
             list
         } catch (e: FirebaseException) {
             Log.d("list_test", "error")
