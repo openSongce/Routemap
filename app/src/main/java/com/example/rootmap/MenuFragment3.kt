@@ -285,6 +285,7 @@ class MenuFragment3 : Fragment() {
                 dialog.dismiss()
                 //해당 장소를 추가하기위해 새로운 팝업창 띄우기
                 viewLifecycleOwner.lifecycleScope.async {
+                    loadListData.clear()
                     loadMyRouteData(routelistAdapter.list[position].docId)
                     loadListData.add(MyLocation(clickLocationName,clickLocationAdress)) //해당 장소를 리스트에 추가
                     myRouteListAdapter.list=loadListData
