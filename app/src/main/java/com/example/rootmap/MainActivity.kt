@@ -43,7 +43,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     var fdStrage: FirebaseStorage = FirebaseStorage.getInstance()
     var fileUri: Uri? = null
     var backPressedTime:Long =0
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)

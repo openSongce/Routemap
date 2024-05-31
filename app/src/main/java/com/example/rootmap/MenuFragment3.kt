@@ -8,12 +8,14 @@ import android.content.Context
 import android.location.Location
 import android.location.LocationRequest
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -94,7 +96,6 @@ class MenuFragment3 : Fragment() {
     val db = Firebase.firestore
     lateinit var myDb: CollectionReference
     private var currentId: String? = null
-    lateinit var layers: LabelLayer
 
     lateinit var searchText:String
     lateinit var userX:String
@@ -191,8 +192,7 @@ class MenuFragment3 : Fragment() {
             locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION))
         }
         binding.addButton.setOnClickListener {
-            Toast.makeText(this.context, "클릭", Toast.LENGTH_SHORT).show()
-            showListDialog("make")
+            showListDialog("","make")
         }
         binding.listButton.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.async{
@@ -250,6 +250,7 @@ class MenuFragment3 : Fragment() {
         listAdapter= RouteListAdapter()
         routelistAdapter= MyDocumentAdapter()
         myRouteListAdapter= ListLocationAdapter()
+
        //검색 리스트의 클릭 이벤트 구현
         listAdapter.setItemClickListener(object: RouteListAdapter.OnItemClickListener {
             //검색 리스트 클릭 시
@@ -290,21 +291,44 @@ class MenuFragment3 : Fragment() {
             //내 경로 리스트의 추가 버튼 클릭 시 이벤트 구현
             override fun onClick(v: View, position: Int) {
                 dialog.dismiss()
+                var docId=routelistAdapter.list[position].docId
                 //해당 장소를 추가하기위해 새로운 팝업창 띄우기
                 viewLifecycleOwner.lifecycleScope.async {
                     loadListData.clear()
                     myRouteListAdapter= ListLocationAdapter()
-                    loadMyRouteData(routelistAdapter.list[position].docId)
+                    loadMyRouteData(docId)
                     loadListData.add(MyLocation(clickLocationName,clickLocationAdress)) //해당 장소를 리스트에 추가
                     myRouteListAdapter.list=loadListData
-                    listdialog=showListDialog("add")
+                    listdialog=showListDialog(docId,"add")
                 }
             }
             //경로 보기를 눌렀을 때 나오는 목록의 버튼(보기) 클릭시
             override fun onListClick(v: View, position: Int) {
-                dialog.dismiss()
-                Toast.makeText(context,"보기 클릭 성공",Toast.LENGTH_SHORT).show()
-                //해당 여행지들을 라벨로 찍고 지도에서 연결
+                val popupMenu = PopupMenu(context, v)
+                var docId=routelistAdapter.list[position].docId
+                 popupMenu.menuInflater.inflate(R.menu.map_list_layout,popupMenu.menu)
+                popupMenu.setOnMenuItemClickListener { item ->
+                    dialog.dismiss()
+                    var text = when(item.itemId) {
+                        R.id.action_menu1 -> {
+                            //해당 여행지들을 라벨로 찍고 지도에서 연결
+                            Toast.makeText(context,"지도에서 보여주기",Toast.LENGTH_SHORT).show()
+                        }
+                        R.id.action_menu2 -> {
+                            //팝업창으로 여행지 보여주기
+                            viewLifecycleOwner.lifecycleScope.async {
+                                loadListData.clear()
+                                myRouteListAdapter= ListLocationAdapter()
+                                loadMyRouteData(docId)
+                                myRouteListAdapter.list=loadListData
+                                showListDialog(docId,"view")
+                            }
+                        }
+                        else -> {}
+                    }
+                    true
+                }
+                popupMenu.show()
             }
         })
 
@@ -412,21 +436,32 @@ class MenuFragment3 : Fragment() {
         return dialog
     }
 
-    private fun showListDialog(mode:String):AlertDialog{ //다이어로그로 팝업창 구현
+    private fun showListDialog(docId:String,mode:String):AlertDialog{ //다이어로그로 팝업창 구현
         val dBinding = RouteaddLayoutBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
-        if(mode=="make"){
+        if(mode=="make"){ //즉, 새로운 여행 경로 만들기 모드
             dBinding.editTextText.hint="제목을 입력하세요."
             loadListData.clear()
-        }else{ //mode==add
+        }else{ //여행 경로에 장소 추가 모드 or 리스트 읽기 모드
             dBinding.editTextText.setText(routeName) //여행 이름 띄우기
+            if(mode=="view"){
+                dBinding.apply {
+                    editTextText.inputType=InputType.TYPE_NULL
+                    memoButton.visibility=View.GONE
+                    accountButton.visibility=View.GONE
+                    cancleButton2.visibility=View.INVISIBLE
+                    saveButton2.text="확인"
+                }
+            }
         }
         dBinding.dialogListView.apply {
             adapter = myRouteListAdapter
             layoutManager = LinearLayoutManager(context)
             //롱클릭 드래그로 순서 이동가능
-            val swipeHelperCallback = DragManageAdapter(myRouteListAdapter)
-            ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(dBinding.dialogListView)
+            if(mode!="view"){
+                val swipeHelperCallback = DragManageAdapter(myRouteListAdapter)
+                ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(dBinding.dialogListView)
+            }
             // 구분선 추가
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
@@ -436,7 +471,27 @@ class MenuFragment3 : Fragment() {
         }
         dBinding.saveButton2.setOnClickListener {//다이어로그의 완료버튼 클릭
             //데이터 저장 후
-            dialog.dismiss()
+            if(mode=="make"){//즉, 새로운 여행 경로 만들기 모드
+                var text=dBinding.editTextText.text.toString()
+                if(text==""){ //제목이 비었으면
+                    Toast.makeText(context,"제목을 입력하세요.",Toast.LENGTH_SHORT).show()
+                }else{
+                    //아래 형식으로 저장
+                    myDb.document().set(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
+                        dialog.dismiss()
+                        Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
+                    }
+                    dialog.dismiss()
+                }
+            }else if(mode=="add"){//여행 경로에 장소 추가 모드
+                myDb.document(docId).update("routeList",loadListData).addOnSuccessListener {
+                    dialog.dismiss()
+                    Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
+                }
+            }else{ //읽기 모드
+                dialog.dismiss()
+            }
+            
         }
         return dialog
     }

@@ -8,4 +8,4 @@ data class SearchLocation(var name:String, var adress:String,var x:Double,var y:
 
 data class MyRouteDocument(var docName:String,var docId:String)
 
-data class MyLocation(var name:String, var adress: GeoPoint)
+data class MyLocation(var name:String, var position: GeoPoint)
