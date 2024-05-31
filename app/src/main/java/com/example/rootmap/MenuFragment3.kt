@@ -6,6 +6,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.location.Location
+import android.location.LocationRequest
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -19,11 +20,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Priority
 import com.example.rootmap.databinding.FragmentMenu3Binding
 import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.example.rootmap.databinding.RouteaddLayoutBinding
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.Firebase
@@ -76,6 +81,9 @@ class MenuFragment3 : Fragment() {
     var clickMarker: Label?=null
     var currendtMarker:Label?=null
     var searchMarker:Label?=null
+    private var requestingLocationUpdates = false
+    private var locationRequest: LocationRequest? = null
+    private val locationCallback: LocationCallback?=null
 
     val locationData: MutableList<SearchLocation> = mutableListOf()
     val loadListData: MutableList<MyLocation> = mutableListOf()
@@ -182,9 +190,9 @@ class MenuFragment3 : Fragment() {
         viewLifecycleOwner.lifecycleScope.async{
             locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION))
         }
-
         binding.addButton.setOnClickListener {
             Toast.makeText(this.context, "클릭", Toast.LENGTH_SHORT).show()
+            showListDialog("make")
         }
         binding.listButton.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.async{
@@ -221,7 +229,6 @@ class MenuFragment3 : Fragment() {
                 binding.recyclerView2.visibility=View.VISIBLE
                 binding.disButton.setText("↓")
             }
-
         }
         binding.searchText.setOnEditorActionListener{ v, actionId, event //키보드 엔터 사용시
             ->
@@ -286,10 +293,11 @@ class MenuFragment3 : Fragment() {
                 //해당 장소를 추가하기위해 새로운 팝업창 띄우기
                 viewLifecycleOwner.lifecycleScope.async {
                     loadListData.clear()
+                    myRouteListAdapter= ListLocationAdapter()
                     loadMyRouteData(routelistAdapter.list[position].docId)
                     loadListData.add(MyLocation(clickLocationName,clickLocationAdress)) //해당 장소를 리스트에 추가
                     myRouteListAdapter.list=loadListData
-                    listdialog=showListDialog()
+                    listdialog=showListDialog("add")
                 }
             }
             //경로 보기를 눌렀을 때 나오는 목록의 버튼(보기) 클릭시
@@ -299,12 +307,7 @@ class MenuFragment3 : Fragment() {
                 //해당 여행지들을 라벨로 찍고 지도에서 연결
             }
         })
-        myRouteListAdapter.setItemClickListener(object: ListLocationAdapter.OnItemClickListener {
-            //경로의 여러 여행지 리스트의 항목의 클릭 이벤트(순서 조정)
-            override fun onClick(v: View, position: Int) {
 
-            }
-        })
         return binding.root
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -370,7 +373,7 @@ class MenuFragment3 : Fragment() {
             val myList = myDb.get().await()
             if(!myList.isEmpty){
                 for (doc in myList.documents) {
-                   list.add(MyRouteDocument(doc.data?.get("name").toString(),doc.id))
+                   list.add(MyRouteDocument(doc.data?.get("tripname").toString(),doc.id))
                 }
             }else{
                 Toast.makeText(context,"아직 경로가 없습니다. 새로운 경로를 만들어주세요.",Toast.LENGTH_SHORT).show()
@@ -386,7 +389,7 @@ class MenuFragment3 : Fragment() {
         return try {
             var data: MutableMap<*, *>
             myDb.document(id).get().addOnSuccessListener { documents->
-                routeName=documents.data?.get("name").toString()
+                routeName=documents.data?.get("tripname").toString()
                 data=documents.data as MutableMap<*,*>
                 dataList.addAll(data["routeList"] as List<Map<String,*>>)
                 dataList.forEach{
@@ -402,19 +405,39 @@ class MenuFragment3 : Fragment() {
     private fun showDialog():AlertDialog{ //다이어로그로 팝업창 구현
         val dBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        dialogBuild.setTitle("내 여행 리스트")
         dBinding.listView.adapter = routelistAdapter
         dBinding.listView.layoutManager = LinearLayoutManager(context)
         val dialog = dialogBuild.show()
         return dialog
     }
 
-    private fun showListDialog():AlertDialog{ //다이어로그로 팝업창 구현
+    private fun showListDialog(mode:String):AlertDialog{ //다이어로그로 팝업창 구현
         val dBinding = RouteaddLayoutBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
-        dBinding.editTextText.setText(routeName) //여행 이름 띄우기
-        dBinding.dialogListView.adapter = myRouteListAdapter
-        dBinding.dialogListView.layoutManager = LinearLayoutManager(context)
+        if(mode=="make"){
+            dBinding.editTextText.hint="제목을 입력하세요."
+            loadListData.clear()
+        }else{ //mode==add
+            dBinding.editTextText.setText(routeName) //여행 이름 띄우기
+        }
+        dBinding.dialogListView.apply {
+            adapter = myRouteListAdapter
+            layoutManager = LinearLayoutManager(context)
+            //롱클릭 드래그로 순서 이동가능
+            val swipeHelperCallback = DragManageAdapter(myRouteListAdapter)
+            ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(dBinding.dialogListView)
+            // 구분선 추가
+            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+        }
         val dialog = dialogBuild.show()
+        dBinding.cancleButton2.setOnClickListener { //다이어로그의 취소버튼 클릭
+            dialog.dismiss()
+        }
+        dBinding.saveButton2.setOnClickListener {//다이어로그의 완료버튼 클릭
+            //데이터 저장 후
+            dialog.dismiss()
+        }
         return dialog
     }
 
