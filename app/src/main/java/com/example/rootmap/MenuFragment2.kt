@@ -5,9 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import androidx.drawerlayout.widget.DrawerLayout
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.rootmap.databinding.FragmentMenu2Binding
+import com.example.rootmap.databinding.PopupFilterBinding
 
 private const val ARG_PARAM1 = "param1_board"
 private const val ARG_PARAM2 = "param2_board"
@@ -35,79 +36,55 @@ class MenuFragment2 : Fragment() {
     ): View? {
         binding = FragmentMenu2Binding.inflate(inflater, container, false)
 
-        // DrawerLayout 열기
+        // 필터 버튼 클릭 이벤트
         binding.filterButton.setOnClickListener {
-            if (!binding.drawerLayout.isDrawerOpen(binding.scrollView)) {
-                binding.drawerLayout.openDrawer(binding.scrollView)
-            }
+            showFilterPopup()
         }
-
-        // DrawerLayout 닫기 및 확인 버튼 클릭 이벤트
-        binding.confirmButton.setOnClickListener {
-            applyFilters()
-        }
-
-        // 초기화 버튼 클릭 이벤트
-        binding.resetButton.setOnClickListener {
-            resetFilters()
-            applyFilters()
-        }
-
-        // DrawerListener 설정
-        binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                // Do nothing
-            }
-
-            override fun onDrawerOpened(drawerView: View) {
-                // Do nothing
-            }
-
-            override fun onDrawerClosed(drawerView: View) {
-                // Do nothing
-            }
-
-            override fun onDrawerStateChanged(newState: Int) {
-                // Handle drawer state changes if necessary
-            }
-        })
-
-        // 여행지, 여행일, 테마 체크박스 동적 생성
-        addCheckBoxes(
-            R.array.locations_array,
-            binding.sideMenu.findViewById(R.id.locations_container)
-        )
-        addCheckBoxes(
-            R.array.durations_array,
-            binding.sideMenu.findViewById(R.id.durations_container)
-        )
-        addCheckBoxes(
-            R.array.themes_array,
-            binding.sideMenu.findViewById(R.id.themes_container)
-        )
 
         return binding.root
     }
 
-    private fun applyFilters() {
+    private fun showFilterPopup() {
+        val popupBinding = PopupFilterBinding.inflate(LayoutInflater.from(context))
+
+        // 여행지, 여행일, 테마 체크박스 동적 생성
+        addCheckBoxes(R.array.locations_array, popupBinding.locationsContainer)
+        addCheckBoxes(R.array.durations_array, popupBinding.durationsContainer)
+        addCheckBoxes(R.array.themes_array, popupBinding.themesContainer)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(popupBinding.root)
+            .setPositiveButton("확인") { _, _ ->
+                applyFilters(popupBinding)
+            }
+            .setNegativeButton("취소", null)
+            .setNeutralButton("초기화") { _, _ ->
+                resetFilters(popupBinding)
+                applyFilters(popupBinding)
+            }
+            .create()
+
+        dialog.show()
+    }
+
+    private fun applyFilters(popupBinding: PopupFilterBinding) {
         selectedLocations.clear()
         selectedDurations.clear()
         selectedThemes.clear()
 
         // 여행지 선택 확인
-        checkAndAddAll(binding.sideMenu.findViewById(R.id.locations_container), selectedLocations)
-        checkAndAddAll(binding.sideMenu.findViewById(R.id.durations_container), selectedDurations)
-        checkAndAddAll(binding.sideMenu.findViewById(R.id.themes_container), selectedThemes)
+        checkAndAddAll(popupBinding.locationsContainer, selectedLocations)
+        checkAndAddAll(popupBinding.durationsContainer, selectedDurations)
+        checkAndAddAll(popupBinding.themesContainer, selectedThemes)
 
-        binding.drawerLayout.closeDrawer(binding.scrollView)
         updateSelectedOptions()
     }
 
-    private fun resetFilters() {
+    private fun resetFilters(popupBinding: PopupFilterBinding) {
         // 모든 체크박스 초기화
-        clearAllCheckBoxes(binding.sideMenu.findViewById(R.id.locations_container))
-        clearAllCheckBoxes(binding.sideMenu.findViewById(R.id.durations_container))
-        clearAllCheckBoxes(binding.sideMenu.findViewById(R.id.themes_container))
+        clearAllCheckBoxes(popupBinding.locationsContainer)
+        clearAllCheckBoxes(popupBinding.durationsContainer)
+        clearAllCheckBoxes(popupBinding.themesContainer)
     }
 
     private fun clearAllCheckBoxes(container: ViewGroup) {
@@ -156,4 +133,3 @@ class MenuFragment2 : Fragment() {
             }
     }
 }
-
