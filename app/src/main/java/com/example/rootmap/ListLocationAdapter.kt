@@ -29,13 +29,13 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
         RecyclerView.ViewHolder(binding.root) {
         fun setData(myLocation: MyLocation) {
             binding.textView3.text=myLocation.name
-           // binding.imageButton2.setOnClickListener {
-            //    itemClickListener.onClick(it, position)
-           // }
+           binding.imageButton2.setOnClickListener {
+                itemClickListener.onClick(it, position)
+            }
         }
     }
     interface OnItemClickListener {
-        fun onClick(v: View, position: Int)
+        fun onClick(v: View, position: Int) //버튼의 기능
     }
     fun setItemClickListener(onItemClickListener: OnItemClickListener) {
         this.itemClickListener = onItemClickListener

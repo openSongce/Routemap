@@ -13,15 +13,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.myapplication.Friend
-import com.example.rootmap.databinding.DialogLayoutBinding
 import com.example.rootmap.databinding.FragmentMenu3Binding
 import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.example.rootmap.databinding.RouteaddLayoutBinding
@@ -31,7 +29,6 @@ import com.google.android.gms.location.LocationServices
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
 import com.kakao.vectormap.KakaoMap
@@ -67,6 +64,8 @@ private const val ARG_PARAM2 = "param2"
  */
 // Logcat Debug 코드 "Map3"
 class MenuFragment3 : Fragment() {
+    //프래그먼트의 binding
+    val binding by lazy { FragmentMenu3Binding.inflate(layoutInflater) }
     private var zoomlevel = 17
     lateinit var locationPermission: ActivityResultLauncher<Array<String>>
     var startpositon:LatLng?=null
@@ -74,24 +73,29 @@ class MenuFragment3 : Fragment() {
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     var kakaomap: KakaoMap?=null
     lateinit var startCamera: CameraPosition
+    var clickMarker: Label?=null
+    var currendtMarker:Label?=null
+    var searchMarker:Label?=null
+
     val locationData: MutableList<SearchLocation> = mutableListOf()
-    //프래그먼트의 binding
-    val binding by lazy { FragmentMenu3Binding.inflate(layoutInflater) }
+    val loadListData: MutableList<MyLocation> = mutableListOf()
     lateinit var listAdapter: RouteListAdapter
     lateinit var routelistAdapter: MyDocumentAdapter
     lateinit var myRouteListAdapter: ListLocationAdapter
+
     val db = Firebase.firestore
     lateinit var myDb: CollectionReference
     private var currentId: String? = null
     lateinit var layers: LabelLayer
-    var clickMarker: Label?=null
-    var currendtMarker:Label?=null
-    var searchMarker:Label?=null
+
     lateinit var searchText:String
     lateinit var userX:String
     lateinit var userY:String
+    lateinit var clickLocationName:String
+    lateinit var clickLocationAdress:GeoPoint
     var layer: LabelLayer?=null
     lateinit var dialog:AlertDialog
+    lateinit var listdialog:AlertDialog
     var routeName:String?=null
     private val readyCallback = object: KakaoMapReadyCallback(){
         override fun onMapReady(kakaoMap: KakaoMap) {
@@ -221,15 +225,17 @@ class MenuFragment3 : Fragment() {
         }
         binding.searchText.setOnEditorActionListener{ v, actionId, event //키보드 엔터 사용시
             ->
-            context?.hideKeyboard(binding.root)
-            searchText=binding.searchText.text.toString()
-            if(searchText==""){
-                Toast.makeText(context, "빈칸입니다.", Toast.LENGTH_SHORT).show()
-            }else{
-                binding.recyclerView2.visibility=View.VISIBLE
-                binding.disButton.visibility=View.VISIBLE
-                binding.disButton.setText("↓")
-                searchKeyword(searchText)
+            if(!binding.progressBar.isVisible){
+                context?.hideKeyboard(binding.root)
+                searchText=binding.searchText.text.toString()
+                if(searchText==""){
+                    Toast.makeText(context, "빈칸입니다.", Toast.LENGTH_SHORT).show()
+                }else{
+                    binding.recyclerView2.visibility=View.VISIBLE
+                    binding.disButton.visibility=View.VISIBLE
+                    binding.disButton.setText("↓")
+                    searchKeyword(searchText)
+                }
             }
             true
         }
@@ -263,7 +269,8 @@ class MenuFragment3 : Fragment() {
             }
             //검색 리스트의 경로 추가 버튼 클릭 시
             override fun onButtonClick(v: View, position: Int) {
-                var loc=LatLng.from(locationData[position].y, locationData[position].x)
+                clickLocationAdress=GeoPoint(locationData[position].y, locationData[position].x)
+                clickLocationName=locationData[position].name
                 viewLifecycleOwner.lifecycleScope.async {
                    routelistAdapter.list=loadMyList() //어댑터에 데이터 연결
                    routelistAdapter.mode="Add"
@@ -276,9 +283,13 @@ class MenuFragment3 : Fragment() {
             //내 경로 리스트의 추가 버튼 클릭 시 이벤트 구현
             override fun onClick(v: View, position: Int) {
                 dialog.dismiss()
-                Toast.makeText(context,"추가 클릭 성공",Toast.LENGTH_SHORT).show()
                 //해당 장소를 추가하기위해 새로운 팝업창 띄우기
-                showListDialog(routelistAdapter.list[position].docId)
+                viewLifecycleOwner.lifecycleScope.async {
+                    loadMyRouteData(routelistAdapter.list[position].docId)
+                    loadListData.add(MyLocation(clickLocationName,clickLocationAdress)) //해당 장소를 리스트에 추가
+                    myRouteListAdapter.list=loadListData
+                    listdialog=showListDialog()
+                }
             }
             //경로 보기를 눌렀을 때 나오는 목록의 버튼(보기) 클릭시
             override fun onListClick(v: View, position: Int) {
@@ -287,7 +298,12 @@ class MenuFragment3 : Fragment() {
                 //해당 여행지들을 라벨로 찍고 지도에서 연결
             }
         })
+        myRouteListAdapter.setItemClickListener(object: ListLocationAdapter.OnItemClickListener {
+            //경로의 여러 여행지 리스트의 항목의 클릭 이벤트(순서 조정)
+            override fun onClick(v: View, position: Int) {
 
+            }
+        })
         return binding.root
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -366,8 +382,7 @@ class MenuFragment3 : Fragment() {
             list
         }
     }
-    suspend fun loadMyRouteData(id:String): MutableList<MyLocation> {
-        var list= mutableListOf<MyLocation>()
+    suspend fun loadMyRouteData(id:String): Boolean {
         var dataList= mutableListOf<Map<String,*>>()
         return try {
             var data: MutableMap<*, *>
@@ -376,16 +391,13 @@ class MenuFragment3 : Fragment() {
                 data=documents.data as MutableMap<*,*>
                 dataList.addAll(data["routeList"] as List<Map<String,*>>)
                 dataList.forEach{
-                    Log.d("list_test", it["locationName"].toString())
-                    Log.d("list_test", "${it["adress"] as GeoPoint}")
-                    list.add(MyLocation(it["locationName"].toString(),it["adress"] as GeoPoint))
+                    loadListData.add(MyLocation(it["locationName"].toString(),it["adress"] as GeoPoint))
                 }
             }.await()
-            Log.d("list_test", "사이즈:${list.size}")
-            list
+            true
         } catch (e: FirebaseException) {
             Log.d("list_test", "error")
-            list
+            true
         }
     }
     private fun showDialog():AlertDialog{ //다이어로그로 팝업창 구현
@@ -397,15 +409,10 @@ class MenuFragment3 : Fragment() {
         return dialog
     }
 
-    private fun showListDialog(id:String):AlertDialog{ //다이어로그로 팝업창 구현
+    private fun showListDialog():AlertDialog{ //다이어로그로 팝업창 구현
         val dBinding = RouteaddLayoutBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
-        viewLifecycleOwner.lifecycleScope.async{
-            myRouteListAdapter.list=loadMyRouteData(id)
-            Log.d("list_test2", "사이즈:${myRouteListAdapter.list.size}")
-            Log.d("list_test2", "데이터:${myRouteListAdapter.list[1].name}")
-            dBinding.editTextText.setText(routeName) //여행 이름 띄우기
-        }
+        dBinding.editTextText.setText(routeName) //여행 이름 띄우기
         dBinding.dialogListView.adapter = myRouteListAdapter
         dBinding.dialogListView.layoutManager = LinearLayoutManager(context)
         val dialog = dialogBuild.show()

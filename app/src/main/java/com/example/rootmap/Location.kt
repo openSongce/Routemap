@@ -2,6 +2,7 @@ package com.example.rootmap
 
 import android.location.Geocoder
 import com.google.firebase.firestore.GeoPoint
+import com.kakao.vectormap.LatLng
 
 data class SearchLocation(var name:String, var adress:String,var x:Double,var y:Double)
 
