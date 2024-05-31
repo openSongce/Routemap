@@ -1,5 +1,6 @@
 package com.example.rootmap
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import com.example.rootmap.databinding.PopupFilterBinding
 
 private const val ARG_PARAM1 = "param1_board"
 private const val ARG_PARAM2 = "param2_board"
+private const val PREFS_NAME = "FilterPrefs"
 
 class MenuFragment2 : Fragment() {
     private var param1: String? = null
@@ -48,9 +50,9 @@ class MenuFragment2 : Fragment() {
         val popupBinding = PopupFilterBinding.inflate(LayoutInflater.from(context))
 
         // 여행지, 여행일, 테마 체크박스 동적 생성
-        addCheckBoxes(R.array.locations_array, popupBinding.locationsContainer)
-        addCheckBoxes(R.array.durations_array, popupBinding.durationsContainer)
-        addCheckBoxes(R.array.themes_array, popupBinding.themesContainer)
+        addCheckBoxes(R.array.locations_array, popupBinding.locationsContainer, "locations")
+        addCheckBoxes(R.array.durations_array, popupBinding.durationsContainer, "durations")
+        addCheckBoxes(R.array.themes_array, popupBinding.themesContainer, "themes")
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(popupBinding.root)
@@ -73,31 +75,33 @@ class MenuFragment2 : Fragment() {
         selectedThemes.clear()
 
         // 여행지 선택 확인
-        checkAndAddAll(popupBinding.locationsContainer, selectedLocations)
-        checkAndAddAll(popupBinding.durationsContainer, selectedDurations)
-        checkAndAddAll(popupBinding.themesContainer, selectedThemes)
+        checkAndAddAll(popupBinding.locationsContainer, selectedLocations, "locations")
+        checkAndAddAll(popupBinding.durationsContainer, selectedDurations, "durations")
+        checkAndAddAll(popupBinding.themesContainer, selectedThemes, "themes")
 
         updateSelectedOptions()
     }
 
     private fun resetFilters(popupBinding: PopupFilterBinding) {
         // 모든 체크박스 초기화
-        clearAllCheckBoxes(popupBinding.locationsContainer)
-        clearAllCheckBoxes(popupBinding.durationsContainer)
-        clearAllCheckBoxes(popupBinding.themesContainer)
+        clearAllCheckBoxes(popupBinding.locationsContainer, "locations")
+        clearAllCheckBoxes(popupBinding.durationsContainer, "durations")
+        clearAllCheckBoxes(popupBinding.themesContainer, "themes")
     }
 
-    private fun clearAllCheckBoxes(container: ViewGroup) {
+    private fun clearAllCheckBoxes(container: ViewGroup, keyPrefix: String) {
         for (i in 0 until container.childCount) {
             val checkBox = container.getChildAt(i) as CheckBox
             checkBox.isChecked = false
+            saveCheckboxState("$keyPrefix$i", false)
         }
     }
 
-    private fun checkAndAddAll(container: ViewGroup, list: MutableList<String>) {
+    private fun checkAndAddAll(container: ViewGroup, list: MutableList<String>, keyPrefix: String) {
         for (i in 0 until container.childCount) {
             val checkBox = container.getChildAt(i) as CheckBox
             checkAndAdd(checkBox, list)
+            saveCheckboxState("$keyPrefix$i", checkBox.isChecked)
         }
     }
 
@@ -112,13 +116,23 @@ class MenuFragment2 : Fragment() {
         binding.selectedOptionsTextView.text = selectedOptions
     }
 
-    private fun addCheckBoxes(arrayResId: Int, container: ViewGroup) {
+    private fun addCheckBoxes(arrayResId: Int, container: ViewGroup, keyPrefix: String) {
         val items = resources.getStringArray(arrayResId)
-        for (item in items) {
+        val sharedPrefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        for (i in items.indices) {
             val checkBox = CheckBox(context).apply {
-                text = item
+                text = items[i]
+                isChecked = sharedPrefs.getBoolean("$keyPrefix$i", false)
             }
             container.addView(checkBox)
+        }
+    }
+
+    private fun saveCheckboxState(key: String, state: Boolean) {
+        val sharedPrefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        with(sharedPrefs.edit()) {
+            putBoolean(key, state)
+            apply()
         }
     }
 
