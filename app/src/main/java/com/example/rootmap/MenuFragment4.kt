@@ -24,6 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.DialogLayoutBinding
 import com.example.rootmap.databinding.FragmentMenu4Binding
+import com.example.rootmap.databinding.DialogChangePasswordBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
@@ -37,7 +38,9 @@ import android.provider.MediaStore
 import androidx.activity.result.ActivityResultLauncher
 import java.io.File
 import android.net.Uri
+import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.storage.FirebaseStorage
 
 // TODO: Rename parameter arguments, choose names that match
@@ -99,8 +102,12 @@ class MenuFragment4 : Fragment() {
             showDialog("secession")
         }
         binding.passwordButton.setOnClickListener { 
-            //비밀번호 변경 기능 구현하기
+            showChangePasswordDialog("changePassword")
         }
+        //소셜 로그인이 아닌 이메일 로그인 시에만 비밀번호 변경 버튼 표시
+        val isEmailSignIn = auth.currentUser?.providerData?.any {it.providerId == "password"} == true
+        binding.passwordButton.isVisible = isEmailSignIn
+
         binding.icon.setOnClickListener {
             if(enableTouch){
                 storagePermission.launch(Manifest.permission.READ_MEDIA_IMAGES)
@@ -267,6 +274,47 @@ class MenuFragment4 : Fragment() {
         }
     }
 
+    fun showChangePasswordDialog(mode: String) {
+        val dcpBinding = DialogChangePasswordBinding.inflate(layoutInflater)
+        dcpBinding.confirmButton.text = "변경"
+        dcpBinding.cancelButton.text = "취소"
+
+        val dialogBuildCP = AlertDialog.Builder(context).setView(dcpBinding.root).setTitle("비밀번호 변경")
+        val dialogCP = dialogBuildCP.show() //다이어로그 창 띄우기
+        dcpBinding.confirmButton.setOnClickListener {//다이어로그 기능 설정
+            if (mode == "changePassword") {
+                val currentPassword = dcpBinding.currentPassword.text.toString()
+                val newPassword = dcpBinding.newPassword.text.toString()
+                val confirmNewPassword = dcpBinding.confirmNewPassword.text.toString()
+                val user = auth.currentUser
+
+                if (newPassword == confirmNewPassword) {
+                    if (user != null && user.email != null) {
+                        val credential = EmailAuthProvider.getCredential(user.email!!, currentPassword)
+                        user.reauthenticate(credential)
+                            .addOnCompleteListener {
+                                user.updatePassword(newPassword)
+                                    .addOnCompleteListener { updateTask ->
+                                        if (updateTask.isSuccessful) {
+                                            Toast.makeText(context, "비밀번호가 성공적으로 변경되었습니다", Toast.LENGTH_SHORT).show()
+                                            dialogCP.dismiss()
+                                        } else {
+                                            Toast.makeText(context, "다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+
+
+                            }
+                    }
+                }
+            }
+            dialogCP.dismiss()
+        }
+        dcpBinding.cancelButton.setOnClickListener {
+            dialogCP.dismiss()
+        }
+
+    }
     companion object {
         /**
          * Use this factory method to create a new instance of
