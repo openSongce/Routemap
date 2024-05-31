@@ -1,16 +1,19 @@
 package com.example.rootmap
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import androidx.drawerlayout.widget.DrawerLayout
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.rootmap.databinding.FragmentMenu2Binding
+import com.example.rootmap.databinding.PopupFilterBinding
 
 private const val ARG_PARAM1 = "param1_board"
 private const val ARG_PARAM2 = "param2_board"
+private const val PREFS_NAME = "FilterPrefs"
 
 class MenuFragment2 : Fragment() {
     private var param1: String? = null
@@ -35,92 +38,70 @@ class MenuFragment2 : Fragment() {
     ): View? {
         binding = FragmentMenu2Binding.inflate(inflater, container, false)
 
-        // DrawerLayout 열기
+        // 필터 버튼 클릭 이벤트
         binding.filterButton.setOnClickListener {
-            if (!binding.drawerLayout.isDrawerOpen(binding.scrollView)) {
-                binding.drawerLayout.openDrawer(binding.scrollView)
-            }
+            showFilterPopup()
         }
-
-        // DrawerLayout 닫기 및 확인 버튼 클릭 이벤트
-        binding.confirmButton.setOnClickListener {
-            applyFilters()
-        }
-
-        // 초기화 버튼 클릭 이벤트
-        binding.resetButton.setOnClickListener {
-            resetFilters()
-            applyFilters()
-        }
-
-        // DrawerListener 설정
-        binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                // Do nothing
-            }
-
-            override fun onDrawerOpened(drawerView: View) {
-                // Do nothing
-            }
-
-            override fun onDrawerClosed(drawerView: View) {
-                // Do nothing
-            }
-
-            override fun onDrawerStateChanged(newState: Int) {
-                // Handle drawer state changes if necessary
-            }
-        })
-
-        // 여행지, 여행일, 테마 체크박스 동적 생성
-        addCheckBoxes(
-            R.array.locations_array,
-            binding.sideMenu.findViewById(R.id.locations_container)
-        )
-        addCheckBoxes(
-            R.array.durations_array,
-            binding.sideMenu.findViewById(R.id.durations_container)
-        )
-        addCheckBoxes(
-            R.array.themes_array,
-            binding.sideMenu.findViewById(R.id.themes_container)
-        )
 
         return binding.root
     }
 
-    private fun applyFilters() {
+    private fun showFilterPopup() {
+        val popupBinding = PopupFilterBinding.inflate(LayoutInflater.from(context))
+
+        // 여행지, 여행일, 테마 체크박스 동적 생성
+        addCheckBoxes(R.array.locations_array, popupBinding.locationsContainer, "locations")
+        addCheckBoxes(R.array.durations_array, popupBinding.durationsContainer, "durations")
+        addCheckBoxes(R.array.themes_array, popupBinding.themesContainer, "themes")
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(popupBinding.root)
+            .setPositiveButton("확인") { _, _ ->
+                applyFilters(popupBinding)
+            }
+            .setNegativeButton("취소", null)
+            .setNeutralButton("초기화") { _, _ ->
+                resetFilters(popupBinding)
+                applyFilters(popupBinding)
+            }
+            .create()
+
+        dialog.show()
+    }
+
+    private fun applyFilters(popupBinding: PopupFilterBinding) {
         selectedLocations.clear()
         selectedDurations.clear()
         selectedThemes.clear()
 
         // 여행지 선택 확인
-        checkAndAddAll(binding.sideMenu.findViewById(R.id.locations_container), selectedLocations)
-        checkAndAddAll(binding.sideMenu.findViewById(R.id.durations_container), selectedDurations)
-        checkAndAddAll(binding.sideMenu.findViewById(R.id.themes_container), selectedThemes)
+        checkAndAddAll(popupBinding.locationsContainer, selectedLocations, "locations")
+        checkAndAddAll(popupBinding.durationsContainer, selectedDurations, "durations")
+        checkAndAddAll(popupBinding.themesContainer, selectedThemes, "themes")
 
-        binding.drawerLayout.closeDrawer(binding.scrollView)
         updateSelectedOptions()
     }
 
-    private fun resetFilters() {
+    private fun resetFilters(popupBinding: PopupFilterBinding) {
         // 모든 체크박스 초기화
-        clearAllCheckBoxes(binding.sideMenu.findViewById(R.id.locations_container))
-        clearAllCheckBoxes(binding.sideMenu.findViewById(R.id.durations_container))
-        clearAllCheckBoxes(binding.sideMenu.findViewById(R.id.themes_container))
+        clearAllCheckBoxes(popupBinding.locationsContainer, "locations")
+        clearAllCheckBoxes(popupBinding.durationsContainer, "durations")
+        clearAllCheckBoxes(popupBinding.themesContainer, "themes")
     }
 
-    private fun clearAllCheckBoxes(container: ViewGroup) {
+    private fun clearAllCheckBoxes(container: ViewGroup, keyPrefix: String) {
         for (i in 0 until container.childCount) {
             val checkBox = container.getChildAt(i) as CheckBox
             checkBox.isChecked = false
+            saveCheckboxState("$keyPrefix$i", false)
         }
     }
 
-    private fun checkAndAddAll(container: ViewGroup, list: MutableList<String>) {
+    private fun checkAndAddAll(container: ViewGroup, list: MutableList<String>, keyPrefix: String) {
         for (i in 0 until container.childCount) {
             val checkBox = container.getChildAt(i) as CheckBox
             checkAndAdd(checkBox, list)
+            saveCheckboxState("$keyPrefix$i", checkBox.isChecked)
         }
     }
 
@@ -135,13 +116,23 @@ class MenuFragment2 : Fragment() {
         binding.selectedOptionsTextView.text = selectedOptions
     }
 
-    private fun addCheckBoxes(arrayResId: Int, container: ViewGroup) {
+    private fun addCheckBoxes(arrayResId: Int, container: ViewGroup, keyPrefix: String) {
         val items = resources.getStringArray(arrayResId)
-        for (item in items) {
+        val sharedPrefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        for (i in items.indices) {
             val checkBox = CheckBox(context).apply {
-                text = item
+                text = items[i]
+                isChecked = sharedPrefs.getBoolean("$keyPrefix$i", false)
             }
             container.addView(checkBox)
+        }
+    }
+
+    private fun saveCheckboxState(key: String, state: Boolean) {
+        val sharedPrefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        with(sharedPrefs.edit()) {
+            putBoolean(key, state)
+            apply()
         }
     }
 
@@ -156,4 +147,3 @@ class MenuFragment2 : Fragment() {
             }
     }
 }
-
