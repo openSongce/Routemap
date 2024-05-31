@@ -345,8 +345,6 @@ class MenuFragment3 : Fragment() {
             }
         })
     }
-
-
     private fun addItemsAndMarkers(searchResult: ResultSearchKeyword?) {
         if (!searchResult?.documents.isNullOrEmpty()) {
 // 검색 결과 있음
@@ -392,7 +390,7 @@ class MenuFragment3 : Fragment() {
                 data=documents.data as MutableMap<*,*>
                 dataList.addAll(data["routeList"] as List<Map<String,*>>)
                 dataList.forEach{
-                    loadListData.add(MyLocation(it["locationName"].toString(),it["adress"] as GeoPoint))
+                    loadListData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint))
                 }
             }.await()
             true
