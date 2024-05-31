@@ -11,9 +11,13 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.example.rootmap.databinding.ItemTouristBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
 
 class TouristAdapter(
     private val items: List<TouristItem>,
+    private val database: DatabaseReference,
+    private val auth: FirebaseAuth,
     private val onItemClick: (TouristItem) -> Unit
 ) : RecyclerView.Adapter<TouristAdapter.TouristViewHolder>() {
 
@@ -22,6 +26,10 @@ class TouristAdapter(
             binding.title.text = item.title
             binding.addr1.text = item.addr1
             binding.addr2.text = item.addr2 ?: ""
+            binding.likeCount.text = item.likeCount.toString()
+            binding.likeButton.setImageResource(
+                if (item.isLiked) R.drawable.heart_filled else R.drawable.heart_empty
+            )
 
             val imageUrl = item.firstimage?.replace("http://", "https://")
 
@@ -62,6 +70,26 @@ class TouristAdapter(
                 // 이미지가 없는 경우 기본 이미지를 설정
                 binding.image.setImageResource(R.drawable.map)
                 Log.d("TouristAdapter", "Image URL is null or empty")
+            }
+
+            binding.likeButton.setOnClickListener {
+                val userId = auth.currentUser?.uid ?: return@setOnClickListener
+
+                item.isLiked = !item.isLiked
+                if (item.isLiked) {
+                    item.likeCount++
+                    binding.likeButton.setImageResource(R.drawable.heart_filled)
+                } else {
+                    item.likeCount--
+                    binding.likeButton.setImageResource(R.drawable.heart_empty)
+                }
+                binding.likeCount.text = item.likeCount.toString()
+
+                // Firebase에 추천 수 저장
+                item.contentid?.let { contentId ->
+                    database.child("likes").child(contentId).setValue(item.likeCount)
+                    database.child("userLikes").child(userId).child(contentId).setValue(item.isLiked)
+                }
             }
 
             binding.root.setOnClickListener {

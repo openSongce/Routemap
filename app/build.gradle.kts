@@ -92,4 +92,5 @@ dependencies {
     implementation("com.kakao.maps.open:android:2.9.7") //카카오맵
     implementation("com.google.android.gms:play-services-location:18.0.0")
     implementation("com.google.code.gson:gson:2.8.6")
+    implementation("com.google.firebase:firebase-database:20.0.5")
 }

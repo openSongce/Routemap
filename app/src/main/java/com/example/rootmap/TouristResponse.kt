@@ -49,5 +49,9 @@ data class TouristItem(
     var title: String? = null,
 
     @field:Element(name = "firstimage", required = false)
-    var firstimage: String? = null
+    var firstimage: String? = null,
+
+    var likeCount: Int = 0,
+
+    var isLiked: Boolean = false
 )
