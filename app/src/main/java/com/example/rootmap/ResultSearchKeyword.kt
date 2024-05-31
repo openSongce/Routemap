@@ -1,5 +1,8 @@
 package com.example.rootmap
 
+import android.location.Address
+import com.google.gson.annotations.SerializedName
+
 data class ResultSearchKeyword(
     var documents: List<Place> // 검색 결과
 )

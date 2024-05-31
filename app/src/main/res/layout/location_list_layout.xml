@@ -1,9 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <!--삭제 버튼 있는 레이아웃-->
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:weightSum="4">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#eeeeee"
+                    android:layout_weight="1"/>
+
+            <TextView
+                    android:id="@+id/tvRemove"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/red"
+                    android:text="삭제"
+                    android:textColor="@color/white"
+                    android:gravity="center"
+                    android:layout_weight="3"/>
+
+        </LinearLayout>
+        <LinearLayout
+                android:id="@+id/swipe_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@color/white">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="70dp">
+        android:layout_height="70dp"
+        >
 
     <TextView
             android:text="TextView"
@@ -34,6 +73,19 @@
             android:visibility="gone"
             android:ellipsize="end" />
 
+    <EditText
+            android:text="TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:id="@+id/memoEditText"
+            tools:layout_editor_absoluteX="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/triplocationName"
+            android:visibility="gone"
+            android:ellipsize="end"
+            android:inputType="text"
+            android:textSize="14sp" />
+
     <TextView
             android:text="TextView"
             android:layout_width="wrap_content"
@@ -49,4 +101,9 @@
             app:layout_constraintHorizontal_bias="0.5"
             android:layout_marginRight="20dp" />
 
+
 </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+</layout>

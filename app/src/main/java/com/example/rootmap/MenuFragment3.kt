@@ -7,9 +7,12 @@ import android.app.AlertDialog
 import android.content.Context
 import android.location.Location
 import android.location.LocationRequest
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
+import android.view.FocusFinder
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,10 +28,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Priority
 import com.example.rootmap.databinding.FragmentMenu3Binding
 import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.example.rootmap.databinding.RouteaddLayoutBinding
+import com.example.rootmap.databinding.RoutelistLayoutBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -57,6 +60,12 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.lang.reflect.Type
+import java.net.HttpURLConnection
+import java.net.URL
+import java.nio.charset.Charset
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -102,6 +111,7 @@ class MenuFragment3 : Fragment() {
     lateinit var userY:String
     lateinit var clickLocationName:String
     lateinit var clickLocationAdress:GeoPoint
+    lateinit var clickAdress:String
     var layer: LabelLayer?=null
     lateinit var dialog:AlertDialog
     lateinit var listdialog:AlertDialog
@@ -439,18 +449,17 @@ class MenuFragment3 : Fragment() {
     private fun showListDialog(docId:String,mode:String):AlertDialog{ //다이어로그로 팝업창 구현
         val dBinding = RouteaddLayoutBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        dialogBuild.setCancelable(false)
         if(mode=="make"){ //즉, 새로운 여행 경로 만들기 모드
+            dialogBuild.setTitle("새로운 여행 루트 만들기")
             dBinding.editTextText.hint="제목을 입력하세요."
             loadListData.clear()
-        }else{ //여행 경로에 장소 추가 모드 or 리스트 읽기 모드
+        }else{ //여행 경로에 장소 추가 모드
             dBinding.editTextText.setText(routeName) //여행 이름 띄우기
-            if(mode=="view"){
+            if(mode=="view"){ //읽기 모드
                 dBinding.apply {
-                    editTextText.inputType=InputType.TYPE_NULL
-                    memoButton.visibility=View.GONE
-                    accountButton.visibility=View.GONE
-                    cancleButton2.visibility=View.INVISIBLE
-                    saveButton2.text="확인"
+                    cancleButton2.text="닫기"
+                    saveButton2.text="수정하기"
                 }
             }
         }
@@ -458,12 +467,17 @@ class MenuFragment3 : Fragment() {
             adapter = myRouteListAdapter
             layoutManager = LinearLayoutManager(context)
             //롱클릭 드래그로 순서 이동가능
-            if(mode!="view"){
-                val swipeHelperCallback = DragManageAdapter(myRouteListAdapter)
+                val swipeHelperCallback = DragManageAdapter(myRouteListAdapter).apply {
+                    // 스와이프한 뒤 고정시킬 위치 지정
+                    setClamp(resources.displayMetrics.widthPixels.toFloat() / 4)    // 1080 / 4 = 270
+                }
                 ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(dBinding.dialogListView)
-            }
             // 구분선 추가
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+            dBinding.dialogListView.setOnTouchListener { _, _ ->
+                swipeHelperCallback.removePreviousClamp(dBinding.dialogListView)
+                false
+            }
         }
         val dialog = dialogBuild.show()
         dBinding.cancleButton2.setOnClickListener { //다이어로그의 취소버튼 클릭
@@ -483,15 +497,12 @@ class MenuFragment3 : Fragment() {
                     }
                     dialog.dismiss()
                 }
-            }else if(mode=="add"){//여행 경로에 장소 추가 모드
+            }else{//여행 경로에 장소 추가 모드
                 myDb.document(docId).update("routeList",loadListData).addOnSuccessListener {
                     dialog.dismiss()
                     Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
                 }
-            }else{ //읽기 모드
-                dialog.dismiss()
             }
-            
         }
         return dialog
     }
