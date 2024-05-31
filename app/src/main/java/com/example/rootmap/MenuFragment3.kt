@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.graphics.Point
 import android.location.Location
 import android.location.LocationRequest
 import android.os.Build
@@ -16,6 +17,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupMenu
@@ -234,10 +236,14 @@ class MenuFragment3 : Fragment() {
             if (binding.recyclerView2.getVisibility() == View.VISIBLE){
                 binding.recyclerView2.visibility=View.GONE
                 binding.disButton.setText("↑")
+                kakaomap!!.setPadding(0,0,0,0)
+                Log.d("Map3padding", kakaomap!!.padding.toString())
             }
             else{
                 binding.recyclerView2.visibility=View.VISIBLE
                 binding.disButton.setText("↓")
+                kakaomap!!.setPadding(0,0,0,900)
+                Log.d("Map3padding", kakaomap!!.padding.toString())
             }
         }
         binding.searchText.setOnEditorActionListener{ v, actionId, event //키보드 엔터 사용시
@@ -252,6 +258,9 @@ class MenuFragment3 : Fragment() {
                     binding.disButton.visibility=View.VISIBLE
                     binding.disButton.setText("↓")
                     searchKeyword(searchText)
+                    kakaomap!!.setPadding(0,0,0,900)
+                    //kakaomap!!.setViewport(0, 0, widthPixel, heightPixel-900)
+                    Log.d("Map3padding", kakaomap!!.padding.toString())
                 }
             }
             true
