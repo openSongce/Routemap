@@ -79,7 +79,6 @@ class DragManageAdapter(private var recyclerViewAdapter : ListLocationAdapter) :
         return true
     }
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-      //  recyclerViewAdapter.removeData(viewHolder.layoutPosition)
     }
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
