@@ -12,12 +12,13 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.FragmentMenuBinding
 import com.example.rootmap.databinding.DialogTouristDetailBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -35,6 +36,8 @@ class MenuFragment : Fragment() {
 
     private lateinit var binding: FragmentMenuBinding
     private lateinit var apiService: TouristApiService
+    private lateinit var database: DatabaseReference
+    private lateinit var auth: FirebaseAuth
     private var currentAreaCode = 1
     private var currentContentTypeId = 12 // Default to 관광지
     private var retryCount = 0
@@ -57,6 +60,10 @@ class MenuFragment : Fragment() {
             .build()
 
         apiService = retrofit.create(TouristApiService::class.java)
+
+        // Firebase Database 초기화
+        database = FirebaseDatabase.getInstance().reference
+        auth = FirebaseAuth.getInstance()
     }
 
     override fun onCreateView(
@@ -94,7 +101,7 @@ class MenuFragment : Fragment() {
                     else -> 1
                 }
                 retryCount = 0 // 스피너가 선택될 때마다 재시도 카운트 초기화
-                fetchTouristInfo(currentAreaCode, currentContentTypeId)
+                fetchTouristInfo(currentAreaCode, currentContentTypeId, randomPage = true) // 처음에도 랜덤 페이지로 가져오기
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -121,7 +128,7 @@ class MenuFragment : Fragment() {
         // 드롭다운 메뉴의 기본값을 서울로 설정하고 초기 데이터 로드
         binding.citySpinner.setSelection(0) // 서울이 0번째 인덱스에 있다고 가정
         selectButton(binding.btnTourist) // 관광지 버튼을 선택된 상태로 설정
-        fetchTouristInfo(1, 12) // 서울의 지역 코드는 1, 관광지는 12
+        fetchTouristInfo(1, 12, randomPage = true) // 서울의 지역 코드는 1, 관광지는 12, 랜덤 페이지로 가져오기
 
         // LocationService 초기화 및 위치 정보 가져오기
         locationService = LocationService(requireContext())
@@ -144,7 +151,7 @@ class MenuFragment : Fragment() {
     private fun setupButton(button: Button, contentTypeId: Int) {
         button.setOnClickListener {
             selectButton(button)
-            fetchTouristInfo(currentAreaCode, contentTypeId)
+            fetchTouristInfo(currentAreaCode, contentTypeId, randomPage = true) // 버튼 클릭 시에도 랜덤 페이지로 가져오기
         }
     }
 
@@ -185,8 +192,43 @@ class MenuFragment : Fragment() {
 
                     val items = response.body()?.body?.items?.item ?: emptyList()
                     Log.d("API_SUCCESS", "Fetched ${items.size} items")
+
+                    // 각 아이템의 추천 수를 Firebase에서 가져옴
+                    items.forEach { item ->
+                        item.contentid?.let { contentId ->
+                            database.child("likes").child(contentId)
+                                .addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                        val likeCount = dataSnapshot.getValue(Int::class.java) ?: 0
+                                        item.likeCount = likeCount
+                                        binding.recyclerView.adapter?.notifyDataSetChanged()
+                                    }
+
+                                    override fun onCancelled(databaseError: DatabaseError) {
+                                        Log.w("MenuFragment", "loadLikeCount:onCancelled", databaseError.toException())
+                                    }
+                                })
+
+                            // 사용자 하트 상태 가져오기
+                            auth.currentUser?.uid?.let { userId ->
+                                database.child("userLikes").child(userId).child(contentId)
+                                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                            val isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
+                                            item.isLiked = isLiked
+                                            binding.recyclerView.adapter?.notifyDataSetChanged()
+                                        }
+
+                                        override fun onCancelled(databaseError: DatabaseError) {
+                                            Log.w("MenuFragment", "loadUserLikeStatus:onCancelled", databaseError.toException())
+                                        }
+                                    })
+                            }
+                        }
+                    }
+
                     if (items.isNotEmpty()) {
-                        val adapter = TouristAdapter(items) { item ->
+                        val adapter = TouristAdapter(items, database, auth) { item ->
                             if (currentContentTypeId == 25) {
                                 item.contentid?.let { fetchTouristDetail(it) }
                             }
@@ -269,7 +311,7 @@ class MenuFragment : Fragment() {
         }
     }
 
-        companion object {
+    companion object {
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             MenuFragment().apply {
@@ -280,3 +322,4 @@ class MenuFragment : Fragment() {
             }
     }
 }
+

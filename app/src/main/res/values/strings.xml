@@ -68,4 +68,7 @@
         <item>역사 탐방</item>
         <item>레저 스포츠</item>
     </string-array>
+
+    <!-- 하트 버튼 설명 -->
+    <string name="like_button">Like Button</string>
 </resources>
