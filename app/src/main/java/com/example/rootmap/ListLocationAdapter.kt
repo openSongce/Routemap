@@ -42,9 +42,23 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
     ) :
         RecyclerView.ViewHolder(binding.root) {
         fun setData(myLocation: MyLocation,position: Int) {
+            var memo=myLocation.memo
+            var spending=myLocation.spending
             binding.triplocationName.text=myLocation.name
             binding.tvRemove.setOnClickListener {
                 removeData(position)
+            }
+            if(memo!="") {
+                binding.memoText.apply {
+                    text=memo
+                    visibility=View.VISIBLE
+                }
+            }
+            if(spending!=""){
+                binding.costText.apply {
+                    text=spending
+                    visibility=View.VISIBLE
+                }
             }
             binding.textViewOptions.setOnClickListener {
                 val popup = PopupMenu(binding.textViewOptions.context, binding.textViewOptions)

@@ -321,7 +321,7 @@ class MenuFragment3 : Fragment() {
                     loadListData.clear()
                     myRouteListAdapter= ListLocationAdapter()
                     loadMyRouteData(docId)
-                    loadListData.add(MyLocation(clickLocationName,clickLocationAdress)) //해당 장소를 리스트에 추가
+                    loadListData.add(MyLocation(clickLocationName,clickLocationAdress,"","")) //해당 장소를 리스트에 추가
                     myRouteListAdapter.list=loadListData
                     listdialog=showListDialog(docId,"add")
                 }
@@ -348,7 +348,9 @@ class MenuFragment3 : Fragment() {
                                 showListDialog(docId,"view")
                             }
                         }
-                        else -> {}
+                        else -> {//게시하기
+                            Toast.makeText(context,"게시판에 올린 태그 선택하는 창 띄우기",Toast.LENGTH_SHORT).show()
+                        }
                     }
                     true
                 }
@@ -429,9 +431,6 @@ class MenuFragment3 : Fragment() {
                 for (doc in myList.documents) {
                    list.add(MyRouteDocument(doc.data?.get("tripname").toString(),doc.id))
                 }
-            }else{
-                //Toast.makeText(context,"아직 경로가 없습니다. 새로운 경로를 만들어주세요.",Toast.LENGTH_SHORT).show()
-
             }
             list
         } catch (e: FirebaseException) {
@@ -448,7 +447,7 @@ class MenuFragment3 : Fragment() {
                 data=documents.data as MutableMap<*,*>
                 dataList.addAll(data["routeList"] as List<Map<String,*>>)
                 dataList.forEach{
-                    loadListData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint))
+                    loadListData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String,it["spending"] as String))
                 }
             }.await()
             true
