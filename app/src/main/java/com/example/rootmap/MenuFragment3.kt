@@ -314,7 +314,7 @@ class MenuFragment3 : Fragment() {
         routelistAdapter.setItemClickListener(object: MyDocumentAdapter.OnItemClickListener {
             //내 경로 리스트의 추가 버튼 클릭 시 이벤트 구현
             override fun onClick(v: View, position: Int) {
-                dialog.dismiss()
+               // dialog.dismiss()
                 var docId=routelistAdapter.list[position].docId
                 //해당 장소를 추가하기위해 새로운 팝업창 띄우기
                 viewLifecycleOwner.lifecycleScope.async {
@@ -332,7 +332,7 @@ class MenuFragment3 : Fragment() {
                 var docId=routelistAdapter.list[position].docId
                  popupMenu.menuInflater.inflate(R.menu.map_list_layout,popupMenu.menu)
                 popupMenu.setOnMenuItemClickListener { item ->
-                    dialog.dismiss()
+                  //  dialog.dismiss()
                     var text = when(item.itemId) {
                         R.id.action_menu1 -> {
                             //해당 여행지들을 라벨로 찍고 지도에서 연결
@@ -481,8 +481,6 @@ class MenuFragment3 : Fragment() {
             dialogBuild.setTitle("새로운 여행 루트 만들기")
             dBinding.apply {
                 editTextText.hint="제목을 입력하세요."
-                memoButton.visibility=View.GONE
-                accountButton.visibility=View.GONE
                 dialogListView.visibility=View.GONE
                 linearLayout5.visibility=View.GONE
             }
@@ -492,7 +490,7 @@ class MenuFragment3 : Fragment() {
             if(mode=="view"){ //읽기 모드
                 dBinding.apply {
                     cancleButton2.text="닫기"
-                    saveButton2.text="수정하기"
+                    saveButton2.text="수정"
                 }
             }
         }
@@ -502,7 +500,7 @@ class MenuFragment3 : Fragment() {
             //롱클릭 드래그로 순서 이동가능
                 val swipeHelperCallback = DragManageAdapter(myRouteListAdapter).apply {
                     // 스와이프한 뒤 고정시킬 위치 지정
-                    setClamp(resources.displayMetrics.widthPixels.toFloat() / 4)    // 1080 / 4 = 270
+                    setClamp(resources.displayMetrics.widthPixels.toFloat()/5)
                 }
                 ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(dBinding.dialogListView)
             // 구분선 추가
@@ -540,6 +538,7 @@ class MenuFragment3 : Fragment() {
                     Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
                 }
             }
+            context?.hideKeyboard(dBinding.root) //키보드내리기
         }
         return dialog
     }

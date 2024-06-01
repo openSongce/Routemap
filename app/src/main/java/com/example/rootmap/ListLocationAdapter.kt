@@ -2,9 +2,14 @@ package com.example.rootmap
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_SWIPE
 import androidx.recyclerview.widget.ItemTouchHelper.DOWN
@@ -41,6 +46,23 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
             binding.tvRemove.setOnClickListener {
                 removeData(position)
             }
+            binding.textViewOptions.setOnClickListener {
+                val popup = PopupMenu(binding.textViewOptions.context, binding.textViewOptions)
+                popup.inflate(R.menu.recyclerview_item_menu)
+                popup.setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.memo -> { //메모 클릭
+                            Toast.makeText(binding.textViewOptions.context,"메모", Toast.LENGTH_SHORT).show()
+                        }
+                        else -> { //금액 클릭
+                            Toast.makeText(binding.textViewOptions.context, "금액", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    true
+                }
+                popup.show()
+            }
+
         }
     }
     fun removeData(position: Int) {
@@ -109,13 +131,11 @@ class DragManageAdapter(private var recyclerViewAdapter : ListLocationAdapter) :
             val view = getView(viewHolder)
             val isClamped = getTag(viewHolder)      // 고정할지 말지 결정, true : 고정함 false : 고정 안 함
             val newX = clampViewPositionHorizontal(dX, isClamped, isCurrentlyActive)  // newX 만큼 이동(고정 시 이동 위치/고정 해제 시 이동 위치 결정)
-
             // 고정시킬 시 애니메이션 추가
             if (newX == -clamp) {
-                getView(viewHolder).animate().translationX(-clamp).setDuration(100L).start()
+                view.animate().translationX(-clamp).setDuration(100L).start()
                 return
             }
-
             currentDx = newX
             getDefaultUIUtil().onDraw(
                 c,
@@ -155,13 +175,12 @@ class DragManageAdapter(private var recyclerViewAdapter : ListLocationAdapter) :
         // 고정할 수 있으면
         val newX = if (isClamped) {
             // 현재 swipe 중이면 swipe되는 영역 제한
-            if (isCurrentlyActive)
-            // 오른쪽 swipe일 때
-                if (dX < 0) dX/3 - clamp
-                // 왼쪽 swipe일 때
-                else dX - clamp
-            // swipe 중이 아니면 고정시키기
-            else -clamp
+            if (isCurrentlyActive){
+                // 오른쪽 swipe일 때
+                if (dX < 0){
+                    dX/3 - clamp
+                }else dX - clamp // 왼쪽 swipe일 때
+            }else -clamp// swipe 중이 아니면 고정시키기
         }
         // 고정할 수 없으면 newX는 스와이프한 만큼
         else dX / 2
