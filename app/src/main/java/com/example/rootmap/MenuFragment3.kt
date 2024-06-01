@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.graphics.Point
 import android.location.Location
 import android.location.LocationRequest
@@ -202,9 +203,6 @@ class MenuFragment3 : Fragment() {
         myDb = db.collection("user").document(currentId.toString()).collection("route")
         viewLifecycleOwner.lifecycleScope.async{
             locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION))
-        }
-        binding.addButton.setOnClickListener {
-            showListDialog("","make")
         }
         binding.listButton.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.async{
@@ -449,6 +447,10 @@ class MenuFragment3 : Fragment() {
         val dBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
         dialogBuild.setTitle("내 여행 리스트")
+        dialogBuild.setPositiveButton("+ 새경로", DialogInterface.OnClickListener{dialog, id->
+            //Toast.makeText(context ,"new route", Toast.LENGTH_SHORT).show()
+            showListDialog("", "make")
+        })
         dBinding.listView.adapter = routelistAdapter
         dBinding.listView.layoutManager = LinearLayoutManager(context)
         val dialog = dialogBuild.show()
