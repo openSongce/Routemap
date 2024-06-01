@@ -10,10 +10,6 @@
         android:icon="@drawable/post"
         android:title="여행 경로 게시판" />
     <item
-        android:id="@+id/menuRouteMake"
-        android:icon="@drawable/routemake"
-        android:title="여행 경로 만들기" />
-    <item
         android:id="@+id/menuPlans"
         android:icon="@drawable/plans"
         android:title="여행 일정" />
@@ -30,4 +26,5 @@
         android:id="@+id/menuLogout"
         android:icon="@drawable/logout"
         android:title="로그아웃" />
+
 </menu>

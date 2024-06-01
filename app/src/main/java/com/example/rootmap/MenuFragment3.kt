@@ -21,6 +21,7 @@ import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupMenu
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -31,6 +32,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.FragmentMenu3Binding
+import com.example.rootmap.databinding.MemoEditLayoutBinding
 import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.example.rootmap.databinding.RouteaddLayoutBinding
 import com.example.rootmap.databinding.RoutelistLayoutBinding
@@ -97,6 +99,7 @@ class MenuFragment3 : Fragment() {
     private var requestingLocationUpdates = false
     private var locationRequest: LocationRequest? = null
     private val locationCallback: LocationCallback?=null
+    private lateinit var makerList:MutableList<LatLng>
 
     val locationData: MutableList<SearchLocation> = mutableListOf()
     val loadListData: MutableList<MyLocation> = mutableListOf()
@@ -129,8 +132,7 @@ class MenuFragment3 : Fragment() {
             if(startpositon!=null){
                 val options = LabelOptions.from(startpositon).setStyles(style)
                 currendtMarker=layer?.addLabel(options)
-                //val trackingManager = kakaoMap.trackingManager
-                //trackingManager!!.startTracking(currendtMarker)
+
             }
             startCamera= kakaoMap.getCameraPosition()!!
             //지도 클릭 시 이벤트 구현
@@ -147,6 +149,7 @@ class MenuFragment3 : Fragment() {
                     layer?.remove(clickMarker)
                     clickMarker=layer?.addLabel(options1) //마크 삭제 후 새로 추가
                 }
+
             }
         }
         override fun getPosition(): LatLng {
@@ -270,6 +273,7 @@ class MenuFragment3 : Fragment() {
         listAdapter= RouteListAdapter()
         routelistAdapter= MyDocumentAdapter()
         myRouteListAdapter= ListLocationAdapter()
+        myRouteListAdapter.myDb=myDb
 
        //검색 리스트의 클릭 이벤트 구현
         listAdapter.setItemClickListener(object: RouteListAdapter.OnItemClickListener {
@@ -323,7 +327,7 @@ class MenuFragment3 : Fragment() {
                     loadMyRouteData(docId)
                     loadListData.add(MyLocation(clickLocationName,clickLocationAdress,"","")) //해당 장소를 리스트에 추가
                     myRouteListAdapter.list=loadListData
-                    listdialog=showListDialog(docId,"add")
+                    showListDialog(docId,"add")
                 }
             }
             //경로 보기를 눌렀을 때 나오는 목록의 버튼(보기) 클릭시
@@ -332,10 +336,11 @@ class MenuFragment3 : Fragment() {
                 var docId=routelistAdapter.list[position].docId
                  popupMenu.menuInflater.inflate(R.menu.map_list_layout,popupMenu.menu)
                 popupMenu.setOnMenuItemClickListener { item ->
-                  //  dialog.dismiss()
+                   // dialog.dismiss()
                     var text = when(item.itemId) {
                         R.id.action_menu1 -> {
                             //해당 여행지들을 라벨로 찍고 지도에서 연결
+
                             Toast.makeText(context,"지도에서 보여주기",Toast.LENGTH_SHORT).show()
                         }
                         R.id.action_menu2 -> {
@@ -344,8 +349,9 @@ class MenuFragment3 : Fragment() {
                                 loadListData.clear()
                                 myRouteListAdapter= ListLocationAdapter()
                                 loadMyRouteData(docId)
+                                myRouteListAdapter.docId=docId
                                 myRouteListAdapter.list=loadListData
-                                showListDialog(docId,"view")
+                                listdialog=showListDialog(docId,"view")
                             }
                         }
                         else -> {//게시하기
@@ -362,7 +368,6 @@ class MenuFragment3 : Fragment() {
                 myDb.document(docId).delete()
             }
         })
-
         return binding.root
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -472,7 +477,6 @@ class MenuFragment3 : Fragment() {
             swipeHelperCallback.removePreviousClamp(dBinding.listView)
             false
         }
-
         if(!boolean){
             dBinding.checkText.apply {
                 text="아직 경로가 없습니다. 새로운 경로를 만들어주세요."
@@ -553,6 +557,38 @@ class MenuFragment3 : Fragment() {
                 }
             }
             context?.hideKeyboard(dBinding.root) //키보드내리기
+        }
+        return dialog
+    }
+    private fun showMemoDialog(memo:String):AlertDialog{ //다이어로그로 팝업창 구현
+        val dBinding = MemoEditLayoutBinding.inflate(layoutInflater)
+        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        dialogBuild.setTitle("메모")
+        dBinding.apply {
+            memoCancleButton.text="닫기"
+            memoSaveButton.text="수정"
+            if(memo!=""){
+                memoArea.setText(memo)
+                memoArea.inputType=InputType.TYPE_NULL
+            }
+        }
+        val dialog = dialogBuild.show()
+        dBinding.apply {
+            memoSaveButton.setOnClickListener {
+                //수정 버튼 클릭
+                if(memoSaveButton.text=="수정"){
+                    memoSaveButton.text="저장"
+                    memoArea.inputType=InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                }else{//저장 버튼 클릭
+                    //저장 기능
+                    dialog.dismiss()
+                }
+            }
+        }
+
+        dBinding.memoCancleButton.setOnClickListener {
+            //닫기
+            dialog.dismiss()
         }
         return dialog
     }

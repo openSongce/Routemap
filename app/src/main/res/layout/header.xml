@@ -1,45 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/login_layout"
-    android:layout_width="match_parent"
-    android:layout_height="200dp"
-    android:padding="20dp">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/login_layout"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:padding="20dp"
+        android:background="@color/custum_color">
 
     <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/header_icon"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:src="@drawable/profile_img"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+            android:id="@+id/header_icon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/profile_img"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:civ_circle_background_color="@color/white"
+            app:layout_constraintVertical_bias="0.5" />
 
     <TextView
-        android:id="@+id/menuUserName"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="60dp"
-        android:text="이름"
-        android:textColor="#000000"
-        android:textSize="20dp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/menuNickname"
-        app:layout_constraintStart_toEndOf="@+id/header_icon"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+            android:id="@+id/menuUserName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="28dp"
+            android:layout_marginTop="60dp"
+            android:text="이름"
+            android:textColor="#000000"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/menuNickname"
+            app:layout_constraintStart_toEndOf="@+id/header_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
 
     <TextView
-        android:id="@+id/menuNickname"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="10dp"
-        android:text="닉네임"
-        android:textColor="#EB554C4C"
-        android:textSize="15dp"
-        app:layout_constraintStart_toEndOf="@+id/header_icon"
-        app:layout_constraintTop_toBottomOf="@+id/menuUserName" />
+            android:id="@+id/menuNickname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="28dp"
+            android:layout_marginTop="10dp"
+            android:text="닉네임"
+            android:textColor="#EB554C4C"
+            android:textSize="15dp"
+            app:layout_constraintStart_toEndOf="@+id/header_icon"
+            app:layout_constraintTop_toBottomOf="@+id/menuUserName" />
 </androidx.constraintlayout.widget.ConstraintLayout>

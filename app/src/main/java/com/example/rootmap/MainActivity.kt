@@ -121,10 +121,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 Toast.makeText(this, "게시판 클릭", Toast.LENGTH_SHORT).show()
             }
 
-            R.id.menuRouteMake -> {
-                Toast.makeText(this, "만들기 클릭", Toast.LENGTH_SHORT).show()
-            }
-
             R.id.menuPlans -> {
                 Toast.makeText(this, "일정 클릭", Toast.LENGTH_SHORT).show()
             }

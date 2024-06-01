@@ -68,11 +68,11 @@
             app:layout_constraintBottom_toTopOf="@+id/recyclerView2" />
 
     <ImageButton
-            android:src="@drawable/plans"
+            android:src="@drawable/route"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:id="@+id/listButton"
-            android:scaleType="centerCrop"
+            android:scaleType="fitCenter"
             android:background="@color/custum_color"
             app:tint="@color/white"
 

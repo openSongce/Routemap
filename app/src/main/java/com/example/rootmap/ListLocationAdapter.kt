@@ -1,14 +1,12 @@
 package com.example.rootmap
 
-import android.content.Context
+import android.app.AlertDialog
 import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.RectF
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_SWIPE
@@ -18,12 +16,20 @@ import androidx.recyclerview.widget.ItemTouchHelper.RIGHT
 import androidx.recyclerview.widget.ItemTouchHelper.UP
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rootmap.databinding.LocationListLayoutBinding
+import com.example.rootmap.databinding.MemoEditLayoutBinding
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.firestore
 import java.util.Collections
 import kotlin.math.min
 
 class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  {
     var list = mutableListOf<MyLocation>()
+    lateinit var parent: ViewGroup
+    lateinit var myDb: CollectionReference
+    lateinit var docId:String
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
+        this.parent =parent
         val binding =
             LocationListLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return Holder(binding)
@@ -66,7 +72,11 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                 popup.setOnMenuItemClickListener { item ->
                     when (item.itemId) {
                         R.id.memo -> { //메모 클릭
-                            Toast.makeText(binding.textViewOptions.context,"메모", Toast.LENGTH_SHORT).show()
+                            memo = showMemoDialog(memo)
+                            list[position].memo = memo
+                            //myDb.document(docId).update(hashMapOf("tripname" to memo.toString(),)).addOnSuccessListener {
+//
+                           // }
                         }
                         else -> { //금액 클릭
                             Toast.makeText(binding.textViewOptions.context, "금액", Toast.LENGTH_SHORT).show()
@@ -75,13 +85,50 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                     true
                 }
                 popup.show()
+
+
             }
 
         }
-    }
-    fun removeData(position: Int) {
-        list.removeAt(position)
-        notifyItemRemoved(position)
+        private fun showMemoDialog(memo:String): String { //다이어로그로 팝업창 구현
+            val dBinding = MemoEditLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            val dialogBuild = AlertDialog.Builder(parent.context).setView(dBinding.root)
+            dialogBuild.setTitle("메모")
+            var text=dBinding.memoArea.text.toString()
+            dBinding.apply {
+                memoCancleButton.text="닫기"
+                memoSaveButton.text="수정"
+                if(memo!=""){
+                   memoArea.setText(memo)
+                   // memoArea.isFocusableInTouchMode=false
+                }
+            }
+            val dialog = dialogBuild.show()
+            dBinding.apply {
+                memoSaveButton.setOnClickListener {
+                    //수정 버튼 클릭
+                    if(memoSaveButton.text=="수정"){
+                        memoSaveButton.text="저장"
+                        memoArea.isFocusableInTouchMode=true
+                    }else{//저장 버튼 클릭
+                        //저장 기능
+                        text=memoArea.text.toString()
+                        memoArea.isFocusableInTouchMode=false
+                        dialog.dismiss()
+                    }
+                }
+            }
+            dBinding.memoCancleButton.setOnClickListener {
+                //닫기
+                dialog.dismiss()
+            }
+            return text
+        }
+        fun removeData(position: Int) {
+            list.removeAt(position)
+            notifyItemRemoved(position)
+        }
+
     }
     // 현재 선택된 데이터와 드래그한 위치에 있는 데이터를 교환
     fun swapData(fromPos: Int, toPos: Int) {
@@ -89,7 +136,14 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
         notifyItemMoved(fromPos, toPos)
     }
 
+    interface OnItemClickListener {
+        fun onClick(v: View, position: Int, textViewOptions: TextView)
+    }
+    fun setItemClickListener(onItemClickListener: OnItemClickListener) {
+        this.itemClickListener = onItemClickListener
+    }
 
+    private lateinit var itemClickListener : OnItemClickListener
 }
 class DragManageAdapter(private var recyclerViewAdapter : ListLocationAdapter) : ItemTouchHelper.Callback() {
     private var currentPosition: Int? = null    // 현재 선택된 recycler view의 position

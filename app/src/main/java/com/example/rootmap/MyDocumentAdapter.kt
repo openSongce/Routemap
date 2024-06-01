@@ -74,7 +74,7 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
     private lateinit var itemClickListener : OnItemClickListener
 }
 
-class SwapeManageAdapter(private var recyclerViewAdapter : MyDocumentAdapter) : ItemTouchHelper.Callback() {
+class SwapeManageAdapter(private var recyclerViewAdapter2 : MyDocumentAdapter) : ItemTouchHelper.Callback() {
     private var currentPosition: Int? = null    // 현재 선택된 recycler view의 position
     private var previousPosition: Int? = null   // 이전에 선택했던 recycler view의 position
     private var currentDx = 0f                  // 현재 x 값

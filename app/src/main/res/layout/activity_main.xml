@@ -71,12 +71,12 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
     <!--자식 레이아웃. Navigation Drawer-->
     <com.google.android.material.navigation.NavigationView
-        android:id="@+id/main_navigationView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="left"
-        app:headerLayout="@layout/header"
-        app:menu="@menu/navigation_layout">
+            android:id="@+id/main_navigationView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="left"
+            app:headerLayout="@layout/header"
+            app:menu="@menu/navigation_layout">
 
     </com.google.android.material.navigation.NavigationView>
 </androidx.drawerlayout.widget.DrawerLayout>
