@@ -203,9 +203,6 @@ class MenuFragment3 : Fragment() {
         viewLifecycleOwner.lifecycleScope.async{
             locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION))
         }
-        binding.addButton.setOnClickListener {
-            showListDialog("","make")
-        }
         binding.listButton.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.async{
                 routelistAdapter.list=loadMyList() //어댑터에 데이터 연결
@@ -460,15 +457,17 @@ class MenuFragment3 : Fragment() {
         val dBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
         dialogBuild.setTitle("내 여행 리스트")
-        dBinding.addTripRouteText.text="새로운 경로 만들기"
-        dBinding.addTripRouteText.setOnClickListener {
-            //제목 받아서 경로 만들기
-            showListDialog("","make")
-        }
         dBinding.listView.adapter = routelistAdapter
         dBinding.listView.layoutManager = LinearLayoutManager(context)
         if(!boolean){
-            dBinding.checkText.text="아직 여행 경로가 없습니다."
+            dBinding.checkText.apply {
+                text="아직 경로가 없습니다. 새로운 경로를 만들어주세요."
+                visibility=View.VISIBLE
+            }
+        }
+        dBinding.addTripRouteText.text="새로운 경로 생성"
+        dBinding.addTripRouteText.setOnClickListener {
+            showListDialog("","make")
         }
         val dialog = dialogBuild.show()
         return dialog
@@ -478,12 +477,14 @@ class MenuFragment3 : Fragment() {
         val dBinding = RouteaddLayoutBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
         dialogBuild.setCancelable(false)
-        if(mode=="make"){ //새로운 여행 경로 만들기 모드
+        if(mode=="make"){ //즉, 새로운 여행 경로 만들기 모드
             dialogBuild.setTitle("새로운 여행 루트 만들기")
             dBinding.apply {
                 editTextText.hint="제목을 입력하세요."
-                cancleButton2.visibility=View.GONE
-                saveButton2.visibility=View.GONE
+                memoButton.visibility=View.GONE
+                accountButton.visibility=View.GONE
+                dialogListView.visibility=View.GONE
+                linearLayout5.visibility=View.GONE
             }
             loadListData.clear()
         }else{ //여행 경로에 장소 추가 모드
@@ -526,6 +527,10 @@ class MenuFragment3 : Fragment() {
                     myDb.document().set(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
                         dialog.dismiss()
                         Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
+                    }
+                    viewLifecycleOwner.lifecycleScope.async {
+                        routelistAdapter.list=loadMyList()
+                        routelistAdapter.notifyDataSetChanged()
                     }
                     dialog.dismiss()
                 }

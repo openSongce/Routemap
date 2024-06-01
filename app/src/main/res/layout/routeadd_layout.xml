@@ -5,6 +5,54 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:id="@+id/constraintLayout"
+            android:layout_marginTop="20dp">
+
+        <EditText
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:inputType="text"
+                android:ems="10"
+                android:id="@+id/editTextText"
+                android:background="@null"
+                android:textStyle="bold"
+                android:paddingLeft="20dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/cancleButton2"
+                app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+                android:text="취소"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/cancleButton2"
+                android:backgroundTint="@color/gray"
+                android:textColor="@color/black"
+                app:layout_constraintEnd_toStartOf="@+id/saveButton2"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginEnd="5dp" />
+
+        <Button
+                android:text="완료"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/saveButton2"
+                android:backgroundTint="@color/black"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginEnd="5dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <Button
             android:text="금액추가"
             android:layout_width="wrap_content"
@@ -31,58 +79,17 @@
             android:backgroundTint="#FFFB98"
             android:textColor="@color/black" />
 
-    <Button
-            android:text="완료"
-            android:layout_width="70dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/saveButton2"
-            app:layout_constraintStart_toEndOf="@+id/cancleButton2"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginRight="5dp"
-            android:backgroundTint="@color/black"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="20dp" />
-
-    <EditText
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:inputType="text"
-            android:ems="10"
-            android:id="@+id/editTextText"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintEnd_toStartOf="@+id/cancleButton2"
-            app:layout_constraintTop_toTopOf="parent"
-            android:background="@null"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/dialogListView"
-            android:paddingLeft="20dp"
-            android:layout_marginTop="20dp" />
-
-    <Button
-            android:text="취소"
-            android:layout_width="70dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/cancleButton2"
-            app:layout_constraintStart_toEndOf="@+id/editTextText"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintEnd_toStartOf="@+id/saveButton2"
-            android:layout_marginRight="5dp"
-            android:backgroundTint="@color/gray"
-            android:textColor="@color/black"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="20dp" />
-
     <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:id="@+id/dialogListView"
-            app:layout_constraintTop_toBottomOf="@+id/cancleButton2"
+            app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
             app:layout_constraintBottom_toTopOf="@+id/memoButton"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp" />
+            android:layout_marginRight="10dp"
+            android:visibility="visible" />
 
     <LinearLayout
             android:orientation="vertical"

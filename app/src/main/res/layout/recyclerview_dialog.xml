@@ -8,7 +8,7 @@
     <TextView
             android:text="TextView"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:id="@+id/addTripRouteText"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -20,7 +20,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="370dp"
             android:id="@+id/listView"
             android:background="#FFFFFF"
             android:visibility="visible"
@@ -38,5 +38,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/addTripRouteText"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="gone" />
 </androidx.constraintlayout.widget.ConstraintLayout>
