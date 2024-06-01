@@ -210,7 +210,11 @@ class MenuFragment3 : Fragment() {
             viewLifecycleOwner.lifecycleScope.async{
                 routelistAdapter.list=loadMyList() //어댑터에 데이터 연결
                 routelistAdapter.mode="View"
-                if(!routelistAdapter.list.isNullOrEmpty())  dialog=showDialog()
+                if(!routelistAdapter.list.isNullOrEmpty()){
+                    dialog=showDialog(true)
+                }else{
+                    dialog=showDialog(false)
+                }
             }
         }
         binding.locationButton.setOnClickListener {
@@ -301,7 +305,11 @@ class MenuFragment3 : Fragment() {
                 viewLifecycleOwner.lifecycleScope.async {
                    routelistAdapter.list=loadMyList() //어댑터에 데이터 연결
                    routelistAdapter.mode="Add"
-                    if(!routelistAdapter.list.isNullOrEmpty())  dialog=showDialog()
+                    if(!routelistAdapter.list.isNullOrEmpty()){
+                        dialog=showDialog(true)
+                    }else{
+                        dialog=showDialog(false)
+                    }
                 }
             }
         })
@@ -401,6 +409,7 @@ class MenuFragment3 : Fragment() {
                 val item = SearchLocation(document.place_name,
                     document.road_address_name,document.x.toDouble(),
                     document.y.toDouble())
+
                 locationData.add(item)
             }
             listAdapter.list=locationData
@@ -419,7 +428,8 @@ class MenuFragment3 : Fragment() {
                    list.add(MyRouteDocument(doc.data?.get("tripname").toString(),doc.id))
                 }
             }else{
-                Toast.makeText(context,"아직 경로가 없습니다. 새로운 경로를 만들어주세요.",Toast.LENGTH_SHORT).show()
+                //Toast.makeText(context,"아직 경로가 없습니다. 새로운 경로를 만들어주세요.",Toast.LENGTH_SHORT).show()
+
             }
             list
         } catch (e: FirebaseException) {
@@ -445,12 +455,21 @@ class MenuFragment3 : Fragment() {
             true
         }
     }
-    private fun showDialog():AlertDialog{ //다이어로그로 팝업창 구현
+    private fun showDialog(boolean: Boolean):AlertDialog{ //다이어로그로 팝업창 구현
+        //boolean은 데이터의 유무-> true 있음, false 없음
         val dBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
         dialogBuild.setTitle("내 여행 리스트")
+        dBinding.addTripRouteText.text="새로운 경로 만들기"
+        dBinding.addTripRouteText.setOnClickListener {
+            //제목 받아서 경로 만들기
+            showListDialog("","make")
+        }
         dBinding.listView.adapter = routelistAdapter
         dBinding.listView.layoutManager = LinearLayoutManager(context)
+        if(!boolean){
+            dBinding.checkText.text="아직 여행 경로가 없습니다."
+        }
         val dialog = dialogBuild.show()
         return dialog
     }
@@ -459,9 +478,13 @@ class MenuFragment3 : Fragment() {
         val dBinding = RouteaddLayoutBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
         dialogBuild.setCancelable(false)
-        if(mode=="make"){ //즉, 새로운 여행 경로 만들기 모드
+        if(mode=="make"){ //새로운 여행 경로 만들기 모드
             dialogBuild.setTitle("새로운 여행 루트 만들기")
-            dBinding.editTextText.hint="제목을 입력하세요."
+            dBinding.apply {
+                editTextText.hint="제목을 입력하세요."
+                cancleButton2.visibility=View.GONE
+                saveButton2.visibility=View.GONE
+            }
             loadListData.clear()
         }else{ //여행 경로에 장소 추가 모드
             dBinding.editTextText.setText(routeName) //여행 이름 띄우기
