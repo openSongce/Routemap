@@ -518,8 +518,8 @@ class MenuFragment3 : Fragment() {
         }
         dBinding.saveButton2.setOnClickListener {//다이어로그의 완료버튼 클릭
             //데이터 저장 후
+            var text=dBinding.editTextText.text.toString()
             if(mode=="make"){//즉, 새로운 여행 경로 만들기 모드
-                var text=dBinding.editTextText.text.toString()
                 if(text==""){ //제목이 비었으면
                     Toast.makeText(context,"제목을 입력하세요.",Toast.LENGTH_SHORT).show()
                 }else{
@@ -535,7 +535,7 @@ class MenuFragment3 : Fragment() {
                     dialog.dismiss()
                 }
             }else{//여행 경로에 장소 추가 모드
-                myDb.document(docId).update("routeList",loadListData).addOnSuccessListener {
+                myDb.document(docId).update(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
                     dialog.dismiss()
                     Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
                 }
