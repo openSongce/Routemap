@@ -1,11 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<layout xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:weightSum="4">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/white"
+                    android:layout_weight="1"/>
+            <TextView
+                    android:id="@+id/tvRemove"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/red"
+                    android:text="삭제"
+                    android:textColor="@color/white"
+                    android:gravity="center"
+                    android:layout_weight="3"/>
+
+        </LinearLayout>
+        <LinearLayout
+                android:id="@+id/swipe_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@color/white"
+                android:visibility="visible">
+<LinearLayout
     android:id="@+id/friendView"
     android:layout_width="match_parent"
     android:layout_height="80dp"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+        android:background="@color/white">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/picture"
@@ -58,3 +94,6 @@
         android:visibility="visible" />
 
 </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+</layout>

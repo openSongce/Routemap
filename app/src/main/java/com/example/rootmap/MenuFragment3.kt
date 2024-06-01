@@ -354,6 +354,11 @@ class MenuFragment3 : Fragment() {
                 }
                 popupMenu.show()
             }
+            //삭제 버튼을 눌렀을 때 삭제하는 기능
+            override fun deleteDoc(v: View, position: Int) {
+                var docId=routelistAdapter.list[position].docId
+                myDb.document(docId).delete()
+            }
         })
 
         return binding.root
@@ -459,6 +464,16 @@ class MenuFragment3 : Fragment() {
         dialogBuild.setTitle("내 여행 리스트")
         dBinding.listView.adapter = routelistAdapter
         dBinding.listView.layoutManager = LinearLayoutManager(context)
+        val swipeHelperCallback = SwapeManageAdapter(routelistAdapter).apply {
+            // 스와이프한 뒤 고정시킬 위치 지정
+            setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
+        }
+        ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(dBinding.listView)
+        dBinding.listView.setOnTouchListener { _, _ ->
+            swipeHelperCallback.removePreviousClamp(dBinding.listView)
+            false
+        }
+
         if(!boolean){
             dBinding.checkText.apply {
                 text="아직 경로가 없습니다. 새로운 경로를 만들어주세요."
@@ -500,7 +515,7 @@ class MenuFragment3 : Fragment() {
             //롱클릭 드래그로 순서 이동가능
                 val swipeHelperCallback = DragManageAdapter(myRouteListAdapter).apply {
                     // 스와이프한 뒤 고정시킬 위치 지정
-                    setClamp(resources.displayMetrics.widthPixels.toFloat()/5)
+                    setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
                 }
                 ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(dBinding.dialogListView)
             // 구분선 추가
