@@ -67,17 +67,6 @@
             android:layout_marginTop="80dp"
             android:layout_marginStart="40dp" />
 
-    <ImageButton
-            android:src="@android:drawable/ic_menu_rotate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/resetButton"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="10dp"
-            android:backgroundTint="@color/custum_color"
-            android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/routeSaveButton" />
-
     <Button
             android:text="저장"
             android:layout_width="0dp"

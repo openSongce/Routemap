@@ -329,14 +329,14 @@ class MenuFragment3 : Fragment() {
                 dialog.dismiss()
                 var docId=routelistAdapter.list[position].docId
                 var docName=routelistAdapter.list[position].docName
-                var preData:List<MyLocation>
+                binding.listButton.visibility = View.INVISIBLE
+                binding.listCloseButton.visibility = View.VISIBLE
                 viewLifecycleOwner.lifecycleScope.async {
                     //Toast.makeText(context, "지도에서 보여주기", Toast.LENGTH_SHORT).show()
                     loadListData.clear()
                     loadMyRouteData(docId)
                     myRouteListAdapter.docId=docId
                     myRouteListAdapter.list=loadListData
-
 /*
                     val intent = Intent(context, RouteMapViewActivity::class.java)
                     intent.putExtra("id", currentId)
@@ -363,17 +363,12 @@ class MenuFragment3 : Fragment() {
                     }
                     kakaomap!!.setPadding(0,0,0,800)
                     makeLine(kakaomap!!,loadListData)
-
-                    binding.listButton.visibility = View.INVISIBLE
-                    binding.listCloseButton.visibility = View.VISIBLE
-
                 }
                 binding.apply {
                     routeSaveButton.visibility=View.VISIBLE
                     routeNameText.visibility=View.VISIBLE
                     recyclerView3.visibility = View.VISIBLE
                     bottomButton.visibility = View.VISIBLE
-                    resetButton.visibility=View.VISIBLE
                     routeNameText.setText(docName)
                 }
                 binding.routeSaveButton.setOnClickListener {
@@ -381,25 +376,8 @@ class MenuFragment3 : Fragment() {
                     myDb.document(docId).update(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
                         Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
                     }
-
-
                 }
-                binding.resetButton.setOnClickListener {
-                    //원래대로 되돌리기
-                    binding.routeNameText.setText(docName)
-                    viewLifecycleOwner.lifecycleScope.async{
-                        loadListData.clear()
-                        loadMyRouteData(docId)
-                        myRouteListAdapter.list=loadListData
-                        myRouteListAdapter.notifyDataSetChanged()
-                    }
-                    //삭제 후 다시 띄우기
-                    for(doc in label)
-                        doc.remove()
-                    kakaomap?.shapeManager?.getLayer()?.remove(areaPolyline)
-                    //다시 띄우는 코드
 
-                }
             }
             //삭제 버튼을 눌렀을 때 삭제하는 기능
             override fun deleteDoc(v: View, position: Int) {
@@ -411,7 +389,6 @@ class MenuFragment3 : Fragment() {
             binding.listCloseButton.visibility = View.GONE
             binding.listButton.visibility = View.VISIBLE
             binding.recyclerView3.visibility = View.GONE
-            binding.resetButton.visibility=View.GONE
             binding.routeNameText.visibility=View.GONE
             binding.routeSaveButton.visibility=View.GONE
             if (binding.recyclerView2.getVisibility() == View.GONE){
