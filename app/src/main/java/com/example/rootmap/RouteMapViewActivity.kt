@@ -1,5 +1,6 @@
 package com.example.rootmap
 
+import android.R
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Toast
@@ -15,11 +16,14 @@ import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.camera.CameraAnimation
 import com.kakao.vectormap.camera.CameraUpdateFactory
+import com.kakao.vectormap.label.Label
+import com.kakao.vectormap.label.LabelOptions
+import com.kakao.vectormap.label.LabelStyle
+import com.kakao.vectormap.label.LabelStyles
+import com.kakao.vectormap.label.LabelTextStyle
 import com.kakao.vectormap.shape.MapPoints
 import com.kakao.vectormap.shape.PolylineOptions
 import com.kakao.vectormap.shape.PolylineStyle
-
-
 class RouteMapViewActivity : AppCompatActivity() {
     val db = Firebase.firestore
     var kakaomap: KakaoMap? = null
@@ -35,6 +39,7 @@ class RouteMapViewActivity : AppCompatActivity() {
             var dataList = mutableListOf<Map<String, *>>()
             var data: MutableMap<*, *>
             var glist = mutableListOf<GeoPoint>()
+            var nlist = mutableListOf<String>()
 
             myDb = db.collection("user").document(intent.getStringExtra("id").toString())
                 .collection("route")
@@ -49,6 +54,21 @@ class RouteMapViewActivity : AppCompatActivity() {
                         }
                         for (doc in glist) {
                             list.add(LatLng.from(doc.latitude, doc.longitude))
+
+
+
+
+                            val style: LabelStyle = LabelStyle.from(com.example.rootmap.R.drawable.clicklocation)
+                                .setTextStyles(
+                                    LabelTextStyle.from(50, Color.parseColor("#0A3711")))
+
+                            val options = LabelOptions.from(LatLng.from(doc.latitude, doc.longitude)).setStyles(style)
+                                .setTexts((cnt+1).toString())
+
+
+                            val layer = kakaoMap.labelManager!!.layer
+
+                            val label: Label = layer!!.addLabel(options)
                             cnt++
                         }
                         var areaPolyline = shapeManager!!.layer.addPolyline(getAreaOptions(list)!!)
