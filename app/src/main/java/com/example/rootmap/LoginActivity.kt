@@ -166,13 +166,13 @@ class LoginActivity : AppCompatActivity() {
             userDocRef.get()
                 .addOnSuccessListener { document ->
                     if (document.exists()) {
-                        // 소셜 로그인 한 적 있는 유저일 경우 바로 MainActivity로 이동
+                        // 문서가 존재하면 바로 MainActivity로 이동
                         val intent = Intent(this, MainActivity::class.java)
                         intent.putExtra("id", currentUser.email)
                         startActivity(intent)
                         finish()
                     } else {
-                        // 소셜 로그인을 처음 한다면 saveGoogleUserData() 메소드를 호출하여 사용자 데이터를 Firestore에 저장
+                        // 문서가 존재하지 않으면 saveGoogleUserData() 메소드를 호출하여 사용자 데이터를 Firestore에 저장
                         saveGoogleUserData(currentUser)
                     }
                 }
@@ -186,8 +186,8 @@ class LoginActivity : AppCompatActivity() {
         user?.let { currentUser ->
             val userData = hashMapOf(
                 "id" to currentUser.email,
-                "nickname" to "루트맵좋아",
-                "name" to "김루트"
+                "nickname" to "닉네임을 설정해주세요",
+                "name" to "이름을 설정해주세요"
             )
 
             db.collection("user").document(currentUser.email.toString())
