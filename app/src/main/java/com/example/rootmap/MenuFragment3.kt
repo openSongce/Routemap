@@ -6,6 +6,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.Point
 import android.location.Location
 import android.location.LocationRequest
@@ -58,6 +59,10 @@ import com.kakao.vectormap.label.LabelLayer
 import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
+import com.kakao.vectormap.label.LabelTextStyle
+import com.kakao.vectormap.shape.MapPoints
+import com.kakao.vectormap.shape.PolylineOptions
+import com.kakao.vectormap.shape.PolylineStyle
 import kotlinx.coroutines.async
 import kotlinx.coroutines.tasks.await
 import retrofit2.Call
@@ -370,6 +375,7 @@ class MenuFragment3 : Fragment() {
                         false
                     }
                     kakaomap!!.setPadding(0,0,0,800)
+                    makeLine(kakaomap!!,loadListData)
                 }
                 binding.apply {
                     routeSaveButton.visibility=View.VISIBLE
@@ -436,6 +442,41 @@ class MenuFragment3 : Fragment() {
         val inputMethodManager =
             getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    private fun makeLine(kakaomap: KakaoMap,list: MutableList<MyLocation>){
+        if(kakaomap!=null){
+            var cnt: Int = 1
+            var labels= mutableListOf<LabelOptions>()
+            var latLngList= mutableListOf<LatLng>()
+            var labelStyle= kakaomap!!.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
+                R.drawable.clicklocation
+            ).setTextStyles(
+                LabelTextStyle.from(50, Color.parseColor("#0A3711")))))
+            for(doc in list){
+                var lanLng=LatLng.from(doc.position.latitude,doc.position.longitude)
+                labels.add(LabelOptions.from(lanLng)
+                    .setStyles(labelStyle).setTexts(cnt.toString()))
+                latLngList.add(lanLng)
+                cnt++
+            }
+            kakaomap.shapeManager!!.layer.addPolyline(getAreaOptions(latLngList)!!)
+            var testlayer= kakaomap!!.getLabelManager()?.getLodLayer();
+            testlayer?.addLodLabels(labels)
+            //첫 위치 기준으로 카메라 이동
+            kakaomap.moveCamera(
+                CameraUpdateFactory.newCenterPosition(
+                    LatLng.from(list[0].position.latitude,list[0].position.longitude), 15
+                ),
+                CameraAnimation.from(500)
+            )
+        }
+    }
+    private fun getAreaOptions(list: MutableList<LatLng>): PolylineOptions? {
+        return PolylineOptions.from(
+            MapPoints.fromLatLng(list),
+            PolylineStyle.from(10f, Color.parseColor("#80ff2c35"), 3f, Color.RED)
+        )
     }
 
     private fun searchKeyword(text:String){

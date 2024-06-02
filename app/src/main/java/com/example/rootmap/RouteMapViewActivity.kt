@@ -54,10 +54,6 @@ class RouteMapViewActivity : AppCompatActivity() {
                         }
                         for (doc in glist) {
                             list.add(LatLng.from(doc.latitude, doc.longitude))
-
-
-
-
                             val style: LabelStyle = LabelStyle.from(com.example.rootmap.R.drawable.clicklocation)
                                 .setTextStyles(
                                     LabelTextStyle.from(50, Color.parseColor("#0A3711")))
