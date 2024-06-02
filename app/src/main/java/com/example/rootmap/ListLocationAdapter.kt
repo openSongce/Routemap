@@ -84,7 +84,6 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
             binding.tvRemove.setOnClickListener {
                 removeData(this.layoutPosition)
             }
-
         }
         private fun showMemoDialog(memo:String,position: Int): AlertDialog { //다이어로그로 팝업창 구현
             val dBinding = MemoEditLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -104,8 +103,8 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                         //저장 기능
                         var text=memoArea.text.toString()
                     if(memo!=text){ //내용 수정이 된 경우
-                        list[position].memo=text
-                      //  notifyDataSetChanged()
+                        list[layoutPosition].memo=text
+                        notifyDataSetChanged()
                     }
                   dialog.dismiss()
                 }
