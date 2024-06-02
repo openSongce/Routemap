@@ -44,6 +44,7 @@
                 android:name=".MainActivity"
                 android:windowSoftInputMode="adjustPan" />
         <activity android:name=".SignupActivity" />
+        <activity android:name=".MyRouteActivity" />
         <activity android:name=".FavoriteTouristActivity"></activity>
 
     </application>

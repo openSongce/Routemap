@@ -114,8 +114,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         //사이드 메뉴 항목 클릭 이벤트 구현
         when (item.itemId) {
             R.id.menuMyRoute -> {
+                val myRouteIntent = Intent(this, MyRouteActivity::class.java)
+                startActivity(myRouteIntent)
                 Toast.makeText(this, "경로 클릭", Toast.LENGTH_SHORT).show()
             }
+
 
             R.id.menuRoutePost -> {
                 Toast.makeText(this, "게시판 클릭", Toast.LENGTH_SHORT).show()

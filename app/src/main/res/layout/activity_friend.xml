@@ -25,7 +25,7 @@
             app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-            android:id="@+id/pageNameFriend"
+            android:id="@+id/myRouteText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="My friends"
@@ -69,7 +69,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pageNameFriend"
+        app:layout_constraintTop_toBottomOf="@+id/myRouteText"
         app:layout_constraintVertical_bias="1.0">
 
     </androidx.viewpager2.widget.ViewPager2>
