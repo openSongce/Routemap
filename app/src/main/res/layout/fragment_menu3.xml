@@ -37,6 +37,22 @@
             android:hint="Search"
             android:textIsSelectable="false" />
 
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:text="Name"
+            android:ems="10"
+            android:id="@+id/routeNameText"
+            app:layout_constraintTop_toBottomOf="@+id/searchText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:background="@drawable/memo_border"
+            android:gravity="center_horizontal|center_vertical"
+            android:layout_marginTop="10dp"
+            android:textSize="24sp"
+            android:visibility="gone" />
+
     <ImageView
             android:src="@drawable/search"
             android:layout_width="50dp"
@@ -51,21 +67,55 @@
             android:layout_marginTop="80dp"
             android:layout_marginStart="40dp" />
 
+    <ImageButton
+            android:src="@android:drawable/ic_menu_rotate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/resetButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/routeCancleButton"
+            android:layout_marginEnd="10dp"
+            android:backgroundTint="@color/custum_color"
+            android:visibility="gone" />
+
     <Button
+            android:text="저장"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/routeSaveButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/listButton"
+            android:layout_marginBottom="10dp"
+            android:layout_marginEnd="10dp"
+            android:backgroundTint="@color/black"
+            android:visibility="gone" />
+
+    <Button
+            android:text="닫기"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/routeCancleButton"
+            app:layout_constraintBottom_toTopOf="@+id/routeSaveButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="10dp"
+            android:backgroundTint="@color/gray"
+            android:textColor="@color/black"
+            android:visibility="gone" />
+
+    <ImageButton
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:id="@+id/disButton"
-
-            android:backgroundTint="@color/custum_color"
-            android:text="↓"
-            android:textSize="25dp"
+            android:src="@drawable/search"
             android:visibility="gone"
-            android:gravity="center_horizontal|center_vertical"
 
             app:layout_constraintEnd_toStartOf="@+id/listButton"
             android:layout_marginEnd="5dp"
             android:layout_marginBottom="5dp"
-            app:layout_constraintBottom_toTopOf="@+id/bottom_button" />
+            app:layout_constraintBottom_toTopOf="@+id/bottom_button"
+            android:scaleType="fitCenter"
+            android:tint="@color/selected_button_text"
+            android:background="@color/custum_color" />
 
     <ImageButton
             android:src="@drawable/route"
@@ -114,7 +164,7 @@
             android:id="@+id/bottom_button"
             app:layout_constraintHorizontal_bias="0.0"
             android:background="#00FFFFFF"
-            android:visibility="gone" >
+            android:visibility="gone">
 
     </androidx.recyclerview.widget.RecyclerView>
 
@@ -127,7 +177,7 @@
             android:id="@+id/recyclerView3"
             app:layout_constraintHorizontal_bias="0.0"
             android:background="#FFFFFF"
-            android:visibility="gone" >
+            android:visibility="gone">
 
     </androidx.recyclerview.widget.RecyclerView>
 

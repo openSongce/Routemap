@@ -243,13 +243,11 @@ class MenuFragment3 : Fragment() {
                     binding.bottomButton.visibility=View.GONE
                     kakaomap!!.setPadding(0,0,0,0)
                 }
-                binding.disButton.setText("↑")
                 Log.d("Map3padding", kakaomap!!.padding.toString())
             }
             else{
                 binding.recyclerView2.visibility=View.VISIBLE
                 binding.bottomButton.visibility=View.VISIBLE
-                binding.disButton.setText("↓")
                 kakaomap!!.setPadding(0,0,0,800)
                 Log.d("Map3padding", kakaomap!!.padding.toString())
             }
@@ -265,7 +263,6 @@ class MenuFragment3 : Fragment() {
                     binding.recyclerView2.visibility=View.VISIBLE
                     binding.bottomButton.visibility=View.VISIBLE
                     binding.disButton.visibility=View.VISIBLE
-                    binding.disButton.setText("↓")
                     searchKeyword(searchText)
                     kakaomap!!.setPadding(0,0,0,800)
                     //kakaomap!!.setViewport(0, 0, widthPixel, heightPixel-900)
@@ -338,14 +335,16 @@ class MenuFragment3 : Fragment() {
             override fun onListClick(v: View, position: Int) {
                 dialog.dismiss()
                 var docId=routelistAdapter.list[position].docId
+                var docName=routelistAdapter.list[position].docName
+                var preData:List<MyLocation>
                 viewLifecycleOwner.lifecycleScope.async {
                     Toast.makeText(context, "지도에서 보여주기", Toast.LENGTH_SHORT).show()
                     loadListData.clear()
                     loadMyRouteData(docId)
                     myRouteListAdapter.docId=docId
                     myRouteListAdapter.list=loadListData
+                    preData=loadListData
                     Log.d("Map3loadData", loadListData.toString())
-
                     if (loadListData.isNotEmpty()){
                         //아직 여행지 없다는 텍스트뷰 출력
                     }
@@ -363,9 +362,43 @@ class MenuFragment3 : Fragment() {
                         swipeHelperCallback.removePreviousClamp(binding.recyclerView3)
                         false
                     }
-                    binding.recyclerView3.visibility = View.VISIBLE
-                    binding.bottomButton.visibility = View.VISIBLE
                     kakaomap!!.setPadding(0,0,0,800)
+                }
+                binding.apply {
+                    routeSaveButton.visibility=View.VISIBLE
+                    routeCancleButton.visibility=View.VISIBLE
+                    routeNameText.visibility=View.VISIBLE
+                    recyclerView3.visibility = View.VISIBLE
+                    bottomButton.visibility = View.VISIBLE
+                    resetButton.visibility=View.VISIBLE
+                    routeNameText.setText(docName)
+                }
+                binding.routeSaveButton.setOnClickListener {
+                    var text=binding.routeNameText.text.toString()
+                    myDb.document(docId).update(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
+                        Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
+                    }
+                }
+                binding.routeCancleButton.setOnClickListener {
+                    //해당 루트 보기 닫기
+                    binding.apply {
+                        routeSaveButton.visibility=View.GONE
+                        routeCancleButton.visibility=View.GONE
+                        routeNameText.visibility=View.GONE
+                        recyclerView3.visibility = View.GONE
+                        bottomButton.visibility = View.GONE
+                        resetButton.visibility=View.GONE
+                    }
+                }
+                binding.resetButton.setOnClickListener {
+                    //원래대로 되돌리기
+                    binding.routeNameText.setText(docName)
+                    viewLifecycleOwner.lifecycleScope.async{
+                        loadListData.clear()
+                        loadMyRouteData(docId)
+                        myRouteListAdapter.list=loadListData
+                        myRouteListAdapter.notifyDataSetChanged()
+                    }
                 }
             }
             //삭제 버튼을 눌렀을 때 삭제하는 기능
@@ -513,15 +546,22 @@ class MenuFragment3 : Fragment() {
             loadListData.clear()
         }else{ //여행 경로에 장소 추가 모드
             dBinding.editTextText.setText(routeName) //여행 이름 띄우기
-            if(mode=="view"){ //읽기 모드
-                dBinding.apply {
-                    cancleButton2.text="닫기"
-                    saveButton2.text="수정"
-                }
-            }
         }
         dBinding.dialogListView.apply {
-
+            adapter = myRouteListAdapter
+            layoutManager = LinearLayoutManager(context)
+            //롱클릭 드래그로 순서 이동가능
+            val swipeHelperCallback = DragManageAdapter(myRouteListAdapter).apply {
+                // 스와이프한 뒤 고정시킬 위치 지정
+                setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
+            }
+            ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(dBinding.dialogListView)
+            // 구분선 추가
+            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+            dBinding.dialogListView.setOnTouchListener { _, _ ->
+                swipeHelperCallback.removePreviousClamp(dBinding.dialogListView)
+                false
+            }
         }
         val dialog = dialogBuild.show()
         dBinding.cancleButton2.setOnClickListener { //다이어로그의 취소버튼 클릭
@@ -552,38 +592,6 @@ class MenuFragment3 : Fragment() {
                 }
             }
             context?.hideKeyboard(dBinding.root) //키보드내리기
-        }
-        return dialog
-    }
-    private fun showMemoDialog(memo:String):AlertDialog{ //다이어로그로 팝업창 구현
-        val dBinding = MemoEditLayoutBinding.inflate(layoutInflater)
-        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
-        dialogBuild.setTitle("메모")
-        dBinding.apply {
-            memoCancleButton.text="닫기"
-            memoSaveButton.text="수정"
-            if(memo!=""){
-                memoArea.setText(memo)
-                memoArea.inputType=InputType.TYPE_NULL
-            }
-        }
-        val dialog = dialogBuild.show()
-        dBinding.apply {
-            memoSaveButton.setOnClickListener {
-                //수정 버튼 클릭
-                if(memoSaveButton.text=="수정"){
-                    memoSaveButton.text="저장"
-                    memoArea.inputType=InputType.TYPE_TEXT_FLAG_MULTI_LINE
-                }else{//저장 버튼 클릭
-                    //저장 기능
-                    dialog.dismiss()
-                }
-            }
-        }
-
-        dBinding.memoCancleButton.setOnClickListener {
-            //닫기
-            dialog.dismiss()
         }
         return dialog
     }
