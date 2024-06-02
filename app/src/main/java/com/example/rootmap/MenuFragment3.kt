@@ -395,10 +395,12 @@ class MenuFragment3 : Fragment() {
                         myRouteListAdapter.list=loadListData
                         myRouteListAdapter.notifyDataSetChanged()
                     }
-
+                    //삭제 후 다시 띄우기
                     for(doc in label)
                         doc.remove()
                     kakaomap?.shapeManager?.getLayer()?.remove(areaPolyline)
+                    //다시 띄우는 코드
+
                 }
             }
             //삭제 버튼을 눌렀을 때 삭제하는 기능
@@ -417,6 +419,9 @@ class MenuFragment3 : Fragment() {
             if (binding.recyclerView2.getVisibility() == View.GONE){
                 binding.bottomButton.visibility = View.GONE
             }
+            for(doc in label)
+                doc.remove()
+            kakaomap?.shapeManager?.getLayer()?.remove(areaPolyline)
         }
         return binding.root
     }
