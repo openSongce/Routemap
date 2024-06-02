@@ -387,12 +387,15 @@ class MenuFragment3 : Fragment() {
                 binding.routeCancleButton.setOnClickListener {
                     //해당 루트 보기 닫기
                     binding.apply {
+                        if(binding.recyclerView2.getVisibility() == View.GONE){
+                            binding.bottomButton.visibility=View.GONE
+                        }
                         routeSaveButton.visibility=View.GONE
                         routeCancleButton.visibility=View.GONE
                         routeNameText.visibility=View.GONE
                         recyclerView3.visibility = View.GONE
-                        bottomButton.visibility = View.GONE
                         resetButton.visibility=View.GONE
+
                     }
                 }
                 binding.resetButton.setOnClickListener {
