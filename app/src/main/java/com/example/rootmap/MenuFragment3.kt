@@ -34,7 +34,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.FragmentMenu3Binding
 import com.example.rootmap.databinding.MemoEditLayoutBinding
 import com.example.rootmap.databinding.RecyclerviewDialogBinding
-import com.example.rootmap.databinding.RouteOnMapLayoutBinding
 import com.example.rootmap.databinding.RouteaddLayoutBinding
 import com.example.rootmap.databinding.RoutelistLayoutBinding
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -107,7 +106,6 @@ class MenuFragment3 : Fragment() {
     lateinit var listAdapter: RouteListAdapter
     lateinit var routelistAdapter: MyDocumentAdapter
     lateinit var myRouteListAdapter: ListLocationAdapter
-    lateinit var routeOnMap: RouteOnMapAdapter
 
     val db = Firebase.firestore
     lateinit var myDb: CollectionReference
@@ -280,7 +278,6 @@ class MenuFragment3 : Fragment() {
         listAdapter= RouteListAdapter()
         routelistAdapter= MyDocumentAdapter()
         myRouteListAdapter= ListLocationAdapter()
-        routeOnMap = RouteOnMapAdapter()
         myRouteListAdapter.myDb=myDb
 
        //검색 리스트의 클릭 이벤트 구현
@@ -339,47 +336,37 @@ class MenuFragment3 : Fragment() {
             }
             //경로 보기를 눌렀을 때 나오는 목록의 버튼(보기) 클릭시
             override fun onListClick(v: View, position: Int) {
-                val popupMenu = PopupMenu(context, v)
+                dialog.dismiss()
                 var docId=routelistAdapter.list[position].docId
-                 popupMenu.menuInflater.inflate(R.menu.map_list_layout,popupMenu.menu)
-                popupMenu.setOnMenuItemClickListener { item ->
-                   // dialog.dismiss()
-                    var text = when(item.itemId) {
-                        R.id.action_menu1 -> {
-                            //해당 여행지들을 라벨로 찍고 지도에서 연결
+                viewLifecycleOwner.lifecycleScope.async {
+                    Toast.makeText(context, "지도에서 보여주기", Toast.LENGTH_SHORT).show()
+                    loadListData.clear()
+                    loadMyRouteData(docId)
+                    myRouteListAdapter.docId=docId
+                    myRouteListAdapter.list=loadListData
+                    Log.d("Map3loadData", loadListData.toString())
 
-                            viewLifecycleOwner.lifecycleScope.async {
-                                Toast.makeText(context, "지도에서 보여주기", Toast.LENGTH_SHORT).show()
-                                loadListData.clear()
-                                loadMyRouteData(docId)
-                                Log.d("Map3loadData", loadListData.toString())
-                                if (loadListData.isNotEmpty()){
-                                    routeOnMap.list = loadListData
-                                    Log.d("Map3OnMap.list", routeOnMap.list.toString())
-                                    routeOnMap.notifyDataSetChanged()
-                                }
-                                binding.recyclerView3.visibility = View.VISIBLE
-                                binding.bottomButton.visibility = View.VISIBLE
-                                kakaomap!!.setPadding(0,0,0,800)
-                            }
-                        }
-                        R.id.action_menu2 -> {
-                            //팝업창으로 여행지 보여주기
-                            viewLifecycleOwner.lifecycleScope.async {
-                                loadListData.clear()
-                                loadMyRouteData(docId)
-                                myRouteListAdapter.docId=docId
-                                myRouteListAdapter.list=loadListData
-                                listdialog=showListDialog(docId,"view")
-                            }
-                        }
-                        else -> {//게시하기
-                            Toast.makeText(context,"게시판에 올린 태그 선택하는 창 띄우기",Toast.LENGTH_SHORT).show()
-                        }
+                    if (loadListData.isNotEmpty()){
+                        //아직 여행지 없다는 텍스트뷰 출력
                     }
-                    true
+                    binding.recyclerView3.adapter = myRouteListAdapter
+                    binding.recyclerView3.layoutManager = LinearLayoutManager(context)
+                    //롱클릭 드래그로 순서 이동가능
+                    val swipeHelperCallback = DragManageAdapter(myRouteListAdapter).apply {
+                        // 스와이프한 뒤 고정시킬 위치 지정
+                        setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
+                    }
+                    ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(binding.recyclerView3)
+                    // 구분선 추가
+                    binding.recyclerView3.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+                    binding.recyclerView3.setOnTouchListener { _, _ ->
+                        swipeHelperCallback.removePreviousClamp(binding.recyclerView3)
+                        false
+                    }
+                    binding.recyclerView3.visibility = View.VISIBLE
+                    binding.bottomButton.visibility = View.VISIBLE
+                    kakaomap!!.setPadding(0,0,0,800)
                 }
-                popupMenu.show()
             }
             //삭제 버튼을 눌렀을 때 삭제하는 기능
             override fun deleteDoc(v: View, position: Int) {
@@ -395,9 +382,6 @@ class MenuFragment3 : Fragment() {
             binding.recyclerView2.adapter = listAdapter
             binding.recyclerView2.layoutManager = LinearLayoutManager(context)
 
-            routeOnMap.list = loadListData
-            binding.recyclerView3.adapter = routeOnMap
-            binding.recyclerView3.layoutManager = LinearLayoutManager(context)
         }
         super.onViewCreated(view, savedInstanceState)
     }
@@ -537,20 +521,7 @@ class MenuFragment3 : Fragment() {
             }
         }
         dBinding.dialogListView.apply {
-            adapter = myRouteListAdapter
-            layoutManager = LinearLayoutManager(context)
-            //롱클릭 드래그로 순서 이동가능
-                val swipeHelperCallback = DragManageAdapter(myRouteListAdapter).apply {
-                    // 스와이프한 뒤 고정시킬 위치 지정
-                    setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
-                }
-                ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(dBinding.dialogListView)
-            // 구분선 추가
-            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
-            dBinding.dialogListView.setOnTouchListener { _, _ ->
-                swipeHelperCallback.removePreviousClamp(dBinding.dialogListView)
-                false
-            }
+
         }
         val dialog = dialogBuild.show()
         dBinding.cancleButton2.setOnClickListener { //다이어로그의 취소버튼 클릭
