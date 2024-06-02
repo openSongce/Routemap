@@ -39,7 +39,6 @@ class RouteMapViewActivity : AppCompatActivity() {
             var dataList = mutableListOf<Map<String, *>>()
             var data: MutableMap<*, *>
             var glist = mutableListOf<GeoPoint>()
-            var nlist = mutableListOf<String>()
 
             myDb = db.collection("user").document(intent.getStringExtra("id").toString())
                 .collection("route")
