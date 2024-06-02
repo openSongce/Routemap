@@ -280,6 +280,7 @@ class MenuFragment3 : Fragment() {
         listAdapter= RouteListAdapter()
         routelistAdapter= MyDocumentAdapter()
         myRouteListAdapter= ListLocationAdapter()
+        routeOnMap = RouteOnMapAdapter()
         myRouteListAdapter.myDb=myDb
 
        //검색 리스트의 클릭 이벤트 구현
@@ -330,7 +331,6 @@ class MenuFragment3 : Fragment() {
                 //해당 장소를 추가하기위해 새로운 팝업창 띄우기
                 viewLifecycleOwner.lifecycleScope.async {
                     loadListData.clear()
-                    myRouteListAdapter= ListLocationAdapter()
                     loadMyRouteData(docId)
                     loadListData.add(MyLocation(clickLocationName,clickLocationAdress,"","")) //해당 장소를 리스트에 추가
                     myRouteListAdapter.list=loadListData
@@ -351,7 +351,6 @@ class MenuFragment3 : Fragment() {
                             viewLifecycleOwner.lifecycleScope.async {
                                 Toast.makeText(context, "지도에서 보여주기", Toast.LENGTH_SHORT).show()
                                 loadListData.clear()
-                                routeOnMap = RouteOnMapAdapter()
                                 loadMyRouteData(docId)
                                 Log.d("Map3loadData", loadListData.toString())
                                 if (loadListData.isNotEmpty()){
@@ -368,7 +367,6 @@ class MenuFragment3 : Fragment() {
                             //팝업창으로 여행지 보여주기
                             viewLifecycleOwner.lifecycleScope.async {
                                 loadListData.clear()
-                                myRouteListAdapter= ListLocationAdapter()
                                 loadMyRouteData(docId)
                                 myRouteListAdapter.docId=docId
                                 myRouteListAdapter.list=loadListData
