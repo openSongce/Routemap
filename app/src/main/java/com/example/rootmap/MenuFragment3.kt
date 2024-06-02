@@ -597,7 +597,7 @@ class MenuFragment3 : Fragment() {
                     Toast.makeText(context,"제목을 입력하세요.",Toast.LENGTH_SHORT).show()
                 }else{
                     //아래 형식으로 저장
-                    myDb.document(text).set(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
+                    myDb.document().set(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
                         dialog.dismiss()
                         Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
                     }
