@@ -16,4 +16,15 @@ interface WeatherApiService {
         @Query("nx") nx: Int,
         @Query("ny") ny: Int
     ): Call<WeatherResponse>
+    @GET("getVilageFcst")
+    fun getVilageFcst(
+        @Query("serviceKey") serviceKey: String,
+        @Query("numOfRows") numOfRows: Int,
+        @Query("pageNo") pageNo: Int,
+        @Query("dataType") dataType: String = "XML",
+        @Query("base_date") baseDate: String,
+        @Query("base_time") baseTime: String,
+        @Query("nx") nx: Int,
+        @Query("ny") ny: Int
+    ): Call<WeatherResponse>
 }

@@ -165,13 +165,12 @@ class MenuFragment : Fragment() {
         return binding.root
     }
 
-    /*
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             fetchLocation()
         }
-    }*/
+    }
 
     private fun setupButton(button: Button, contentTypeId: Int) {
         button.setOnClickListener {
@@ -383,6 +382,7 @@ class MenuFragment : Fragment() {
         Log.d("WEATHER_REQUEST", "Request URL: https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=your_service_key&numOfRows=10&pageNo=1&dataType=XML&base_date=$baseDate&base_time=$baseTime&nx=$nx&ny=$ny")
         Log.d("WEATHER_REQUEST", "Request Parameters: baseDate=$baseDate, baseTime=$baseTime, nx=$nx, ny=$ny")
 
+        // 초단기 실황 -> 현재기온
         weatherApiService.getUltraSrtNcst(
             serviceKey = "oX0uqL6VzriCMyNDlwDB23W4%2Bb9mn8EPDaqry2QN4hO9qaQCMH5oQOhK9oIi92TiDYQ6vAY9nv9XDubAGOdugw%3D%3D",
             numOfRows = 10,
@@ -418,20 +418,75 @@ class MenuFragment : Fragment() {
                 updateWeatherInfo(null, city) // 도시 이름은 업데이트하지만 온도는 없음
             }
         })
-    }
 
+        // 단기 예보
+        weatherApiService.getVilageFcst(
+            serviceKey = "oX0uqL6VzriCMyNDlwDB23W4%2Bb9mn8EPDaqry2QN4hO9qaQCMH5oQOhK9oIi92TiDYQ6vAY9nv9XDubAGOdugw%3D%3D",
+            numOfRows = 50,
+            pageNo = 1,
+            dataType = "XML",
+            baseDate = baseDate,
+            baseTime = "0200",  // 단기 예보의 baseTime은 0200 고정
+            nx = nx,
+            ny = ny
+        ).enqueue(object : Callback<WeatherResponse> {
+            override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
+                if (response.isSuccessful) {
+                    Log.d("WEATHER_RESPONSE", "Short-term Forecast: ${response.body().toString()}")
+                    val items = response.body()?.body?.items?.item
+                    val tmx = items?.find { it.category == "TMX" }?.fcstValue
+                    val tmn = items?.find { it.category == "TMN" }?.fcstValue
+                    val sky = items?.find { it.category == "SKY" }?.fcstValue
+
+                    Log.d("WEATHER_SUCCESS", "Today's Temperature: TMX: ${tmx ?: "null"}, TMN: ${tmn ?: "null"}")
+                    updateShortTermWeatherInfo(tmx, tmn)
+
+                    Log.d("WEATHER_SUCCESS", "Sky Condition: ${sky ?: "null"}")
+                    updateSkyInfo(sky)
+                } else {
+                    Log.e("WEATHER_ERROR", "Short-term Forecast Response code: ${response.code()}")
+                    Log.e("WEATHER_ERROR_BODY", response.errorBody()?.string() ?: "No error body")
+                    updateShortTermWeatherInfo(null, null)
+                    updateSkyInfo(null)
+                }
+            }
+
+            override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                Log.e("WEATHER_FAILURE", "Failed to fetch short-term forecast data", t)
+                updateShortTermWeatherInfo(null, null)
+                updateSkyInfo(null)
+            }
+        })
+    }
 
     private fun updateWeatherInfo(temp: String?, city: String) {
         val tvNowCelsius = binding.root.findViewById<TextView>(R.id.tvNowCelsius)
         val tvLocation = binding.root.findViewById<TextView>(R.id.tvLocation)
 
-        Log.d("WEATHER_UPDATE", "Updating temperature to $temp° for city $city")
+        Log.d("WEATHER_UPDATE", "Updating temperature to ${temp ?: "null"}° for city $city")
 
-        tvNowCelsius.text = "$temp°"
-        tvLocation.text = "$city"
+        tvNowCelsius.text = temp?.let { "$it°" } ?: "null"
+        tvLocation.text = city
     }
 
 
+    private fun updateSkyInfo(skyValue: String?) {
+        val tvSkyCondition = binding.root.findViewById<TextView>(R.id.tvSkyCondition)
+        val skyCondition = when (skyValue) {
+            "1" -> "맑음"
+            "2" -> "구름 조금"
+            "3" -> "구름 많음"
+            "4" -> "흐림"
+            else -> "null"
+        }
+        Log.d("WEATHER_UPDATE", "Updating sky condition to $skyCondition")
+        tvSkyCondition.text = "하늘: $skyCondition"
+    }
+    private fun updateShortTermWeatherInfo(tmx: String?, tmn: String?) {
+        val tvTodayCelsius = binding.root.findViewById<TextView>(R.id.tvTodayCelsius)
+        Log.d("WEATHER_UPDATE", "Updating today's temperature: TMX: ${tmx ?: "null"}°, TMN: ${tmn ?: "null"}°")
+        tvTodayCelsius.text = "최고: ${tmx ?: "null"}°/최저: ${tmn ?: "null"}°"
+    }
 
     companion object {
         @JvmStatic
