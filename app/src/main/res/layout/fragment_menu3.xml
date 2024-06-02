@@ -109,12 +109,12 @@
             android:src="@drawable/search"
             android:visibility="gone"
 
-            app:layout_constraintEnd_toStartOf="@+id/listButton"
-            android:layout_marginEnd="5dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="70dp"
             android:layout_marginBottom="5dp"
             app:layout_constraintBottom_toTopOf="@+id/bottom_button"
             android:scaleType="fitCenter"
-            android:tint="@color/selected_button_text"
+            app:tint="@color/selected_button_text"
             android:background="@color/custum_color" />
 
     <ImageButton
@@ -125,6 +125,22 @@
             android:scaleType="fitCenter"
             android:background="@color/custum_color"
             app:tint="@color/white"
+            android:visibility="visible"
+
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_button" />
+
+    <ImageButton
+            android:src="@drawable/route_close"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:id="@+id/listCloseButton"
+            android:scaleType="fitCenter"
+            android:background="@color/custum_color"
+            app:tint="@color/white"
+            android:visibility="gone"
 
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="5dp"

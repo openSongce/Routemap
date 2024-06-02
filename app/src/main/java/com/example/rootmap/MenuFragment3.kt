@@ -337,25 +337,27 @@ class MenuFragment3 : Fragment() {
                     showListDialog(docId,"add")
                 }
             }
-            //경로 보기를 눌렀을 때 나오는 목록의 버튼(보기) 클릭시
+            //경로 보기를 눌렀을 때 나오는 목록의 버튼(보기) 클릭시 // 경로 및 핀표시 추가
             override fun onListClick(v: View, position: Int) {
                 dialog.dismiss()
                 var docId=routelistAdapter.list[position].docId
                 var docName=routelistAdapter.list[position].docName
                 var preData:List<MyLocation>
                 viewLifecycleOwner.lifecycleScope.async {
-                    Toast.makeText(context, "지도에서 보여주기", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(context, "지도에서 보여주기", Toast.LENGTH_SHORT).show()
                     loadListData.clear()
                     loadMyRouteData(docId)
                     myRouteListAdapter.docId=docId
                     myRouteListAdapter.list=loadListData
 
 
-
+/*
                     val intent = Intent(context, RouteMapViewActivity::class.java)
                     intent.putExtra("id", currentId)
                     intent.putExtra("routeId",docId)
                     startActivity(intent)
+
+ */
 
                     if (loadListData.isNotEmpty()){
                         //아직 여행지 없다는 텍스트뷰 출력
@@ -376,6 +378,10 @@ class MenuFragment3 : Fragment() {
                     }
                     kakaomap!!.setPadding(0,0,0,800)
                     makeLine(kakaomap!!,loadListData)
+
+                    binding.listButton.visibility = View.GONE
+                    binding.listCloseButton.visibility = View.VISIBLE
+
                 }
                 binding.apply {
                     routeSaveButton.visibility=View.VISIBLE
@@ -423,6 +429,15 @@ class MenuFragment3 : Fragment() {
                 myDb.document(docId).delete()
             }
         })
+        binding.listCloseButton.setOnClickListener(){//지도에서경로보기 끄는버튼 // 경로지우기 추가
+            binding.listCloseButton.visibility = View.GONE
+            binding.listButton.visibility = View.VISIBLE
+            binding.recyclerView3.visibility = View.GONE
+            if (binding.recyclerView2.getVisibility() == View.GONE){
+                binding.bottomButton.visibility = View.GONE
+            }
+        }
+
         return binding.root
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
