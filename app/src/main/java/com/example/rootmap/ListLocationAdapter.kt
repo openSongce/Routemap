@@ -43,17 +43,24 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
     override fun getItemCount(): Int {
         return list.size
     }
+    fun removeData(position: Int) {
+        list.removeAt(position)
+        notifyItemRemoved(position)
+    }
+    fun swapData(fromPos: Int, toPos: Int) {
+        Collections.swap(list, fromPos, toPos)
+        notifyItemMoved(fromPos, toPos)
+    }
     inner class Holder(
         val binding: LocationListLayoutBinding
     ) :
         RecyclerView.ViewHolder(binding.root) {
+      //  fun bind
+
         fun setData(myLocation: MyLocation,position: Int) {
             var memo=myLocation.memo
             var spending=myLocation.spending
             binding.triplocationName.text=myLocation.name
-            binding.tvRemove.setOnClickListener {
-                removeData(position)
-            }
             binding.memoText.text=memo
             binding.costText.text=spending
             binding.textViewOptions.setOnClickListener {
@@ -73,6 +80,9 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                 popup.show()
 
 
+            }
+            binding.tvRemove.setOnClickListener {
+                removeData(this.layoutPosition)
             }
 
         }
@@ -95,7 +105,7 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                         var text=memoArea.text.toString()
                     if(memo!=text){ //내용 수정이 된 경우
                         list[position].memo=text
-                        notifyDataSetChanged()
+                      //  notifyDataSetChanged()
                     }
                   dialog.dismiss()
                 }
@@ -106,17 +116,9 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
             }
             return dialog
         }
-        fun removeData(position: Int) {
-            list.removeAt(position)
-            notifyItemRemoved(position)
-        }
 
     }
     // 현재 선택된 데이터와 드래그한 위치에 있는 데이터를 교환
-    fun swapData(fromPos: Int, toPos: Int) {
-        Collections.swap(list, fromPos, toPos)
-        notifyItemMoved(fromPos, toPos)
-    }
 
     interface OnItemClickListener {
         fun onClick(v: View, position: Int, textViewOptions: TextView)
@@ -145,8 +147,8 @@ class DragManageAdapter(private var recyclerViewAdapter : ListLocationAdapter) :
         viewHolder: RecyclerView.ViewHolder,
         target: RecyclerView.ViewHolder
     ): Boolean {
-        val fromPos: Int = viewHolder.adapterPosition
-        val toPos: Int = target.adapterPosition
+        val fromPos: Int = viewHolder.getAbsoluteAdapterPosition()
+        val toPos: Int = target.getAbsoluteAdapterPosition()
         recyclerViewAdapter.swapData(fromPos, toPos)
         return true
     }
@@ -155,15 +157,16 @@ class DragManageAdapter(private var recyclerViewAdapter : ListLocationAdapter) :
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
         currentDx = 0f                                      // 현재 x 위치 초기화
-        previousPosition = viewHolder.adapterPosition       // 드래그 또는 스와이프 동작이 끝난 view의 position 기억하기
+        previousPosition = viewHolder.getAbsoluteAdapterPosition()       // 드래그 또는 스와이프 동작이 끝난 view의 position 기억하기
         getDefaultUIUtil().clearView(getView(viewHolder))
     }
 
     // ItemTouchHelper가 ViewHolder를 스와이프 되었거나 드래그 되었을 때 호출
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         viewHolder?.let {
-            currentPosition = viewHolder.adapterPosition    // 현재 드래그 또는 스와이프 중인 view 의 position 기억하기
+            currentPosition = viewHolder.getAbsoluteAdapterPosition()    // 현재 드래그 또는 스와이프 중인 view 의 position 기억하기
             getDefaultUIUtil().onSelected(getView(it))
+
         }
     }
 
