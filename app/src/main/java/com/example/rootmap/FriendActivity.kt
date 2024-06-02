@@ -34,7 +34,7 @@ class FriendActivity : AppCompatActivity() {
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = tabTitle[position]
         }.attach()
-        binding.button2.setOnClickListener { //뒤로가기 버튼
+        binding.backButton.setOnClickListener { //뒤로가기 버튼
             super.onBackPressed()
         }
     }
