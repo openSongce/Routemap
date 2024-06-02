@@ -379,13 +379,12 @@ class MenuFragment3 : Fragment() {
                     kakaomap!!.setPadding(0,0,0,800)
                     makeLine(kakaomap!!,loadListData)
 
-                    binding.listButton.visibility = View.GONE
+                    binding.listButton.visibility = View.INVISIBLE
                     binding.listCloseButton.visibility = View.VISIBLE
 
                 }
                 binding.apply {
                     routeSaveButton.visibility=View.VISIBLE
-                    routeCancleButton.visibility=View.VISIBLE
                     routeNameText.visibility=View.VISIBLE
                     recyclerView3.visibility = View.VISIBLE
                     bottomButton.visibility = View.VISIBLE
@@ -396,20 +395,6 @@ class MenuFragment3 : Fragment() {
                     var text=binding.routeNameText.text.toString()
                     myDb.document(docId).update(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
                         Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
-                    }
-                }
-                binding.routeCancleButton.setOnClickListener {
-                    //해당 루트 보기 닫기
-                    binding.apply {
-                        if(binding.recyclerView2.getVisibility() == View.GONE){
-                            binding.bottomButton.visibility=View.GONE
-                        }
-                        routeSaveButton.visibility=View.GONE
-                        routeCancleButton.visibility=View.GONE
-                        routeNameText.visibility=View.GONE
-                        recyclerView3.visibility = View.GONE
-                        resetButton.visibility=View.GONE
-
                     }
                 }
                 binding.resetButton.setOnClickListener {
@@ -429,15 +414,17 @@ class MenuFragment3 : Fragment() {
                 myDb.document(docId).delete()
             }
         })
-        binding.listCloseButton.setOnClickListener(){//지도에서경로보기 끄는버튼 // 경로지우기 추가
+        binding.listCloseButton.setOnClickListener{//지도에서경로보기 끄는버튼 // 경로지우기 추가
             binding.listCloseButton.visibility = View.GONE
             binding.listButton.visibility = View.VISIBLE
             binding.recyclerView3.visibility = View.GONE
+            binding.resetButton.visibility=View.GONE
+            binding.routeNameText.visibility=View.GONE
+            binding.routeSaveButton.visibility=View.GONE
             if (binding.recyclerView2.getVisibility() == View.GONE){
                 binding.bottomButton.visibility = View.GONE
             }
         }
-
         return binding.root
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -448,10 +435,6 @@ class MenuFragment3 : Fragment() {
 
         }
         super.onViewCreated(view, savedInstanceState)
-    }
-     override fun onPause() {
-        super.onPause()
-         //fusedLocationProviderClient.removeLocationUpdates(locationCallback)
     }
     fun Context.hideKeyboard(view: View) {
         val inputMethodManager =
