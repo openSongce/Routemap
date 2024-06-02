@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.graphics.Point
 import android.location.Location
 import android.location.LocationRequest
@@ -345,6 +346,11 @@ class MenuFragment3 : Fragment() {
                     myRouteListAdapter.docId=docId
                     myRouteListAdapter.list=loadListData
                     Log.d("Map3loadData", loadListData.toString())
+
+                    val intent = Intent(context, RouteMapViewActivity::class.java)
+                    intent.putExtra("id", currentId)
+                    intent.putExtra("routeId",docId)
+                    startActivity(intent)
 
                     if (loadListData.isNotEmpty()){
                         //아직 여행지 없다는 텍스트뷰 출력
