@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.graphics.Point
 import android.location.Location
 import android.location.LocationRequest
@@ -341,7 +342,10 @@ class MenuFragment3 : Fragment() {
                         R.id.action_menu1 -> {
                             //해당 여행지들을 라벨로 찍고 지도에서 연결
 
-                            Toast.makeText(context,"지도에서 보여주기",Toast.LENGTH_SHORT).show()
+                            val intent = Intent(context, RouteMapViewActivity::class.java)
+                            intent.putExtra("id", currentId)
+                            intent.putExtra("routeId",docId)
+                            startActivity(intent)
                         }
                         R.id.action_menu2 -> {
                             //팝업창으로 여행지 보여주기
