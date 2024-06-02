@@ -34,6 +34,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.FragmentMenu3Binding
 import com.example.rootmap.databinding.MemoEditLayoutBinding
 import com.example.rootmap.databinding.RecyclerviewDialogBinding
+import com.example.rootmap.databinding.RouteOnMapLayoutBinding
 import com.example.rootmap.databinding.RouteaddLayoutBinding
 import com.example.rootmap.databinding.RoutelistLayoutBinding
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -106,6 +107,7 @@ class MenuFragment3 : Fragment() {
     lateinit var listAdapter: RouteListAdapter
     lateinit var routelistAdapter: MyDocumentAdapter
     lateinit var myRouteListAdapter: ListLocationAdapter
+    lateinit var routeOnMap: RouteOnMapAdapter
 
     val db = Firebase.firestore
     lateinit var myDb: CollectionReference
@@ -239,14 +241,18 @@ class MenuFragment3 : Fragment() {
         binding.disButton.setOnClickListener {
             if (binding.recyclerView2.getVisibility() == View.VISIBLE){
                 binding.recyclerView2.visibility=View.GONE
+                if(binding.recyclerView3.getVisibility() == View.GONE){
+                    binding.bottomButton.visibility=View.GONE
+                    kakaomap!!.setPadding(0,0,0,0)
+                }
                 binding.disButton.setText("↑")
-                kakaomap!!.setPadding(0,0,0,0)
                 Log.d("Map3padding", kakaomap!!.padding.toString())
             }
             else{
                 binding.recyclerView2.visibility=View.VISIBLE
+                binding.bottomButton.visibility=View.VISIBLE
                 binding.disButton.setText("↓")
-                kakaomap!!.setPadding(0,0,0,900)
+                kakaomap!!.setPadding(0,0,0,800)
                 Log.d("Map3padding", kakaomap!!.padding.toString())
             }
         }
@@ -259,10 +265,11 @@ class MenuFragment3 : Fragment() {
                     Toast.makeText(context, "빈칸입니다.", Toast.LENGTH_SHORT).show()
                 }else{
                     binding.recyclerView2.visibility=View.VISIBLE
+                    binding.bottomButton.visibility=View.VISIBLE
                     binding.disButton.visibility=View.VISIBLE
                     binding.disButton.setText("↓")
                     searchKeyword(searchText)
-                    kakaomap!!.setPadding(0,0,0,900)
+                    kakaomap!!.setPadding(0,0,0,800)
                     //kakaomap!!.setViewport(0, 0, widthPixel, heightPixel-900)
                     Log.d("Map3padding", kakaomap!!.padding.toString())
                 }
@@ -341,7 +348,21 @@ class MenuFragment3 : Fragment() {
                         R.id.action_menu1 -> {
                             //해당 여행지들을 라벨로 찍고 지도에서 연결
 
-                            Toast.makeText(context,"지도에서 보여주기",Toast.LENGTH_SHORT).show()
+                            viewLifecycleOwner.lifecycleScope.async {
+                                Toast.makeText(context, "지도에서 보여주기", Toast.LENGTH_SHORT).show()
+                                loadListData.clear()
+                                routeOnMap = RouteOnMapAdapter()
+                                loadMyRouteData(docId)
+                                Log.d("Map3loadData", loadListData.toString())
+                                if (loadListData.isNotEmpty()){
+                                    routeOnMap.list = loadListData
+                                    Log.d("Map3OnMap.list", routeOnMap.list.toString())
+                                    routeOnMap.notifyDataSetChanged()
+                                }
+                                binding.recyclerView3.visibility = View.VISIBLE
+                                binding.bottomButton.visibility = View.VISIBLE
+                                kakaomap!!.setPadding(0,0,0,800)
+                            }
                         }
                         R.id.action_menu2 -> {
                             //팝업창으로 여행지 보여주기
@@ -375,6 +396,10 @@ class MenuFragment3 : Fragment() {
             listAdapter.list=locationData
             binding.recyclerView2.adapter = listAdapter
             binding.recyclerView2.layoutManager = LinearLayoutManager(context)
+
+            routeOnMap.list = loadListData
+            binding.recyclerView3.adapter = routeOnMap
+            binding.recyclerView3.layoutManager = LinearLayoutManager(context)
         }
         super.onViewCreated(view, savedInstanceState)
     }
@@ -422,6 +447,7 @@ class MenuFragment3 : Fragment() {
                 locationData.add(item)
             }
             listAdapter.list=locationData
+            Log.d("Map3searchlist", listAdapter.list.toString())
             listAdapter.notifyDataSetChanged()
         } else {
 // 검색 결과 없음
@@ -443,7 +469,7 @@ class MenuFragment3 : Fragment() {
             list
         }
     }
-    suspend fun loadMyRouteData(id:String): Boolean {
+   suspend fun loadMyRouteData(id:String): Boolean {
         var dataList= mutableListOf<Map<String,*>>()
         return try {
             var data: MutableMap<*, *>
