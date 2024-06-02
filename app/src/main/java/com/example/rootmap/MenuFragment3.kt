@@ -345,6 +345,8 @@ class MenuFragment3 : Fragment() {
                     myRouteListAdapter.docId=docId
                     myRouteListAdapter.list=loadListData
 
+
+
                     val intent = Intent(context, RouteMapViewActivity::class.java)
                     intent.putExtra("id", currentId)
                     intent.putExtra("routeId",docId)
