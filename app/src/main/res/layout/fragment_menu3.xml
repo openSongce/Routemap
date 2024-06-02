@@ -73,10 +73,10 @@
             android:layout_height="wrap_content"
             android:id="@+id/resetButton"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/routeCancleButton"
             android:layout_marginEnd="10dp"
             android:backgroundTint="@color/custum_color"
-            android:visibility="gone" />
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/routeSaveButton" />
 
     <Button
             android:text="저장"
@@ -88,18 +88,6 @@
             android:layout_marginBottom="10dp"
             android:layout_marginEnd="10dp"
             android:backgroundTint="@color/black"
-            android:visibility="gone" />
-
-    <Button
-            android:text="닫기"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/routeCancleButton"
-            app:layout_constraintBottom_toTopOf="@+id/routeSaveButton"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="10dp"
-            android:backgroundTint="@color/gray"
-            android:textColor="@color/black"
             android:visibility="gone" />
 
     <ImageButton
@@ -140,12 +128,12 @@
             android:scaleType="fitCenter"
             android:background="@color/custum_color"
             app:tint="@color/white"
-            android:visibility="gone"
 
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="5dp"
             android:layout_marginBottom="5dp"
-            app:layout_constraintBottom_toTopOf="@+id/bottom_button" />
+            app:layout_constraintBottom_toTopOf="@+id/bottom_button"
+            android:visibility="gone" />
 
     <ImageButton
             android:src="@drawable/location"

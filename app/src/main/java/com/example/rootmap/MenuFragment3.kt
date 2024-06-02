@@ -5,25 +5,16 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
-import android.graphics.Point
 import android.location.Location
 import android.location.LocationRequest
-import android.os.Build
 import android.os.Bundle
-import android.text.InputType
 import android.util.Log
-import android.view.FocusFinder
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.widget.PopupMenu
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,10 +25,8 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.FragmentMenu3Binding
-import com.example.rootmap.databinding.MemoEditLayoutBinding
 import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.example.rootmap.databinding.RouteaddLayoutBinding
-import com.example.rootmap.databinding.RoutelistLayoutBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -60,7 +49,9 @@ import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
 import com.kakao.vectormap.label.LabelTextStyle
+import com.kakao.vectormap.label.LodLabel
 import com.kakao.vectormap.shape.MapPoints
+import com.kakao.vectormap.shape.Polyline
 import com.kakao.vectormap.shape.PolylineOptions
 import com.kakao.vectormap.shape.PolylineStyle
 import kotlinx.coroutines.async
@@ -70,12 +61,6 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.lang.reflect.Type
-import java.net.HttpURLConnection
-import java.net.URL
-import java.nio.charset.Charset
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -106,6 +91,8 @@ class MenuFragment3 : Fragment() {
     private var locationRequest: LocationRequest? = null
     private val locationCallback: LocationCallback?=null
     private lateinit var makerList:MutableList<LatLng>
+    var label = arrayOf<LodLabel>()
+    var areaPolyline:Polyline?=null
 
     val locationData: MutableList<SearchLocation> = mutableListOf()
     val loadListData: MutableList<MyLocation> = mutableListOf()
@@ -379,13 +366,12 @@ class MenuFragment3 : Fragment() {
                     kakaomap!!.setPadding(0,0,0,800)
                     makeLine(kakaomap!!,loadListData)
 
-                    binding.listButton.visibility = View.GONE
+                    binding.listButton.visibility = View.INVISIBLE
                     binding.listCloseButton.visibility = View.VISIBLE
 
                 }
                 binding.apply {
                     routeSaveButton.visibility=View.VISIBLE
-                    routeCancleButton.visibility=View.VISIBLE
                     routeNameText.visibility=View.VISIBLE
                     recyclerView3.visibility = View.VISIBLE
                     bottomButton.visibility = View.VISIBLE
@@ -397,20 +383,8 @@ class MenuFragment3 : Fragment() {
                     myDb.document(docId).update(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
                         Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
                     }
-                }
-                binding.routeCancleButton.setOnClickListener {
-                    //해당 루트 보기 닫기
-                    binding.apply {
-                        if(binding.recyclerView2.getVisibility() == View.GONE){
-                            binding.bottomButton.visibility=View.GONE
-                        }
-                        routeSaveButton.visibility=View.GONE
-                        routeCancleButton.visibility=View.GONE
-                        routeNameText.visibility=View.GONE
-                        recyclerView3.visibility = View.GONE
-                        resetButton.visibility=View.GONE
 
-                    }
+
                 }
                 binding.resetButton.setOnClickListener {
                     //원래대로 되돌리기
@@ -421,6 +395,12 @@ class MenuFragment3 : Fragment() {
                         myRouteListAdapter.list=loadListData
                         myRouteListAdapter.notifyDataSetChanged()
                     }
+                    //삭제 후 다시 띄우기
+                    for(doc in label)
+                        doc.remove()
+                    kakaomap?.shapeManager?.getLayer()?.remove(areaPolyline)
+                    //다시 띄우는 코드
+
                 }
             }
             //삭제 버튼을 눌렀을 때 삭제하는 기능
@@ -429,15 +409,20 @@ class MenuFragment3 : Fragment() {
                 myDb.document(docId).delete()
             }
         })
-        binding.listCloseButton.setOnClickListener(){//지도에서경로보기 끄는버튼 // 경로지우기 추가
+        binding.listCloseButton.setOnClickListener{//지도에서경로보기 끄는버튼 // 경로지우기 추가
             binding.listCloseButton.visibility = View.GONE
             binding.listButton.visibility = View.VISIBLE
             binding.recyclerView3.visibility = View.GONE
+            binding.resetButton.visibility=View.GONE
+            binding.routeNameText.visibility=View.GONE
+            binding.routeSaveButton.visibility=View.GONE
             if (binding.recyclerView2.getVisibility() == View.GONE){
                 binding.bottomButton.visibility = View.GONE
             }
+            for(doc in label)
+                doc.remove()
+            kakaomap?.shapeManager?.getLayer()?.remove(areaPolyline)
         }
-
         return binding.root
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -448,10 +433,6 @@ class MenuFragment3 : Fragment() {
 
         }
         super.onViewCreated(view, savedInstanceState)
-    }
-     override fun onPause() {
-        super.onPause()
-         //fusedLocationProviderClient.removeLocationUpdates(locationCallback)
     }
     fun Context.hideKeyboard(view: View) {
         val inputMethodManager =
@@ -475,9 +456,9 @@ class MenuFragment3 : Fragment() {
                 latLngList.add(lanLng)
                 cnt++
             }
-            kakaomap.shapeManager!!.layer.addPolyline(getAreaOptions(latLngList)!!)
+            areaPolyline = kakaomap.shapeManager!!.layer.addPolyline(getAreaOptions(latLngList)!!)
             var testlayer= kakaomap!!.getLabelManager()?.getLodLayer();
-            testlayer?.addLodLabels(labels)
+            label = testlayer!!.addLodLabels(labels)
             //첫 위치 기준으로 카메라 이동
             kakaomap.moveCamera(
                 CameraUpdateFactory.newCenterPosition(
