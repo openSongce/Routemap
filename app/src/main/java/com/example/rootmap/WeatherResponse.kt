@@ -57,6 +57,15 @@ data class WeatherItem(
     @field:Element(name = "category", required = false)
     var category: String? = null,
 
+    @field:Element(name = "fcstDate", required = false)
+    var fcstDate: String? = null,
+
+    @field:Element(name = "fcstTime", required = false)
+    var fcstTime: String? = null,
+
+    @field:Element(name = "fcstValue", required = false)
+    var fcstValue: String? = null,
+
     @field:Element(name = "nx", required = false)
     var nx: Int? = null,
 
