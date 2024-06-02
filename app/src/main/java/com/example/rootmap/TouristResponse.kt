@@ -55,3 +55,23 @@ data class TouristItem(
 
     var isLiked: Boolean = false
 )
+
+@Root(name = "response", strict = false)
+data class TouristItemResponse(
+    @field:Element(name = "header", required = false)
+    var header: Header? = null,
+    @field:Element(name = "body", required = false)
+    var body: BodyItem? = null
+)
+
+@Root(name = "body", strict = false)
+data class BodyItem(
+    @field:Element(name = "items", required = false)
+    var items: ItemsItem? = null
+)
+
+@Root(name = "items", strict = false)
+data class ItemsItem(
+    @field:Element(name = "item", required = false)
+    var item: TouristItem? = null
+)
