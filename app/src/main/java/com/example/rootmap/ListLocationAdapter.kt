@@ -54,29 +54,15 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
             binding.tvRemove.setOnClickListener {
                 removeData(position)
             }
-            if(memo!="") {
-                binding.memoText.apply {
-                    text=memo
-                    visibility=View.VISIBLE
-                }
-            }
-            if(spending!=""){
-                binding.costText.apply {
-                    text=spending
-                    visibility=View.VISIBLE
-                }
-            }
+            binding.memoText.text=memo
+            binding.costText.text=spending
             binding.textViewOptions.setOnClickListener {
                 val popup = PopupMenu(binding.textViewOptions.context, binding.textViewOptions)
                 popup.inflate(R.menu.recyclerview_item_menu)
                 popup.setOnMenuItemClickListener { item ->
                     when (item.itemId) {
                         R.id.memo -> { //메모 클릭
-                            memo = showMemoDialog(memo)
-                            list[position].memo = memo
-                            //myDb.document(docId).update(hashMapOf("tripname" to memo.toString(),)).addOnSuccessListener {
-//
-                           // }
+                           showMemoDialog(memo,position)
                         }
                         else -> { //금액 클릭
                             Toast.makeText(binding.textViewOptions.context, "금액", Toast.LENGTH_SHORT).show()
@@ -90,39 +76,35 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
             }
 
         }
-        private fun showMemoDialog(memo:String): String { //다이어로그로 팝업창 구현
+        private fun showMemoDialog(memo:String,position: Int): AlertDialog { //다이어로그로 팝업창 구현
             val dBinding = MemoEditLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             val dialogBuild = AlertDialog.Builder(parent.context).setView(dBinding.root)
             dialogBuild.setTitle("메모")
-            var text=dBinding.memoArea.text.toString()
             dBinding.apply {
                 memoCancleButton.text="닫기"
-                memoSaveButton.text="수정"
+                memoSaveButton.text="확인"
                 if(memo!=""){
                    memoArea.setText(memo)
-                   // memoArea.isFocusableInTouchMode=false
                 }
             }
             val dialog = dialogBuild.show()
             dBinding.apply {
                 memoSaveButton.setOnClickListener {
-                    //수정 버튼 클릭
-                    if(memoSaveButton.text=="수정"){
-                        memoSaveButton.text="저장"
-                        memoArea.isFocusableInTouchMode=true
-                    }else{//저장 버튼 클릭
+                    //확인 버튼 클릭
                         //저장 기능
-                        text=memoArea.text.toString()
-                        memoArea.isFocusableInTouchMode=false
-                        dialog.dismiss()
+                        var text=memoArea.text.toString()
+                    if(memo!=text){ //내용 수정이 된 경우
+                        list[position].memo=text
+                        notifyDataSetChanged()
                     }
+                  dialog.dismiss()
                 }
             }
             dBinding.memoCancleButton.setOnClickListener {
                 //닫기
                 dialog.dismiss()
             }
-            return text
+            return dialog
         }
         fun removeData(position: Int) {
             list.removeAt(position)
