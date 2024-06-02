@@ -65,7 +65,7 @@
             app:layout_constraintEnd_toStartOf="@+id/listButton"
             android:layout_marginEnd="5dp"
             android:layout_marginBottom="5dp"
-            app:layout_constraintBottom_toTopOf="@+id/recyclerView2" />
+            app:layout_constraintBottom_toTopOf="@+id/bottom_button" />
 
     <ImageButton
             android:src="@drawable/route"
@@ -79,7 +79,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="5dp"
             android:layout_marginBottom="5dp"
-            app:layout_constraintBottom_toTopOf="@+id/recyclerView2" />
+            app:layout_constraintBottom_toTopOf="@+id/bottom_button" />
 
     <ImageButton
             android:src="@drawable/location"
@@ -92,7 +92,7 @@
             app:tint="#FFFFFF"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginBottom="5dp"
-            app:layout_constraintBottom_toTopOf="@+id/recyclerView2"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_button"
             android:layout_marginStart="5dp" />
 
     <ProgressBar
@@ -104,6 +104,32 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/mapViewId"
             app:layout_constraintBottom_toBottomOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="0dp"
+            android:layout_height="300dp"
+            app:layout_constraintStart_toStartOf="@+id/mapViewId"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/bottom_button"
+            app:layout_constraintHorizontal_bias="0.0"
+            android:background="#00FFFFFF"
+            android:visibility="gone" >
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="0dp"
+            android:layout_height="300dp"
+            app:layout_constraintStart_toStartOf="@+id/mapViewId"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/recyclerView3"
+            app:layout_constraintHorizontal_bias="0.0"
+            android:background="#FFFFFF"
+            android:visibility="gone" >
+
+    </androidx.recyclerview.widget.RecyclerView>
 
     <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"

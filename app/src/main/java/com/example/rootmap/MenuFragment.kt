@@ -101,7 +101,7 @@ class MenuFragment : Fragment() {
                     else -> 1
                 }
                 retryCount = 0 // 스피너가 선택될 때마다 재시도 카운트 초기화
-                fetchTouristInfo(currentAreaCode, currentContentTypeId, randomPage = true) // 처음에도 랜덤 페이지로 가져오기
+                fetchTotalPages(currentAreaCode, currentContentTypeId) // 스피너 변경 시에도 랜덤 페이지로 가져오기
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -122,13 +122,13 @@ class MenuFragment : Fragment() {
         // SwipeRefreshLayout 설정
         binding.swipeRefreshLayout.setOnRefreshListener {
             retryCount = 0 // 새로고침 시 재시도 카운트 초기화
-            fetchTouristInfo(currentAreaCode, currentContentTypeId, randomPage = true)
+            fetchTotalPages(currentAreaCode, currentContentTypeId) // 새로고침 시에도 랜덤 페이지로 가져오기
         }
 
         // 드롭다운 메뉴의 기본값을 서울로 설정하고 초기 데이터 로드
         binding.citySpinner.setSelection(0) // 서울이 0번째 인덱스에 있다고 가정
         selectButton(binding.btnTourist) // 관광지 버튼을 선택된 상태로 설정
-        fetchTouristInfo(1, 12, randomPage = true) // 서울의 지역 코드는 1, 관광지는 12, 랜덤 페이지로 가져오기
+        fetchTotalPages(1, 12) // 서울의 지역 코드는 1, 관광지는 12, 앱 처음 실행 시 랜덤 페이지로 가져오기
 
         // LocationService 초기화 및 위치 정보 가져오기
         locationService = LocationService(requireContext())
@@ -151,7 +151,7 @@ class MenuFragment : Fragment() {
     private fun setupButton(button: Button, contentTypeId: Int) {
         button.setOnClickListener {
             selectButton(button)
-            fetchTouristInfo(currentAreaCode, contentTypeId, randomPage = true) // 버튼 클릭 시에도 랜덤 페이지로 가져오기
+            fetchTotalPages(currentAreaCode, contentTypeId) // 버튼 클릭 시에도 랜덤 페이지로 가져오기
         }
     }
 
@@ -165,7 +165,36 @@ class MenuFragment : Fragment() {
         selectedButton?.setTextColor(ContextCompat.getColor(requireContext(), R.color.default_button_text))
     }
 
-    private fun fetchTouristInfo(areaCode: Int, contentTypeId: Int, randomPage: Boolean = false) {
+    private fun fetchTotalPages(areaCode: Int, contentTypeId: Int) { // 전체 페이지 수 가져오기
+        apiService.getTouristInfo(
+            numOfRows = 10,
+            pageNo = 1,
+            mobileOS = "AND",
+            mobileApp = "MobileApp",
+            contentTypeId = contentTypeId,
+            areaCode = areaCode,
+            serviceKey = "iIzVkyvN4jIuoBR82vVZ0iFXlV65w0gsaiuOlUboGQ45v7PnBXkVOsDoBxoqMul10rfSMk7J+X5YKBxqu2ANRQ=="
+        ).enqueue(object : Callback<TouristResponse> {
+            override fun onResponse(
+                call: Call<TouristResponse>,
+                response: Response<TouristResponse>
+            ) {
+                if (response.isSuccessful) {
+                    val totalCount = response.body()?.body?.totalCount?.toIntOrNull() ?: 0
+                    totalPages = (totalCount / 10) + 1
+                    fetchTouristInfo(areaCode, contentTypeId, randomPage = true)
+                } else {
+                    Log.e("API_ERROR", "Response code: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<TouristResponse>, t: Throwable) {
+                Log.e("API_FAILURE", "Failed to fetch total pages", t)
+            }
+        })
+    }
+
+    private fun fetchTouristInfo(areaCode: Int, contentTypeId: Int, randomPage: Boolean = true) { // 여행지 정보 가져오기
         currentContentTypeId = contentTypeId
         if (retryCount >= maxRetries) {
             binding.swipeRefreshLayout.isRefreshing = false
@@ -187,9 +216,6 @@ class MenuFragment : Fragment() {
                 response: Response<TouristResponse>
             ) {
                 if (response.isSuccessful) {
-                    val totalCount = response.body()?.body?.totalCount?.toIntOrNull() ?: 0
-                    totalPages = (totalCount / 10) + 1
-
                     val items = response.body()?.body?.items?.item ?: emptyList()
                     Log.d("API_SUCCESS", "Fetched ${items.size} items")
 
@@ -299,7 +325,7 @@ class MenuFragment : Fragment() {
 
     private fun retryFetchTouristInfo(areaCode: Int, contentTypeId: Int) {
         retryCount++
-        fetchTouristInfo(areaCode, contentTypeId, randomPage = true)
+        fetchTouristInfo(areaCode, contentTypeId, randomPage = true) // 재시도 시에도 랜덤 페이지로 가져오기
     }
 
     private fun fetchLocation() {
@@ -322,4 +348,3 @@ class MenuFragment : Fragment() {
             }
     }
 }
-

@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
-import android.content.Intent
 import android.graphics.Point
 import android.location.Location
 import android.location.LocationRequest
@@ -240,14 +239,18 @@ class MenuFragment3 : Fragment() {
         binding.disButton.setOnClickListener {
             if (binding.recyclerView2.getVisibility() == View.VISIBLE){
                 binding.recyclerView2.visibility=View.GONE
+                if(binding.recyclerView3.getVisibility() == View.GONE){
+                    binding.bottomButton.visibility=View.GONE
+                    kakaomap!!.setPadding(0,0,0,0)
+                }
                 binding.disButton.setText("↑")
-                kakaomap!!.setPadding(0,0,0,0)
                 Log.d("Map3padding", kakaomap!!.padding.toString())
             }
             else{
                 binding.recyclerView2.visibility=View.VISIBLE
+                binding.bottomButton.visibility=View.VISIBLE
                 binding.disButton.setText("↓")
-                kakaomap!!.setPadding(0,0,0,900)
+                kakaomap!!.setPadding(0,0,0,800)
                 Log.d("Map3padding", kakaomap!!.padding.toString())
             }
         }
@@ -260,10 +263,11 @@ class MenuFragment3 : Fragment() {
                     Toast.makeText(context, "빈칸입니다.", Toast.LENGTH_SHORT).show()
                 }else{
                     binding.recyclerView2.visibility=View.VISIBLE
+                    binding.bottomButton.visibility=View.VISIBLE
                     binding.disButton.visibility=View.VISIBLE
                     binding.disButton.setText("↓")
                     searchKeyword(searchText)
-                    kakaomap!!.setPadding(0,0,0,900)
+                    kakaomap!!.setPadding(0,0,0,800)
                     //kakaomap!!.setViewport(0, 0, widthPixel, heightPixel-900)
                     Log.d("Map3padding", kakaomap!!.padding.toString())
                 }
@@ -324,7 +328,6 @@ class MenuFragment3 : Fragment() {
                 //해당 장소를 추가하기위해 새로운 팝업창 띄우기
                 viewLifecycleOwner.lifecycleScope.async {
                     loadListData.clear()
-                    myRouteListAdapter= ListLocationAdapter()
                     loadMyRouteData(docId)
                     loadListData.add(MyLocation(clickLocationName,clickLocationAdress,"","")) //해당 장소를 리스트에 추가
                     myRouteListAdapter.list=loadListData
@@ -333,38 +336,37 @@ class MenuFragment3 : Fragment() {
             }
             //경로 보기를 눌렀을 때 나오는 목록의 버튼(보기) 클릭시
             override fun onListClick(v: View, position: Int) {
-                val popupMenu = PopupMenu(context, v)
+                dialog.dismiss()
                 var docId=routelistAdapter.list[position].docId
-                 popupMenu.menuInflater.inflate(R.menu.map_list_layout,popupMenu.menu)
-                popupMenu.setOnMenuItemClickListener { item ->
-                   // dialog.dismiss()
-                    var text = when(item.itemId) {
-                        R.id.action_menu1 -> {
-                            //해당 여행지들을 라벨로 찍고 지도에서 연결
+                viewLifecycleOwner.lifecycleScope.async {
+                    Toast.makeText(context, "지도에서 보여주기", Toast.LENGTH_SHORT).show()
+                    loadListData.clear()
+                    loadMyRouteData(docId)
+                    myRouteListAdapter.docId=docId
+                    myRouteListAdapter.list=loadListData
+                    Log.d("Map3loadData", loadListData.toString())
 
-                            val intent = Intent(context, RouteMapViewActivity::class.java)
-                            intent.putExtra("id", currentId)
-                            intent.putExtra("routeId",docId)
-                            startActivity(intent)
-                        }
-                        R.id.action_menu2 -> {
-                            //팝업창으로 여행지 보여주기
-                            viewLifecycleOwner.lifecycleScope.async {
-                                loadListData.clear()
-                                myRouteListAdapter= ListLocationAdapter()
-                                loadMyRouteData(docId)
-                                myRouteListAdapter.docId=docId
-                                myRouteListAdapter.list=loadListData
-                                listdialog=showListDialog(docId,"view")
-                            }
-                        }
-                        else -> {//게시하기
-                            Toast.makeText(context,"게시판에 올린 태그 선택하는 창 띄우기",Toast.LENGTH_SHORT).show()
-                        }
+                    if (loadListData.isNotEmpty()){
+                        //아직 여행지 없다는 텍스트뷰 출력
                     }
-                    true
+                    binding.recyclerView3.adapter = myRouteListAdapter
+                    binding.recyclerView3.layoutManager = LinearLayoutManager(context)
+                    //롱클릭 드래그로 순서 이동가능
+                    val swipeHelperCallback = DragManageAdapter(myRouteListAdapter).apply {
+                        // 스와이프한 뒤 고정시킬 위치 지정
+                        setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
+                    }
+                    ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(binding.recyclerView3)
+                    // 구분선 추가
+                    binding.recyclerView3.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+                    binding.recyclerView3.setOnTouchListener { _, _ ->
+                        swipeHelperCallback.removePreviousClamp(binding.recyclerView3)
+                        false
+                    }
+                    binding.recyclerView3.visibility = View.VISIBLE
+                    binding.bottomButton.visibility = View.VISIBLE
+                    kakaomap!!.setPadding(0,0,0,800)
                 }
-                popupMenu.show()
             }
             //삭제 버튼을 눌렀을 때 삭제하는 기능
             override fun deleteDoc(v: View, position: Int) {
@@ -379,6 +381,7 @@ class MenuFragment3 : Fragment() {
             listAdapter.list=locationData
             binding.recyclerView2.adapter = listAdapter
             binding.recyclerView2.layoutManager = LinearLayoutManager(context)
+
         }
         super.onViewCreated(view, savedInstanceState)
     }
@@ -426,6 +429,7 @@ class MenuFragment3 : Fragment() {
                 locationData.add(item)
             }
             listAdapter.list=locationData
+            Log.d("Map3searchlist", listAdapter.list.toString())
             listAdapter.notifyDataSetChanged()
         } else {
 // 검색 결과 없음
@@ -447,7 +451,7 @@ class MenuFragment3 : Fragment() {
             list
         }
     }
-    suspend fun loadMyRouteData(id:String): Boolean {
+   suspend fun loadMyRouteData(id:String): Boolean {
         var dataList= mutableListOf<Map<String,*>>()
         return try {
             var data: MutableMap<*, *>
@@ -517,20 +521,7 @@ class MenuFragment3 : Fragment() {
             }
         }
         dBinding.dialogListView.apply {
-            adapter = myRouteListAdapter
-            layoutManager = LinearLayoutManager(context)
-            //롱클릭 드래그로 순서 이동가능
-                val swipeHelperCallback = DragManageAdapter(myRouteListAdapter).apply {
-                    // 스와이프한 뒤 고정시킬 위치 지정
-                    setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
-                }
-                ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(dBinding.dialogListView)
-            // 구분선 추가
-            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
-            dBinding.dialogListView.setOnTouchListener { _, _ ->
-                swipeHelperCallback.removePreviousClamp(dBinding.dialogListView)
-                false
-            }
+
         }
         val dialog = dialogBuild.show()
         dBinding.cancleButton2.setOnClickListener { //다이어로그의 취소버튼 클릭

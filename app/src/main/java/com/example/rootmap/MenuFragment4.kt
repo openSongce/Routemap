@@ -281,6 +281,7 @@ class MenuFragment4 : Fragment() {
 
         val dialogBuildCP = AlertDialog.Builder(context).setView(dcpBinding.root).setTitle("비밀번호 변경")
         val dialogCP = dialogBuildCP.show() //다이어로그 창 띄우기
+
         dcpBinding.confirmButton.setOnClickListener {//다이어로그 기능 설정
             if (mode == "changePassword") {
                 val currentPassword = dcpBinding.currentPassword.text.toString()
@@ -288,33 +289,38 @@ class MenuFragment4 : Fragment() {
                 val confirmNewPassword = dcpBinding.confirmNewPassword.text.toString()
                 val user = auth.currentUser
 
-                if (newPassword == confirmNewPassword) {
-                    if (user != null && user.email != null) {
-                        val credential = EmailAuthProvider.getCredential(user.email!!, currentPassword)
-                        user.reauthenticate(credential)
-                            .addOnCompleteListener {
-                                user.updatePassword(newPassword)
-                                    .addOnCompleteListener { updateTask ->
-                                        if (updateTask.isSuccessful) {
-                                            Toast.makeText(context, "비밀번호가 성공적으로 변경되었습니다", Toast.LENGTH_SHORT).show()
-                                            dialogCP.dismiss()
-                                        } else {
-                                            Toast.makeText(context, "다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-                                        }
+                if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmNewPassword.isEmpty() ||
+                    currentPassword.length <= 5 || newPassword.length <= 5 || confirmNewPassword.length <= 5) {
+                    Toast.makeText(context, "비밀번호는 6글자 이상입니다.", Toast.LENGTH_SHORT).show()
+                } else if (user != null && user.email != null) {
+                    val credential = EmailAuthProvider.getCredential(user.email!!, currentPassword)
+                    user.reauthenticate(credential).addOnCompleteListener { reauthTask ->
+                        if (reauthTask.isSuccessful) {
+                            if (newPassword != confirmNewPassword) {
+                                Toast.makeText(context, "새 비밀번호가 일치하지 않습니다", Toast.LENGTH_SHORT).show()
+                            } else {
+                                user.updatePassword(newPassword).addOnCompleteListener { updateTask ->
+                                    if (updateTask.isSuccessful) {
+                                        Toast.makeText(context, "비밀번호가 성공적으로 변경되었습니다", Toast.LENGTH_SHORT).show()
+                                        dialogCP.dismiss()
+                                    } else {
+                                        Toast.makeText(context, "다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                                     }
-
-
+                                }
                             }
+                        } else {
+                            Toast.makeText(context, "현재 비밀번호가 일치하지 않습니다", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }
-            dialogCP.dismiss()
         }
+
         dcpBinding.cancelButton.setOnClickListener {
             dialogCP.dismiss()
         }
-
     }
+
     companion object {
         /**
          * Use this factory method to create a new instance of
