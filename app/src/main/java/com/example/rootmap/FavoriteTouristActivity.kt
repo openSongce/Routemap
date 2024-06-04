@@ -39,7 +39,7 @@ class FavoriteTouristActivity : AppCompatActivity() {
             .build()
 
         apiService = retrofit.create(TouristApiService::class.java)
-
+        fetchFavoriteTouristSpots()
         adapter = TouristAdapter(likedTouristItems, database, auth) { item ->
             // 좋아요 버튼 클릭 시 처리
             item.isLiked = !item.isLiked
@@ -57,8 +57,6 @@ class FavoriteTouristActivity : AppCompatActivity() {
             }
         }
         binding.recyclerView.adapter = adapter
-
-        fetchFavoriteTouristSpots()
     }
 
     private fun fetchFavoriteTouristSpots() {
