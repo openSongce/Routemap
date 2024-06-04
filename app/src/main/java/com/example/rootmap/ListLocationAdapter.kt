@@ -60,7 +60,6 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
         init {
             binding.tvRemove.setOnClickListener {
                 removeData(this.layoutPosition)
-                Toast.makeText(binding.root.context, "삭제했습니다.", Toast.LENGTH_SHORT).show()
             }
         }
         fun bind(myLocation: MyLocation,position: Int) {

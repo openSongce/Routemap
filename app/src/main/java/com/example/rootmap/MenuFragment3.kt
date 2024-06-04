@@ -391,7 +391,7 @@ class MenuFragment3 : Fragment() {
         binding.listCloseButton.setOnClickListener{//지도에서경로보기 끄는버튼 // 경로지우기 추가
             binding.listCloseButton.visibility = View.GONE
             binding.listButton.visibility = View.VISIBLE
-            binding.recyclerView3.visibility = View.INVISIBLE
+            binding.recyclerView3.visibility = View.GONE
             binding.routeNameText.visibility=View.GONE
             binding.routeSaveButton.visibility=View.GONE
             if (binding.recyclerView2.getVisibility() == View.GONE){
