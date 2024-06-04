@@ -40,6 +40,7 @@ import com.google.firebase.firestore.firestore
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
+import com.kakao.vectormap.MapGravity.TOP
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.camera.CameraAnimation
 import com.kakao.vectormap.camera.CameraPosition
@@ -121,6 +122,7 @@ class MenuFragment3 : Fragment() {
         override fun onMapReady(kakaoMap: KakaoMap) {
             //현재 위치에 라벨
             kakaomap=kakaoMap
+            kakaoMap.logo!!.setPosition(TOP, 20F, 20F ) // 카카오맵 API 사용시 주의사항 - 'kakao'로고 가리지 말것
             layer=kakaoMap.labelManager?.layer
             val style = kakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
                 R.drawable.mylocation
@@ -396,6 +398,7 @@ class MenuFragment3 : Fragment() {
             binding.routeSaveButton.visibility=View.GONE
             if (binding.recyclerView2.getVisibility() == View.GONE){
                 binding.bottomButton.visibility = View.GONE
+                kakaomap!!.setPadding(0,0,0,0)
             }
             for(doc in label)
                 doc.remove()
