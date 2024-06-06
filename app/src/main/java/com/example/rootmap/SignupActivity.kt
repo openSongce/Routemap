@@ -10,6 +10,7 @@ import com.example.rootmap.databinding.ActivitySignupBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.regex.Pattern
 
 class SignupActivity : AppCompatActivity() {
     lateinit var emailSignup: EditText
@@ -34,12 +35,23 @@ class SignupActivity : AppCompatActivity() {
         signupSuccessBtn = findViewById(R.id.signupSuccessBtn)
         nameSignup = findViewById(R.id.nameSignup)
         nicknameSignup = findViewById(R.id.nicknameSignup)
-        signupSuccessBtn = binding.signupSuccessBtn
+        //signupSuccessBtn = binding.signupSuccessBtn
 
-        signupSuccessBtn.setOnClickListener {
+        binding.signupSuccessBtn.setOnClickListener {
             val email = emailSignup.text.toString()
             val password = passwordSignup.text.toString()
-            createUser(email, password)
+            val name = nameSignup.text.toString()
+            val nickname = nicknameSignup.text.toString()
+
+            if (email.isNullOrBlank() || password.isNullOrBlank() || name.isNullOrBlank() || nickname.isNullOrBlank()) {
+                Toast.makeText(this, "모두 입력해주세요", Toast.LENGTH_SHORT).show()
+            } else if (!isValidEmail(email)) {
+                Toast.makeText(this, "이메일 형식으로 작성해주세요", Toast.LENGTH_SHORT).show()
+            } else if (password.length <= 5) {
+                Toast.makeText(this, "비밀번호는 6글자 이상만 가능합니다", Toast.LENGTH_SHORT).show()
+            } else {
+                createUser(email, password)
+            }
         }
     }
 
@@ -77,5 +89,10 @@ class SignupActivity : AppCompatActivity() {
             .addOnFailureListener { e ->
                 Toast.makeText(this, "오류가 발생했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+        return Pattern.compile(emailPattern).matcher(email).matches()
     }
 }

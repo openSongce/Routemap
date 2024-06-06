@@ -21,6 +21,8 @@ import android.content.pm.PackageManager
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.ActivityCompat
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import java.security.MessageDigest
@@ -123,25 +125,33 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun login(email: String, password: String) {
+        if (email.isNullOrBlank() || password.isNullOrBlank()) {
+            Toast.makeText(this, "이메일 또는 비밀번호를 입력하세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     val intent = Intent(this, MainActivity::class.java)
                     intent.putExtra("id", email)
-
                     // 로그인 상태 저장
                     val sharedPreferences = getSharedPreferences("RootMapPrefs", Context.MODE_PRIVATE)
                     with(sharedPreferences.edit()) {
                         putBoolean("isLoggedIn", true)
                         apply()
                     }
-
                     startActivity(intent)
                     finish()
                     Toast.makeText(this, "${user?.email}님 반갑습니다!", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "로그인 실패", Toast.LENGTH_SHORT).show()
+                    try {
+                        throw task.exception!!
+                    } catch (e: FirebaseAuthInvalidUserException) {
+                        Toast.makeText(this, "등록되지 않은 계정입니다.", Toast.LENGTH_SHORT).show()
+                    } catch (e: FirebaseAuthInvalidCredentialsException) {
+                        Toast.makeText(this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
     }
@@ -166,13 +176,13 @@ class LoginActivity : AppCompatActivity() {
             userDocRef.get()
                 .addOnSuccessListener { document ->
                     if (document.exists()) {
-                        // 문서가 존재하면 바로 MainActivity로 이동
+                        // firebase에 등록된 계정일 경우 바로 MainActivity로 이동
                         val intent = Intent(this, MainActivity::class.java)
                         intent.putExtra("id", currentUser.email)
                         startActivity(intent)
                         finish()
                     } else {
-                        // 문서가 존재하지 않으면 saveGoogleUserData() 메소드를 호출하여 사용자 데이터를 Firestore에 저장
+                        // firebase에 등록되지 않은 계정일 경우 saveGoogleUserData() 메소드를 호출하여 사용자 데이터를 Firestore에 저장
                         saveGoogleUserData(currentUser)
                     }
                 }
