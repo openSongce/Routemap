@@ -52,18 +52,20 @@ import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
 import com.kakao.vectormap.label.LabelTextStyle
 import com.kakao.vectormap.label.LodLabel
-import com.kakao.vectormap.shape.MapPoints
-import com.kakao.vectormap.shape.Polyline
-import com.kakao.vectormap.shape.PolylineOptions
-import com.kakao.vectormap.shape.PolylineStyle
+import com.kakao.vectormap.route.RouteLine
+import com.kakao.vectormap.route.RouteLineLayer
+import com.kakao.vectormap.route.RouteLineOptions
+import com.kakao.vectormap.route.RouteLinePattern
+import com.kakao.vectormap.route.RouteLineSegment
+import com.kakao.vectormap.route.RouteLineStyle
 import kotlinx.coroutines.async
 import kotlinx.coroutines.tasks.await
+import okhttp3.Route
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -94,7 +96,8 @@ class MenuFragment3 : Fragment() {
     private val locationCallback: LocationCallback?=null
     private lateinit var makerList:MutableList<LatLng>
     var label = arrayOf<LodLabel>()
-    var areaPolyline:Polyline?=null
+    var layerR: RouteLineLayer? = null
+    var byLevelLine: RouteLine?=null
 
     var locationData: MutableList<SearchLocation> = mutableListOf()
     var loadListData: MutableList<MyLocation> = mutableListOf()
@@ -102,7 +105,6 @@ class MenuFragment3 : Fragment() {
     lateinit var listAdapter: RouteListAdapter
     lateinit var routelistAdapter: MyDocumentAdapter
     lateinit var myRouteListAdapter: ListLocationAdapter
-
 
     val db = Firebase.firestore
     lateinit var myDb: CollectionReference
@@ -124,6 +126,7 @@ class MenuFragment3 : Fragment() {
             kakaomap=kakaoMap
             kakaoMap.logo!!.setPosition(TOP, 20F, 20F ) // 카카오맵 API 사용시 주의사항 - 'kakao'로고 가리지 말것
             layer=kakaoMap.labelManager?.layer
+            layerR= kakaoMap.routeLineManager?.getLayer()
             val style = kakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
                 R.drawable.mylocation
             )))
@@ -402,7 +405,7 @@ class MenuFragment3 : Fragment() {
             }
             for(doc in label)
                 doc.remove()
-            kakaomap?.shapeManager?.getLayer()?.remove(areaPolyline)
+            layerR?.remove(byLevelLine)
         }
         return binding.root
     }
@@ -427,6 +430,7 @@ class MenuFragment3 : Fragment() {
             var cnt: Int = 1
             var labels= mutableListOf<LabelOptions>()
             var latLngList= mutableListOf<LatLng>()
+            var segments = mutableListOf<RouteLineSegment>()
             var labelStyle= kakaomap!!.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
                 R.drawable.clicklocation
             ).setTextStyles(
@@ -438,7 +442,14 @@ class MenuFragment3 : Fragment() {
                 latLngList.add(lanLng)
                 cnt++
             }
-            areaPolyline = kakaomap.shapeManager!!.layer.addPolyline(getAreaOptions(latLngList)!!)
+            // PolyLine이 앱을 더 무겁게 해서 RouteLine으로 변경.
+            val styles = RouteLineStyle.from(20f, Color.GREEN, 1f, Color.WHITE).setZoomLevel(15)
+                .setPattern(RouteLinePattern.from(activity?.baseContext, R.style.GreenRouteArrowLineStyle))
+
+            val options: RouteLineOptions =
+                RouteLineOptions.from(RouteLineSegment.from(latLngList, styles))
+            byLevelLine = layerR?.addRouteLine(options)
+
             var testlayer= kakaomap!!.getLabelManager()?.getLodLayer();
             label = testlayer!!.addLodLabels(labels)
             //첫 위치 기준으로 카메라 이동
@@ -449,12 +460,6 @@ class MenuFragment3 : Fragment() {
                 CameraAnimation.from(500)
             )
         }
-    }
-    private fun getAreaOptions(list: MutableList<LatLng>): PolylineOptions? {
-        return PolylineOptions.from(
-            MapPoints.fromLatLng(list),
-            PolylineStyle.from(10f, Color.parseColor("#80ff2c35"), 3f, Color.RED)
-        )
     }
 
     private fun searchKeyword(text:String){
