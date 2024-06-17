@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -51,6 +52,8 @@ class MenuFragment : Fragment() {
     private var totalPages = 1
     private var selectedButton: Button? = null
     private lateinit var locationService: LocationService
+    private var retryCountWeather = 0
+    private val maxRetriesWeather = 3
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -379,9 +382,6 @@ class MenuFragment : Fragment() {
             }
         }
 
-        Log.d("WEATHER_REQUEST", "Request URL: https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=your_service_key&numOfRows=10&pageNo=1&dataType=XML&base_date=$baseDate&base_time=$baseTime&nx=$nx&ny=$ny")
-        Log.d("WEATHER_REQUEST", "Request Parameters: baseDate=$baseDate, baseTime=$baseTime, nx=$nx, ny=$ny")
-
         // 초단기 실황 -> 현재기온
         weatherApiService.getUltraSrtNcst(
             serviceKey = "oX0uqL6VzriCMyNDlwDB23W4%2Bb9mn8EPDaqry2QN4hO9qaQCMH5oQOhK9oIi92TiDYQ6vAY9nv9XDubAGOdugw%3D%3D",
@@ -402,20 +402,21 @@ class MenuFragment : Fragment() {
                     response.body()?.body?.items?.item?.find { it.category == "T1H" }?.let {
                         Log.d("WEATHER_SUCCESS", "Temperature: ${it.obsrValue}")
                         updateWeatherInfo(it.obsrValue, city)
+                        retryCountWeather = 0 // Reset retry count on success
                     } ?: run {
                         Log.e("WEATHER_ERROR", "Temperature data not found")
-                        updateWeatherInfo(null, city) // 도시 이름은 업데이트하지만 온도는 없음
+                        handleWeatherFailure(nx, ny, city)
                     }
                 } else {
                     Log.e("WEATHER_ERROR", "Response code: ${response.code()}")
                     Log.e("WEATHER_ERROR_BODY", response.errorBody()?.string() ?: "No error body")
-                    updateWeatherInfo(null, city) // 도시 이름은 업데이트하지만 온도는 없음
+                    handleWeatherFailure(nx, ny, city)
                 }
             }
 
             override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
                 Log.e("WEATHER_FAILURE", "Failed to fetch weather data", t)
-                updateWeatherInfo(null, city) // 도시 이름은 업데이트하지만 온도는 없음
+                handleWeatherFailure(nx, ny, city)
             }
         })
 
@@ -440,23 +441,35 @@ class MenuFragment : Fragment() {
 
                     Log.d("WEATHER_SUCCESS", "Today's Temperature: TMX: ${tmx ?: "null"}, TMN: ${tmn ?: "null"}")
                     updateShortTermWeatherInfo(tmx, tmn)
+                    retryCountWeather = 0 // Reset retry count on success
 
                     Log.d("WEATHER_SUCCESS", "Sky Condition: ${sky ?: "null"}")
                     updateSkyInfo(sky)
                 } else {
                     Log.e("WEATHER_ERROR", "Short-term Forecast Response code: ${response.code()}")
                     Log.e("WEATHER_ERROR_BODY", response.errorBody()?.string() ?: "No error body")
-                    updateShortTermWeatherInfo(null, null)
-                    updateSkyInfo(null)
+                    handleWeatherFailure(nx, ny, city)
                 }
             }
 
             override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
                 Log.e("WEATHER_FAILURE", "Failed to fetch short-term forecast data", t)
-                updateShortTermWeatherInfo(null, null)
-                updateSkyInfo(null)
+                handleWeatherFailure(nx, ny, city)
             }
         })
+    }
+
+    private fun handleWeatherFailure(nx: Int, ny: Int, city: String) {
+        if (retryCountWeather < maxRetriesWeather) {
+            retryCountWeather++
+            Log.d("WEATHER_RETRY", "Retrying fetchWeather... Attempt: $retryCountWeather")
+            fetchWeather(nx, ny, city)
+        } else {
+            Log.e("WEATHER_RETRY", "Max retries reached. Could not fetch weather data.")
+            updateWeatherInfo(null, city)
+            updateShortTermWeatherInfo(null, null)
+            updateSkyInfo(null)
+        }
     }
 
     private fun updateWeatherInfo(temp: String?, city: String) {
@@ -465,19 +478,36 @@ class MenuFragment : Fragment() {
 
         Log.d("WEATHER_UPDATE", "Updating temperature to ${temp ?: "null"}° for city $city")
 
-        tvNowCelsius.text = temp?.let { "$it°" } ?: "null"
+        tvNowCelsius.text = temp?.let { "$it°" } ?: "null°"
         tvLocation.text = city
     }
 
 
     private fun updateSkyInfo(skyValue: String?) {
         val tvSkyCondition = binding.root.findViewById<TextView>(R.id.tvSkyCondition)
+        val imageView = binding.root.findViewById<ImageView>(R.id.imageView)
         val skyCondition = when (skyValue) {
-            "1" -> "맑음"
-            "2" -> "구름 조금"
-            "3" -> "구름 많음"
-            "4" -> "흐림"
-            else -> "null"
+            "1" -> {
+                imageView.setImageResource(R.drawable.weather_01)
+                "맑음"
+            }
+            "2" -> {
+                imageView.setImageResource(R.drawable.weather_02)
+                "구름 조금"
+            }
+            "3" -> {
+                imageView.setImageResource(R.drawable.weather_02)
+                "구름 많음"
+            }
+            "4" -> {
+                imageView.setImageResource(R.drawable.weather_04)
+                "흐림"
+            }
+            else -> {
+                imageView.setImageResource(R.drawable.weather_01) // Default image
+                //"null"
+                "맑음"
+            }
         }
         Log.d("WEATHER_UPDATE", "Updating sky condition to $skyCondition")
         tvSkyCondition.text = "하늘: $skyCondition"
