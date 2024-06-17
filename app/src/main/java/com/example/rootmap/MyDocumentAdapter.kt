@@ -45,20 +45,23 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
                 binding.friendButton2.setOnClickListener {
                     itemClickListener.onListClick(it, position)
                 }
-            }else{
+            }else if(mode=="Add"){
                 binding.friendButton2.text="추가"
                 binding.friendButton2.setOnClickListener {
                     itemClickListener.onClick(it, position)
                 }
+            } else{ //내 여행경로 액티비티의 설정(mode==MyRoute)
+                binding.run{
+                    friendButton2.visibility=View.GONE
+                    optionButton.visibility=View.VISIBLE
+                    optionButton.setOnClickListener {
+                        itemClickListener.onClick(it, position)
+                    }
+                }
             }
             binding.tvRemove.setOnClickListener {
                 itemClickListener.deleteDoc(it, position)
-                removeData(position)
             }
-        }
-        fun removeData(position: Int) {
-            list.removeAt(position)
-            notifyItemRemoved(position)
         }
 
     }

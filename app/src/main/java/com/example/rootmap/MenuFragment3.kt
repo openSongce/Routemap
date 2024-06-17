@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.rootmap.databinding.DialogLayoutBinding
 import com.example.rootmap.databinding.FragmentMenu3Binding
 import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.example.rootmap.databinding.RouteaddLayoutBinding
@@ -115,7 +116,6 @@ class MenuFragment3 : Fragment() {
     lateinit var userY:String
     lateinit var clickLocationName:String
     lateinit var clickLocationAdress:GeoPoint
-    lateinit var clickAdress:String
     var layer: LabelLayer?=null
     lateinit var dialog:AlertDialog
     lateinit var listdialog:AlertDialog
@@ -384,12 +384,10 @@ class MenuFragment3 : Fragment() {
                         Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
                     }
                 }
-
             }
             //삭제 버튼을 눌렀을 때 DB에서 삭제하는 기능
             override fun deleteDoc(v: View, position: Int) {
-                var docId=routelistAdapter.list[position].docId
-                myDb.document(docId).delete()
+                showDeleteDialog(position)
             }
         })
 
@@ -565,6 +563,27 @@ class MenuFragment3 : Fragment() {
         return dialog
     }
 
+    private fun showDeleteDialog(position: Int){
+        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
+        dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
+        dBinding.bButton.text = "확인"
+        dBinding.content.text = "해당 경로를 삭제하시겠습니까?"
+        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        val dialog = dialogBuild.show() //다이어로그 창 띄우기
+        dBinding.bButton.setOnClickListener {
+            //검정 버튼의 기능 구현 ↓
+            var docId=routelistAdapter.list[position].docId
+            myDb.document(docId).delete()
+            routelistAdapter.list.removeAt(position)
+            routelistAdapter.notifyItemRemoved(position)
+            dialog.dismiss()
+        }
+        dBinding.wButton.setOnClickListener {//취소버튼
+            //회색 버튼의 기능 구현 ↓
+            dialog.dismiss()
+        }
+    }
+
     private fun showListDialog(docId:String,mode:String):AlertDialog{ //다이어로그로 팝업창 구현
         val dBinding = RouteaddLayoutBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
@@ -602,6 +621,7 @@ class MenuFragment3 : Fragment() {
         }
         dBinding.saveButton2.setOnClickListener {//다이어로그의 완료버튼 클릭
             //데이터 저장 후
+            context?.hideKeyboard(dBinding.root) //키보드내리기
             var text=dBinding.editTextText.text.toString()
             if(mode=="make"){//즉, 새로운 여행 경로 만들기 모드
                 if(text==""){ //제목이 비었으면
@@ -624,7 +644,6 @@ class MenuFragment3 : Fragment() {
                     Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
                 }
             }
-            context?.hideKeyboard(dBinding.root) //키보드내리기
         }
         return dialog
     }

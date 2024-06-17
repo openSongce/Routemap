@@ -37,7 +37,6 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
         var screen = list.get(position)
-
         holder.setData(screen,position)
     }
     override fun getItemCount(): Int {
@@ -84,6 +83,7 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
             }
         }
         private fun showMemoDialog(memo:String,position: Int): AlertDialog { //다이어로그로 팝업창 구현
+            //메모 보기 및 수정창
             val dBinding = MemoEditLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             val dialogBuild = AlertDialog.Builder(parent.context).setView(dBinding.root)
             dialogBuild.setTitle("메모")

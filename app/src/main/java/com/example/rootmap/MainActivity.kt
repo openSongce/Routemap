@@ -118,8 +118,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 startActivity(myRouteIntent)
                 Toast.makeText(this, "경로 클릭", Toast.LENGTH_SHORT).show()
             }
-
-
             R.id.menuRoutePost -> {
                 Toast.makeText(this, "게시판 클릭", Toast.LENGTH_SHORT).show()
             }

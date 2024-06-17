@@ -93,6 +93,16 @@
         android:text="액션"
         android:visibility="visible" />
 
+    <TextView
+            android:id="@+id/optionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="&#8942;"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:visibility="gone" />
+
 </LinearLayout>
         </LinearLayout>
     </FrameLayout>
