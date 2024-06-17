@@ -353,7 +353,6 @@ class MenuFragment3 : Fragment() {
                 var docName=routelistAdapter.list[position].docName
 
                 viewLifecycleOwner.lifecycleScope.async {
-                    //Toast.makeText(context, "지도에서 보여주기", Toast.LENGTH_SHORT).show()
                     loadListData.clear()
                     loadMyRouteData(docId)
                     myRouteListAdapter.docId=docId
@@ -388,6 +387,7 @@ class MenuFragment3 : Fragment() {
                 myDb.document(docId).delete()
             }
         })
+
         binding.listCloseButton.setOnClickListener{//지도에서경로보기 끄는버튼 // 경로지우기 추가
             binding.listCloseButton.visibility = View.GONE
             binding.listButton.visibility = View.VISIBLE
@@ -484,7 +484,6 @@ class MenuFragment3 : Fragment() {
                 val item = SearchLocation(document.place_name,
                     document.road_address_name,document.x.toDouble(),
                     document.y.toDouble())
-
                 locationData.add(item)
             }
             listAdapter.list=locationData
@@ -520,7 +519,6 @@ class MenuFragment3 : Fragment() {
                 dataList.addAll(data["routeList"] as List<Map<String,*>>)
                 dataList.forEach{
                     loadListData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String,it["spending"] as String))
-                    Log.d("checkTest","${it["name"].toString()},${it["position"] as com.google.firebase.firestore.GeoPoint},${it["memo"] as kotlin.String},${it["spending"] as kotlin.String}")
                 }
             }.await()
             true

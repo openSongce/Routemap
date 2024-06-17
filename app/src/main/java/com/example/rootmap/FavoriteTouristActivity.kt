@@ -101,9 +101,9 @@ class FavoriteTouristActivity : AppCompatActivity() {
                         if (response.isSuccessful) {
                             response.body()?.body?.items?.item?.let { item ->
                                 Log.d("FavoriteTouristActivity", "Fetched item: $item")
-                                item.isLiked = true
-                                likedTouristItems.add(item)
-                                adapter.notifyDataSetChanged()
+                                //item.isLiked = true
+                               // likedTouristItems.add(item)
+                              //  adapter.notifyDataSetChanged()
                             }
                         } else {
                             Log.e("API_ERROR", "Response code: ${response.code()}")
