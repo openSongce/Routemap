@@ -48,7 +48,7 @@
                 android:src="@drawable/search" />
 
         <EditText
-                android:id="@+id/searchFriendText"
+                android:id="@+id/searchMyRouteText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -58,7 +58,7 @@
                 android:layout_marginEnd="10dp" />
 
         <ImageView
-                android:id="@+id/sendButton"
+                android:id="@+id/mRSearchButton"
                 android:layout_width="40dp"
                 android:layout_height="wrap_content"
                 android:scaleType="fitCenter"

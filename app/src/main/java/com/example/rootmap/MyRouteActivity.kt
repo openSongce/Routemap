@@ -29,6 +29,8 @@ class MyRouteActivity : AppCompatActivity() {
     lateinit var myDb: CollectionReference
     private lateinit var auth: FirebaseAuth
     lateinit var currentId:String
+    var searchText=""
+    var searchCheck=false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,9 +65,29 @@ class MyRouteActivity : AppCompatActivity() {
                 addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
             }
         }
-
         binding.backButton.setOnClickListener { //뒤로가기 버튼
             super.onBackPressed()
+        }
+        binding.mRSearchButton.setOnClickListener { //검색 버튼
+            searchText=binding.searchMyRouteText.text.toString()
+            CoroutineScope(Dispatchers.Main).launch{
+                if(searchText!=""){
+                   //검색결과
+                    routelistAdapter.list=searchRoute(searchText)
+                    routelistAdapter.notifyDataSetChanged()
+                    searchCheck=true
+                }else if(searchCheck==true){
+                    //전체 결과
+                    if(loadMyRouteList()==false){
+                        Toast.makeText(this@MyRouteActivity, "데이터 로드에 실패했습니다.",Toast.LENGTH_SHORT).show()
+                    }else{
+                        routelistAdapter.list=routeList
+                        routelistAdapter.notifyDataSetChanged()
+                        searchCheck=false
+                    }
+                }
+            }
+
         }
 
         routelistAdapter.setItemClickListener(object: MyDocumentAdapter.OnItemClickListener{
@@ -87,6 +109,7 @@ class MyRouteActivity : AppCompatActivity() {
 
     suspend fun loadMyRouteList():Boolean{
         //내 루트리스트를 가져오는 함수
+        routeList.clear()
         return try {
             val myList = myDb.get().await()
             if(!myList.isEmpty){
@@ -100,6 +123,36 @@ class MyRouteActivity : AppCompatActivity() {
             false
         }
     }
+    private fun searchRoute(text:String):MutableList<MyRouteDocument>{
+        var searchList= mutableListOf<MyRouteDocument>()
+        if(routeList.isNullOrEmpty()){
+            Toast.makeText(this@MyRouteActivity, "내가 만든 여행경로가 없어 검색이 불가능합니다.",Toast.LENGTH_SHORT).show()
+        }
+        routeList.forEach {
+            if (it.docName.contains(text)){
+                searchList.add(it)
+            }
+        }
+        return searchList
+    }
+    suspend fun loadSearchRouteList(text:String):MutableList<MyRouteDocument>{
+        //검색한 루트리스트를 가져오는 함수
+        //텍스트일부만으로 검색이 안되어서 이 함수는 보류
+        var list= mutableListOf<MyRouteDocument>()
+        return try {
+            val myList = myDb.whereEqualTo("tripname",text).get().await()
+            if(!myList.isEmpty){
+                for (doc in myList.documents) {
+                    list.add(MyRouteDocument(doc.data?.get("tripname").toString(),doc.id))
+                }
+            }
+            list
+        } catch (e: FirebaseException) {
+            Log.d("list_test", "error")
+            list
+        }
+    }
+
 
     fun showDeleteDialog(position: Int){
         val dBinding = DialogLayoutBinding.inflate(layoutInflater)
