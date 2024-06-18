@@ -213,6 +213,15 @@ class SwapeManageAdapter(private var recyclerViewAdapter2 : MyDocumentAdapter) :
 
     }
 
+    fun removeClamp(recyclerView: RecyclerView){
+        currentPosition?.let {
+            val viewHolder = recyclerView.findViewHolderForAdapterPosition(it) ?: return
+            getView(viewHolder).animate().x(0f).setDuration(100L).start()
+            setTag(viewHolder, false)
+            currentPosition = null
+        }
+    }
+
 
 }
 

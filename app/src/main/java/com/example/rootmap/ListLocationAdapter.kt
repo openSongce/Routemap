@@ -263,5 +263,4 @@ class DragManageAdapter(private var recyclerViewAdapter : ListLocationAdapter) :
 
     }
 
-
 }

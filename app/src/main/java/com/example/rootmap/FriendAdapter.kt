@@ -87,6 +87,12 @@ class FriendHolder(
                     FriendAdd.getInstance()?.showCancle(binding.friendId.text.toString())
                 }
             }
+            "RouteShare"->{
+                binding.run {
+                    friendButton2.visibility=View.GONE
+                    shareCheck.visibility=View.VISIBLE
+                }
+            }
         }
     }
 

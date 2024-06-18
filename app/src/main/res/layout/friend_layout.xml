@@ -103,6 +103,13 @@
             android:textAppearance="?android:textAppearanceMedium"
             android:visibility="gone" />
 
+    <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/shareCheck"
+            android:layout_weight="0"
+            android:visibility="gone" />
+
 </LinearLayout>
         </LinearLayout>
     </FrameLayout>
