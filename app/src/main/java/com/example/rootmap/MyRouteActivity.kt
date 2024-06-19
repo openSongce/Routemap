@@ -21,22 +21,28 @@ import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class MyRouteActivity : AppCompatActivity() {
     val binding by lazy { ActivityMyRouteBinding.inflate(layoutInflater) }
     lateinit var routelistAdapter: MyDocumentAdapter
+    lateinit var listLocationAdapter:ListLocationAdapter
     lateinit var routeList: MutableList<MyRouteDocument>
+    lateinit var routeDataList:MutableList<MyLocation>
     lateinit var myDb: DocumentReference
     private lateinit var auth: FirebaseAuth
     lateinit var currentId:String
     lateinit var swipeHelperCallback: SwapeManageAdapter
     var searchText=""
     var searchCheck=false
+    var routeName=""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,16 +51,29 @@ class MyRouteActivity : AppCompatActivity() {
         currentId = auth.currentUser?.email.toString()
         myDb = Firebase.firestore.collection("user").document(currentId.toString())
         routeList = mutableListOf<MyRouteDocument>()
+        routeDataList= mutableListOf<MyLocation>()
 
         routelistAdapter= MyDocumentAdapter()
         routelistAdapter.mode="MyRoute"
         routelistAdapter.userId=currentId
+        listLocationAdapter= ListLocationAdapter()
+
         swipeHelperCallback = SwapeManageAdapter(routelistAdapter).apply {
             // 스와이프한 뒤 고정시킬 위치 지정
             setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
         }
         ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(binding.recyclerList)
-
+        val swipeHelperCallbackData = DragManageAdapter(listLocationAdapter).apply {
+            // 스와이프한 뒤 고정시킬 위치 지정
+            setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
+        }
+        ItemTouchHelper(swipeHelperCallbackData).attachToRecyclerView(binding.routeDataList)
+        // 구분선 추가
+        binding.routeDataList.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
+        binding.routeDataList.setOnTouchListener { _, _ ->
+            swipeHelperCallbackData.removePreviousClamp(binding.routeDataList)
+            false
+        }
         CoroutineScope(Dispatchers.Main).launch {
             if(loadMyRouteList()==false){
                 Toast.makeText(this@MyRouteActivity, "데이터 로드에 실패했습니다.",Toast.LENGTH_SHORT).show()
@@ -76,25 +95,12 @@ class MyRouteActivity : AppCompatActivity() {
             super.onBackPressed()
         }
         binding.mRSearchButton.setOnClickListener { //검색 버튼
-            searchText=binding.searchMyRouteText.text.toString()
-            CoroutineScope(Dispatchers.Main).launch{
-                if(searchText!=""){
-                   //검색결과
-                    routelistAdapter.list=searchRoute(searchText)
-                    routelistAdapter.notifyDataSetChanged()
-                    searchCheck=true
-                }else if(searchCheck==true){
-                    //전체 결과
-                    if(loadMyRouteList()==false){
-                        Toast.makeText(this@MyRouteActivity, "데이터 로드에 실패했습니다.",Toast.LENGTH_SHORT).show()
-                    }else{
-                        routelistAdapter.list=routeList
-                        routelistAdapter.notifyDataSetChanged()
-                        searchCheck=false
-                    }
-                }
-            }
-
+            clickOrEnterSearch()
+        }
+        binding.searchMyRouteText.setOnEditorActionListener { v, actionId, event //키보드 엔터 사용시
+            ->
+            clickOrEnterSearch()
+            true
         }
 
         routelistAdapter.setItemClickListener(object: MyDocumentAdapter.OnItemClickListener{
@@ -103,11 +109,33 @@ class MyRouteActivity : AppCompatActivity() {
                 //버튼 눌렀을때의 코드
                 var docId=routelistAdapter.list[position].docId
                 var docName=routelistAdapter.list[position].docName
+                var docOwner=routelistAdapter.list[position].owner
                 val popup = PopupMenu(this@MyRouteActivity,v )
                 popup.inflate(R.menu.myroute_list_layout)
                 popup.setOnMenuItemClickListener { item ->
                     when (item.itemId) {
                         R.id.action_menu1 -> { //보기 클릭
+                            binding.run {
+                                recyclerList.visibility=View.INVISIBLE
+                                routeDataList.visibility=View.VISIBLE
+                                routeCloseButton.visibility=View.VISIBLE
+                                routeCloseButton.setOnClickListener {
+                                    routeDataList.visibility=View.GONE
+                                    routeCloseButton.visibility=View.GONE
+                                    recyclerList.visibility=View.VISIBLE
+                                }
+                            }
+                            CoroutineScope(Dispatchers.IO).launch {
+                                routeDataList.clear()
+                                loadMyRouteData(docId,docOwner)
+                                listLocationAdapter.list=routeDataList
+                                withContext(Dispatchers.Main){
+                                    binding.routeDataList.run{
+                                        adapter=listLocationAdapter
+                                        layoutManager=LinearLayoutManager(this@MyRouteActivity)
+                                    }
+                                }
+                            }
                             Toast.makeText(this@MyRouteActivity, "보기", Toast.LENGTH_SHORT).show()
                         }
                         R.id.action_menu2->{
@@ -115,7 +143,6 @@ class MyRouteActivity : AppCompatActivity() {
                                 var data=loadFriendData()
                                 showFriendDialog(data,docId,docName)
                             }
-
                         }
                         else -> { //게시글로 만들기 클릭
                             Toast.makeText(this@MyRouteActivity, "게시글", Toast.LENGTH_SHORT).show()
@@ -140,7 +167,6 @@ class MyRouteActivity : AppCompatActivity() {
 
         })
     }
-
     suspend fun loadMyRouteList():Boolean{
         //내 루트리스트를 가져오는 함수
         routeList.clear()
@@ -162,6 +188,46 @@ class MyRouteActivity : AppCompatActivity() {
         } catch (e: FirebaseException) {
             Log.d("list_test", "error")
             false
+        }
+    }
+    private suspend fun loadMyRouteData(id:String,owner:String): Boolean {
+        //경로내의 여행지 리스트들을 가져오는 함수
+        var dataList= mutableListOf<Map<String,*>>()
+        return try {
+            var data: MutableMap<*, *>
+            Firebase.firestore.collection("user").document(owner).collection("route").document(id).get().addOnSuccessListener { documents->
+                routeName=documents.data?.get("tripname").toString()
+                data=documents.data as MutableMap<*,*>
+                dataList.addAll(data["routeList"] as List<Map<String,*>>)
+                dataList.forEach{
+                    routeDataList.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String,it["spending"] as String))
+                }
+            }.await()
+            true
+        } catch (e: FirebaseException) {
+            Log.d("list_test", "error")
+            true
+        }
+    }
+
+    private fun clickOrEnterSearch(){
+        searchText=binding.searchMyRouteText.text.toString()
+        CoroutineScope(Dispatchers.Main).launch{
+            if(searchText!=""){
+                //검색결과
+                routelistAdapter.list=searchRoute(searchText)
+                routelistAdapter.notifyDataSetChanged()
+                searchCheck=true
+            }else if(searchCheck==true){
+                //전체 결과
+                if(loadMyRouteList()==false){
+                    Toast.makeText(this@MyRouteActivity, "데이터 로드에 실패했습니다.",Toast.LENGTH_SHORT).show()
+                }else{
+                    routelistAdapter.list=routeList
+                    routelistAdapter.notifyDataSetChanged()
+                    searchCheck=false
+                }
+            }
         }
     }
     private fun searchRoute(text:String):MutableList<MyRouteDocument>{
