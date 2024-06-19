@@ -1,6 +1,7 @@
 package com.example.rootmap
 
 import android.graphics.Canvas
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ import kotlin.math.min
 class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
     var list = mutableListOf<MyRouteDocument>()
     lateinit var mode:String
+    lateinit var userId:String
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val binding =
             FriendLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -38,7 +40,12 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
             binding.apply {
                 friendName.text=myRouteDocument.docName
                 picture.visibility=View.GONE
-                friendId.visibility=View.GONE
+                if(myRouteDocument.owner!=userId)
+                    friendId.text="공유받은 경로"
+                else{
+                    //friendId.text="공유아님"
+                    friendId.visibility=View.GONE
+                }
             }
             if(mode=="View"){
                 binding.friendButton2.text="보기"

@@ -106,10 +106,10 @@ class MenuFragment3 : Fragment() {
     lateinit var listAdapter: RouteListAdapter
     lateinit var routelistAdapter: MyDocumentAdapter
     lateinit var myRouteListAdapter: ListLocationAdapter
+    lateinit var swipeHelperCallbackRoute: SwapeManageAdapter
 
     val db = Firebase.firestore
-    lateinit var myDb: CollectionReference
-    private var currentId: String? = null
+    private lateinit var currentId: String
 
     lateinit var searchText:String
     lateinit var userX:String
@@ -118,7 +118,9 @@ class MenuFragment3 : Fragment() {
     lateinit var clickLocationAdress:GeoPoint
     var layer: LabelLayer?=null
     lateinit var dialog:AlertDialog
-    lateinit var listdialog:AlertDialog
+    lateinit var routeDialog:RecyclerviewDialogBinding
+    lateinit var owner:String
+
     var routeName:String?=null
     private val readyCallback = object: KakaoMapReadyCallback(){
         override fun onMapReady(kakaoMap: KakaoMap) {
@@ -183,7 +185,7 @@ class MenuFragment3 : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            currentId = it.getString("id")
+            currentId = it.getString("id").toString()
         }
         fusedLocationProviderClient =
             LocationServices.getFusedLocationProviderClient(this.context)
@@ -202,8 +204,6 @@ class MenuFragment3 : Fragment() {
                 getLocation()
             }
         }
-        //DB
-        myDb = db.collection("user").document(currentId.toString()).collection("route")
         viewLifecycleOwner.lifecycleScope.async{
             locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION))
         }
@@ -278,8 +278,8 @@ class MenuFragment3 : Fragment() {
         }
         listAdapter= RouteListAdapter()
         routelistAdapter= MyDocumentAdapter()
+        routelistAdapter.userId=currentId.toString()
         myRouteListAdapter= ListLocationAdapter()
-        myRouteListAdapter.myDb=myDb
         binding.apply {
             recyclerView2.setHasFixedSize(true)
             recyclerView3.setHasFixedSize(true)
@@ -342,13 +342,14 @@ class MenuFragment3 : Fragment() {
             //내 경로 리스트의 추가 버튼 클릭 시 이벤트 구현
             override fun onClick(v: View, position: Int) {
                 var docId=routelistAdapter.list[position].docId
+                owner=routelistAdapter.list[position].owner
                 //해당 장소를 추가하기위해 새로운 팝업창 띄우기
                 viewLifecycleOwner.lifecycleScope.async {
                     loadListData.clear()
-                    loadMyRouteData(docId)
+                    loadMyRouteData(docId,owner)
                     loadListData.add(MyLocation(clickLocationName,clickLocationAdress,"","")) //해당 장소를 리스트에 추가
                     myRouteListAdapter.list=loadListData
-                    showListDialog(docId,"add")
+                    showListDialog(docId,"add",owner)
                 }
             }
             //경로 보기를 눌렀을 때 나오는 목록의 버튼(보기) 클릭시 // 경로 및 핀표시 추가
@@ -356,10 +357,11 @@ class MenuFragment3 : Fragment() {
                 dialog.dismiss()
                 var docId=routelistAdapter.list[position].docId
                 var docName=routelistAdapter.list[position].docName
+                owner=routelistAdapter.list[position].owner
 
                 viewLifecycleOwner.lifecycleScope.async {
                     loadListData.clear()
-                    loadMyRouteData(docId)
+                    loadMyRouteData(docId,owner)
                     myRouteListAdapter.docId=docId
                     myRouteListAdapter.list=loadListData
                     myRouteListAdapter.notifyDataSetChanged()
@@ -380,14 +382,19 @@ class MenuFragment3 : Fragment() {
                 }
                 binding.routeSaveButton.setOnClickListener {
                     var text=binding.routeNameText.text.toString()
-                    myDb.document(docId).update(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
+                    returnDb(owner).document(docId).update(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
                         Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
                     }
                 }
             }
             //삭제 버튼을 눌렀을 때 DB에서 삭제하는 기능
             override fun deleteDoc(v: View, position: Int) {
-                showDeleteDialog(position)
+                if(routelistAdapter.list[position].owner==currentId.toString())
+                    showDeleteDialog(position)
+                else{
+                    swipeHelperCallbackRoute.removeClamp(routeDialog.listView)
+                    Toast.makeText(this@MenuFragment3.context, "경로 생성자만이 삭제할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                }
             }
         })
 
@@ -421,6 +428,10 @@ class MenuFragment3 : Fragment() {
         val inputMethodManager =
             getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    fun returnDb(owner:String):CollectionReference{
+        return db.collection("user").document(owner).collection("route")
     }
 
     private fun makeLine(kakaomap: KakaoMap,list: MutableList<MyLocation>){
@@ -503,10 +514,16 @@ class MenuFragment3 : Fragment() {
     suspend fun loadMyList(): MutableList<MyRouteDocument> {
         var list= mutableListOf<MyRouteDocument>()
         return try {
-            val myList = myDb.get().await()
+            val myList = returnDb(currentId).get().await()
             if(!myList.isEmpty){
-                for (doc in myList.documents) {
-                    list.add(MyRouteDocument(doc.data?.get("tripname").toString(),doc.id))
+                myList.forEach {
+                    list.add(MyRouteDocument(it.data?.get("tripname").toString(),it.id,currentId))
+                }
+            }
+            val sharedList=db.collection("user").document(currentId).collection("sharedList").get().await()
+            if(!sharedList.isEmpty){
+                sharedList.forEach {
+                    list.add(MyRouteDocument(it.data?.get("docName").toString(),it.data?.get("docId").toString(),it.data?.get("created").toString()))
                 }
             }
             list
@@ -515,18 +532,19 @@ class MenuFragment3 : Fragment() {
             list
         }
     }
-    suspend fun loadMyRouteData(id:String): Boolean {
+    suspend fun loadMyRouteData(id:String,owner:String): Boolean {
+        //경로내의 여행지 리스트들을 가져오는 함수
         var dataList= mutableListOf<Map<String,*>>()
         return try {
             var data: MutableMap<*, *>
-            myDb.document(id).get().addOnSuccessListener { documents->
-                routeName=documents.data?.get("tripname").toString()
-                data=documents.data as MutableMap<*,*>
-                dataList.addAll(data["routeList"] as List<Map<String,*>>)
-                dataList.forEach{
-                    loadListData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String,it["spending"] as String))
-                }
-            }.await()
+            db.collection("user").document(owner).collection("route").document(id).get().addOnSuccessListener { documents->
+                    routeName=documents.data?.get("tripname").toString()
+                    data=documents.data as MutableMap<*,*>
+                    dataList.addAll(data["routeList"] as List<Map<String,*>>)
+                    dataList.forEach{
+                        loadListData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String,it["spending"] as String))
+                    }
+                }.await()
             true
         } catch (e: FirebaseException) {
             Log.d("list_test", "error")
@@ -535,29 +553,29 @@ class MenuFragment3 : Fragment() {
     }
     private fun showDialog(boolean: Boolean):AlertDialog{ //다이어로그로 팝업창 구현
         //boolean은 데이터의 유무-> true 있음, false 없음
-        val dBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
-        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        routeDialog = RecyclerviewDialogBinding.inflate(layoutInflater)
+        val dialogBuild = AlertDialog.Builder(context).setView(routeDialog.root)
         dialogBuild.setTitle("내 여행 리스트")
-        dBinding.listView.adapter = routelistAdapter
-        dBinding.listView.layoutManager = LinearLayoutManager(context)
-        val swipeHelperCallback = SwapeManageAdapter(routelistAdapter).apply {
+        routeDialog.listView.adapter = routelistAdapter
+        routeDialog.listView.layoutManager = LinearLayoutManager(context)
+         swipeHelperCallbackRoute = SwapeManageAdapter(routelistAdapter).apply {
             // 스와이프한 뒤 고정시킬 위치 지정
             setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
         }
-        ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(dBinding.listView)
-        dBinding.listView.setOnTouchListener { _, _ ->
-            swipeHelperCallback.removePreviousClamp(dBinding.listView)
+        ItemTouchHelper(swipeHelperCallbackRoute).attachToRecyclerView(routeDialog.listView)
+        routeDialog.listView.setOnTouchListener { _, _ ->
+            swipeHelperCallbackRoute.removePreviousClamp(routeDialog.listView)
             false
         }
         if(!boolean){
-            dBinding.checkText.apply {
+            routeDialog.checkText.apply {
                 text="아직 경로가 없습니다. 새로운 경로를 만들어주세요."
                 visibility=View.VISIBLE
             }
         }
-        dBinding.addTripRouteText.text="새로운 경로 생성"
-        dBinding.addTripRouteText.setOnClickListener {
-            showListDialog("","make")
+        routeDialog.addTripRouteText.text="새로운 경로 생성"
+        routeDialog.addTripRouteText.setOnClickListener {
+            showListDialog("","make",currentId)
         }
         val dialog = dialogBuild.show()
         return dialog
@@ -573,19 +591,20 @@ class MenuFragment3 : Fragment() {
         dBinding.bButton.setOnClickListener {
             //검정 버튼의 기능 구현 ↓
             var docId=routelistAdapter.list[position].docId
-            myDb.document(docId).delete()
+            returnDb(currentId).document(docId).delete()
             routelistAdapter.list.removeAt(position)
             routelistAdapter.notifyItemRemoved(position)
             dialog.dismiss()
         }
         dBinding.wButton.setOnClickListener {//취소버튼
             //회색 버튼의 기능 구현 ↓
+            swipeHelperCallbackRoute.removeClamp(routeDialog.listView)
             dialog.dismiss()
         }
     }
 
-    private fun showListDialog(docId:String,mode:String):AlertDialog{ //다이어로그로 팝업창 구현
-        val dBinding = RouteaddLayoutBinding.inflate(layoutInflater)
+    private fun showListDialog(docId:String,mode:String,owner: String):AlertDialog{ //다이어로그로 팝업창 구현
+        var dBinding = RouteaddLayoutBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
         dialogBuild.setCancelable(false)
         if(mode=="make"){ //즉, 새로운 여행 경로 만들기 모드
@@ -611,7 +630,7 @@ class MenuFragment3 : Fragment() {
             // 구분선 추가
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
             dBinding.dialogListView.setOnTouchListener { _, _ ->
-                swipeHelperCallback.removePreviousClamp(dBinding.dialogListView)
+                swipeHelperCallbackRoute.removePreviousClamp(routeDialog.listView)
                 false
             }
         }
@@ -628,7 +647,8 @@ class MenuFragment3 : Fragment() {
                     Toast.makeText(context,"제목을 입력하세요.",Toast.LENGTH_SHORT).show()
                 }else{
                     //아래 형식으로 저장
-                    myDb.document().set(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
+                    var sharedList= listOf<String>()
+                    returnDb(currentId).document().set(hashMapOf("tripname" to text,"routeList" to loadListData,"created" to currentId,"shared" to sharedList)).addOnSuccessListener {
                         dialog.dismiss()
                         Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
                     }
@@ -639,7 +659,7 @@ class MenuFragment3 : Fragment() {
                     dialog.dismiss()
                 }
             }else{//여행 경로에 장소 추가 모드
-                myDb.document(docId).update(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
+                returnDb(owner).document(docId).update(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
                     dialog.dismiss()
                     Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
                 }

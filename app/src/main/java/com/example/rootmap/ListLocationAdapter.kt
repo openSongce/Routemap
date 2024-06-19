@@ -26,7 +26,6 @@ import kotlin.math.min
 class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  {
     var list = mutableListOf<MyLocation>()
     lateinit var parent: ViewGroup
-    lateinit var myDb: CollectionReference
     lateinit var docId:String
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         this.parent =parent
@@ -115,7 +114,6 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
         }
 
     }
-    // 현재 선택된 데이터와 드래그한 위치에 있는 데이터를 교환
 
     interface OnItemClickListener {
         fun onClick(v: View, position: Int, textViewOptions: TextView)
@@ -261,6 +259,14 @@ class DragManageAdapter(private var recyclerViewAdapter : ListLocationAdapter) :
             previousPosition = null
         }
 
+    }
+    fun removeClamp(recyclerView: RecyclerView){
+        currentPosition?.let {
+            val viewHolder = recyclerView.findViewHolderForAdapterPosition(it) ?: return
+            getView(viewHolder).animate().x(0f).setDuration(100L).start()
+            setTag(viewHolder, false)
+            currentPosition = null
+        }
     }
 
 }

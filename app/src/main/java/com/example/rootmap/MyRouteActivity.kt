@@ -48,6 +48,7 @@ class MyRouteActivity : AppCompatActivity() {
 
         routelistAdapter= MyDocumentAdapter()
         routelistAdapter.mode="MyRoute"
+        routelistAdapter.userId=currentId
         swipeHelperCallback = SwapeManageAdapter(routelistAdapter).apply {
             // 스와이프한 뒤 고정시킬 위치 지정
             setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
@@ -100,6 +101,8 @@ class MyRouteActivity : AppCompatActivity() {
             //리스트의 버튼 클릭시 동작
             override fun onClick(v: View, position: Int) {
                 //버튼 눌렀을때의 코드
+                var docId=routelistAdapter.list[position].docId
+                var docName=routelistAdapter.list[position].docName
                 val popup = PopupMenu(this@MyRouteActivity,v )
                 popup.inflate(R.menu.myroute_list_layout)
                 popup.setOnMenuItemClickListener { item ->
@@ -109,8 +112,8 @@ class MyRouteActivity : AppCompatActivity() {
                         }
                         R.id.action_menu2->{
                             CoroutineScope(Dispatchers.Main).launch{
-                                var data=loadData()
-                                showDialog(data)
+                                var data=loadFriendData()
+                                showFriendDialog(data,docId,docName)
                             }
 
                         }
@@ -127,7 +130,12 @@ class MyRouteActivity : AppCompatActivity() {
             }
             override fun deleteDoc(v: View, position: Int) {
                 //삭제버튼 코드
-                showDeleteDialog(position)
+                if(routelistAdapter.list[position].owner==currentId)
+                     showDeleteDialog(position)
+                else{
+                    swipeHelperCallback.removeClamp(binding.recyclerList)
+                    Toast.makeText(this@MyRouteActivity, "경로 생성자만이 삭제할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                }
             }
 
         })
@@ -139,8 +147,15 @@ class MyRouteActivity : AppCompatActivity() {
         return try {
             val myList = myDb.collection("route").get().await()
             if(!myList.isEmpty){
-                for (doc in myList.documents) {
-                    routeList.add(MyRouteDocument(doc.data?.get("tripname").toString(),doc.id))
+                myList.forEach {
+                    routeList.add(MyRouteDocument(it.data?.get("tripname").toString(),it.id,currentId))
+                }
+            }
+            //공유리스트 추가
+            val sharedList=myDb.collection("sharedList").get().await()
+            if(!sharedList.isEmpty){
+                sharedList.forEach {
+                    routeList.add(MyRouteDocument(it.data?.get("docName").toString(),it.data?.get("docId").toString(),it.data?.get("created").toString()))
                 }
             }
             true
@@ -161,24 +176,6 @@ class MyRouteActivity : AppCompatActivity() {
         }
         return searchList
     }
-    suspend fun loadSearchRouteList(text:String):MutableList<MyRouteDocument>{
-        //검색한 루트리스트를 가져오는 함수
-        //텍스트일부만으로 검색이 안되어서 이 함수는 보류
-        var list= mutableListOf<MyRouteDocument>()
-        return try {
-            val myList = myDb.collection("route").whereEqualTo("tripname",text).get().await()
-            if(!myList.isEmpty){
-                for (doc in myList.documents) {
-                    list.add(MyRouteDocument(doc.data?.get("tripname").toString(),doc.id))
-                }
-            }
-            list
-        } catch (e: FirebaseException) {
-            Log.d("list_test", "error")
-            list
-        }
-    }
-
 
     fun showDeleteDialog(position: Int){
         val dBinding = DialogLayoutBinding.inflate(layoutInflater)
@@ -203,7 +200,7 @@ class MyRouteActivity : AppCompatActivity() {
         }
     }
 
-    private fun showDialog(friendList:MutableList<Friend>):AlertDialog{ //다이어로그로 팝업창 구현
+     private fun showFriendDialog(friendList:MutableList<Friend>,docId:String,docName:String):AlertDialog{ //다이어로그로 팝업창 구현
         val dBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(this).setView(dBinding.root)
         dialogBuild.setTitle("My friends")
@@ -217,16 +214,26 @@ class MyRouteActivity : AppCompatActivity() {
             listView.adapter = myFriendAdapter
             listView.layoutManager = LinearLayoutManager(this@MyRouteActivity)
             addTripRouteText.text="공유하기"
-            addTripRouteText.setOnClickListener{
-                //체크된 친구와 여행경로 공유
-                Toast.makeText(this@MyRouteActivity, "공유", Toast.LENGTH_SHORT).show()
-            }
         }
         val dialog = dialogBuild.show()
+        dBinding.addTripRouteText.setOnClickListener{
+            //체크된 친구와 여행경로 공유
+            var checkFriends=myFriendAdapter.mChecked.toList()
+            //체크된 친구를 shared에 저장(자신의 DB데이터에)
+            myDb.collection("route").document(docId).update("shared",checkFriends).addOnSuccessListener {
+                Toast.makeText(this@MyRouteActivity, "공유", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+            checkFriends.forEach {
+                Firebase.firestore.collection("user").document(it).collection("sharedList").document().set(
+                    hashMapOf("created" to currentId,"docId" to docId,"docName" to docName)
+                )
+            }
+        }
         return dialog
     }
 
-    suspend fun loadData(): MutableList<Friend> {
+    suspend fun loadFriendData(): MutableList<Friend> {
         var friendList= mutableListOf<Friend>()
         return try {
             val fr_add = myDb.collection("friend").whereEqualTo("state", "2").get().await()
