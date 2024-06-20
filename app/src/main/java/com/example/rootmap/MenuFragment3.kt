@@ -59,7 +59,10 @@ import com.kakao.vectormap.route.RouteLineOptions
 import com.kakao.vectormap.route.RouteLinePattern
 import com.kakao.vectormap.route.RouteLineSegment
 import com.kakao.vectormap.route.RouteLineStyle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import okhttp3.Route
 import retrofit2.Call
@@ -278,7 +281,7 @@ class MenuFragment3 : Fragment() {
         }
         listAdapter= RouteListAdapter()
         routelistAdapter= MyDocumentAdapter()
-        routelistAdapter.userId=currentId.toString()
+        routelistAdapter.userId=currentId
         myRouteListAdapter= ListLocationAdapter()
         binding.apply {
             recyclerView2.setHasFixedSize(true)
@@ -382,8 +385,18 @@ class MenuFragment3 : Fragment() {
                 }
                 binding.routeSaveButton.setOnClickListener {
                     var text=binding.routeNameText.text.toString()
-                    returnDb(owner).document(docId).update(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
+                    val originalData= returnDb(owner).document(docId)
+                    originalData.update(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
                         Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
+                    }
+                    if(text!=docName){
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val frList=originalData.get().await().data?.get("shared") as List<String>
+                            frList.forEach {
+                                Firebase.firestore.collection("user").document(it).collection("sharedList").document(docId).update("docName",text)
+                            }
+                        }
+                        routelistAdapter.notifyDataSetChanged()
                     }
                 }
             }

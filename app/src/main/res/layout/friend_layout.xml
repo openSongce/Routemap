@@ -16,12 +16,12 @@
                     android:layout_height="match_parent"
                     android:background="@color/white"
                     android:layout_weight="1"/>
-            <TextView
+            <ImageButton
                     android:id="@+id/tvRemove"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@color/red"
-                    android:text="삭제"
+                    android:src="@android:drawable/ic_menu_delete"
                     android:textColor="@color/white"
                     android:gravity="center"
                     android:layout_weight="3"/>

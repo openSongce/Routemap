@@ -43,8 +43,7 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
                 if(myRouteDocument.owner!=userId)
                     friendId.text="공유받은 경로"
                 else{
-                    //friendId.text="공유아님"
-                    friendId.visibility=View.GONE
+                    friendId.text=""
                 }
             }
             if(mode=="View"){

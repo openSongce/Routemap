@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.forEach
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -67,11 +68,11 @@ class MyRouteActivity : AppCompatActivity() {
             // 스와이프한 뒤 고정시킬 위치 지정
             setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
         }
-        ItemTouchHelper(swipeHelperCallbackData).attachToRecyclerView(binding.routeDataList)
+        ItemTouchHelper(swipeHelperCallbackData).attachToRecyclerView(binding.routeDataListView)
         // 구분선 추가
-        binding.routeDataList.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
-        binding.routeDataList.setOnTouchListener { _, _ ->
-            swipeHelperCallbackData.removePreviousClamp(binding.routeDataList)
+        binding.routeDataListView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
+        binding.routeDataListView.setOnTouchListener { _, _ ->
+            swipeHelperCallbackData.removePreviousClamp(binding.routeDataListView)
             false
         }
         CoroutineScope(Dispatchers.Main).launch {
@@ -117,12 +118,35 @@ class MyRouteActivity : AppCompatActivity() {
                         R.id.action_menu1 -> { //보기 클릭
                             binding.run {
                                 recyclerList.visibility=View.INVISIBLE
-                                routeDataList.visibility=View.VISIBLE
+                                routeDataListView.visibility=View.VISIBLE
                                 routeCloseButton.visibility=View.VISIBLE
+                                routeSaveButton2.visibility=View.VISIBLE
+                                routeNameText2.visibility=View.VISIBLE
+                                routeNameText2.setText(docName)
                                 routeCloseButton.setOnClickListener {
-                                    routeDataList.visibility=View.GONE
+                                    routeDataListView.visibility=View.GONE
                                     routeCloseButton.visibility=View.GONE
+                                    routeSaveButton2.visibility=View.GONE
                                     recyclerList.visibility=View.VISIBLE
+                                    routeNameText2.visibility=View.GONE
+                                }
+                                routeSaveButton2.setOnClickListener {
+                                    //저장버튼을 눌렀을 때
+                                    var text=binding.routeNameText2.text.toString()
+                                    val originalData=MenuFragment3.getInstance()!!.returnDb(docOwner).document(docId)
+                                    originalData.update(hashMapOf("tripname" to text,"routeList" to routeDataList)).addOnSuccessListener {
+                                        Toast.makeText(this@MyRouteActivity,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
+                                    }
+                                    //공유 경로인 경우, 경로 이름 변경시 sharedList의 docName 전부 변경
+                                    if(text!=docName){
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            val frList=originalData.get().await().data?.get("shared") as List<String>
+                                            frList.forEach {
+                                                Firebase.firestore.collection("user").document(it).collection("sharedList").document(docId).update("docName",text)
+                                            }
+                                        }
+                                       // routelistAdapter.notifyDataSetChanged()
+                                    }
                                 }
                             }
                             CoroutineScope(Dispatchers.IO).launch {
@@ -130,13 +154,12 @@ class MyRouteActivity : AppCompatActivity() {
                                 loadMyRouteData(docId,docOwner)
                                 listLocationAdapter.list=routeDataList
                                 withContext(Dispatchers.Main){
-                                    binding.routeDataList.run{
+                                    binding.routeDataListView.run{
                                         adapter=listLocationAdapter
                                         layoutManager=LinearLayoutManager(this@MyRouteActivity)
                                     }
                                 }
                             }
-                            Toast.makeText(this@MyRouteActivity, "보기", Toast.LENGTH_SHORT).show()
                         }
                         R.id.action_menu2->{
                             CoroutineScope(Dispatchers.Main).launch{
@@ -290,8 +313,9 @@ class MyRouteActivity : AppCompatActivity() {
                 Toast.makeText(this@MyRouteActivity, "공유", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
             }
+            //체크된 친구의 sharedList에 추가
             checkFriends.forEach {
-                Firebase.firestore.collection("user").document(it).collection("sharedList").document().set(
+                Firebase.firestore.collection("user").document(it).collection("sharedList").document(docId).set(
                     hashMapOf("created" to currentId,"docId" to docId,"docName" to docName)
                 )
             }
