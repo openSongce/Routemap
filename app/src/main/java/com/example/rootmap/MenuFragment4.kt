@@ -96,7 +96,7 @@ class MenuFragment4 : Fragment() {
             Toast.makeText(this.context, "루트 이동 구현하기", Toast.LENGTH_SHORT).show()
         }
         binding.favoriteTouristSpotsButton.setOnClickListener {
-            val intent = Intent(context, FavoriteTouristActivity::class.java)
+            val intent = Intent(requireContext(), FavoriteTouristSpotsActivity::class.java)
             startActivity(intent)
         }
         binding.logoutButton.setOnClickListener {
