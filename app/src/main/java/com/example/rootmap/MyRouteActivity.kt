@@ -1,10 +1,13 @@
 package com.example.rootmap
 
+import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -137,6 +140,7 @@ class MyRouteActivity : AppCompatActivity() {
                                     originalData.update(hashMapOf("tripname" to text,"routeList" to routeDataList)).addOnSuccessListener {
                                         Toast.makeText(this@MyRouteActivity,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
                                     }
+                                    this@MyRouteActivity.hideKeyboard(binding.root)
                                     //공유 경로인 경우, 경로 이름 변경시 sharedList의 docName 전부 변경
                                     if(text!=docName){
                                         CoroutineScope(Dispatchers.IO).launch {
@@ -145,7 +149,8 @@ class MyRouteActivity : AppCompatActivity() {
                                                 Firebase.firestore.collection("user").document(it).collection("sharedList").document(docId).update("docName",text)
                                             }
                                         }
-                                       // routelistAdapter.notifyDataSetChanged()
+                                        routelistAdapter.list[position].docName=text
+                                        routelistAdapter.notifyItemChanged(position)
                                     }
                                 }
                             }
@@ -252,6 +257,13 @@ class MyRouteActivity : AppCompatActivity() {
                 }
             }
         }
+       this.hideKeyboard(binding.root)
+    }
+
+    private fun Context.hideKeyboard(view: View) {
+        val inputMethodManager =
+            getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
     private fun searchRoute(text:String):MutableList<MyRouteDocument>{
         var searchList= mutableListOf<MyRouteDocument>()

@@ -214,11 +214,7 @@ class MenuFragment3 : Fragment() {
             viewLifecycleOwner.lifecycleScope.async{
                 routelistAdapter.list=loadMyList() //어댑터에 데이터 연결
                 routelistAdapter.mode="View"
-                if(!routelistAdapter.list.isNullOrEmpty()){
-                    dialog=showDialog(true)
-                }else{
-                    dialog=showDialog(false)
-                }
+                dialog=showDialog()
             }
         }
         binding.locationButton.setOnClickListener {
@@ -332,11 +328,7 @@ class MenuFragment3 : Fragment() {
                 viewLifecycleOwner.lifecycleScope.async {
                     routelistAdapter.list=loadMyList() //어댑터에 데이터 연결
                     routelistAdapter.mode="Add"
-                    if(!routelistAdapter.list.isNullOrEmpty()){
-                        dialog=showDialog(true)
-                    }else{
-                        dialog=showDialog(false)
-                    }
+                    dialog=showDialog()
                 }
             }
         })
@@ -437,7 +429,7 @@ class MenuFragment3 : Fragment() {
         binding.recyclerView3.layoutManager = LinearLayoutManager(context)
         super.onViewCreated(view, savedInstanceState)
     }
-    fun Context.hideKeyboard(view: View) {
+    private fun Context.hideKeyboard(view: View) {
         val inputMethodManager =
             getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
@@ -564,7 +556,7 @@ class MenuFragment3 : Fragment() {
             true
         }
     }
-    private fun showDialog(boolean: Boolean):AlertDialog{ //다이어로그로 팝업창 구현
+    private fun showDialog():AlertDialog{ //다이어로그로 팝업창 구현
         //boolean은 데이터의 유무-> true 있음, false 없음
         routeDialog = RecyclerviewDialogBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(routeDialog.root)
@@ -580,7 +572,7 @@ class MenuFragment3 : Fragment() {
             swipeHelperCallbackRoute.removePreviousClamp(routeDialog.listView)
             false
         }
-        if(!boolean){
+        if(routelistAdapter.list.isNullOrEmpty()){
             routeDialog.checkText.apply {
                 text="아직 경로가 없습니다. 새로운 경로를 만들어주세요."
                 visibility=View.VISIBLE

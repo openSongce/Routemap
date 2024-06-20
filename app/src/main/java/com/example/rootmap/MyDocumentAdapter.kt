@@ -88,6 +88,7 @@ class SwapeManageAdapter(private var recyclerViewAdapter2 : MyDocumentAdapter) :
     private var previousPosition: Int? = null   // 이전에 선택했던 recycler view의 position
     private var currentDx = 0f                  // 현재 x 값
     private var clamp = 0f                      // 고정시킬 크기
+    private var check=false
 
     override fun getMovementFlags(
         recyclerView: RecyclerView,
@@ -208,7 +209,6 @@ class SwapeManageAdapter(private var recyclerViewAdapter2 : MyDocumentAdapter) :
     fun removePreviousClamp(recyclerView: RecyclerView) {
         // 현재 선택한 view가 이전에 선택한 view와 같으면 패스
         if (currentPosition == previousPosition) return
-
         // 이전에 선택한 위치의 view 고정 해제
         previousPosition?.let {
             val viewHolder = recyclerView.findViewHolderForAdapterPosition(it) ?: return
@@ -216,7 +216,6 @@ class SwapeManageAdapter(private var recyclerViewAdapter2 : MyDocumentAdapter) :
             setTag(viewHolder, false)
             previousPosition = null
         }
-
     }
 
     fun removeClamp(recyclerView: RecyclerView){
