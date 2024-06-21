@@ -293,6 +293,7 @@ class MenuFragment3 : Fragment() {
         ItemTouchHelper(swipeHelperCallback).attachToRecyclerView(binding.recyclerView3)
         // 구분선 추가
         binding.recyclerView3.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+        binding.recyclerView2.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         binding.recyclerView3.setOnTouchListener { _, _ ->
             swipeHelperCallback.removePreviousClamp(binding.recyclerView3)
             false

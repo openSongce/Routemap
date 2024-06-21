@@ -10,13 +10,13 @@
         android:icon="@drawable/post"
         android:title="여행 경로 게시판" />
     <item
-        android:id="@+id/menuPlans"
-        android:icon="@drawable/plans"
-        android:title="여행 일정" />
+            android:id="@+id/menuPlans"
+            android:icon="@android:drawable/ic_menu_month"
+            android:title="여행 일정" />
     <item
-        android:id="@+id/menuMoney"
-        android:icon="@drawable/plans"
-        android:title="가계부" />
+            android:id="@+id/menuMoney"
+            android:icon="@drawable/money"
+            android:title="가계부" />
 
     <item
     android:id="@+id/menuFriend"

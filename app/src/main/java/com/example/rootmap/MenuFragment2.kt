@@ -65,7 +65,6 @@ class MenuFragment2 : Fragment() {
                 applyFilters(popupBinding)
             }
             .create()
-
         dialog.show()
     }
 

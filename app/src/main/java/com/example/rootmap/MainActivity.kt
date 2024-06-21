@@ -19,6 +19,7 @@ import com.example.myapplication.Friend
 import com.example.rootmap.databinding.ActivityMainBinding
 import com.example.rootmap.databinding.HeaderBinding
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
@@ -67,8 +68,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
         }
-
-
         auth = FirebaseAuth.getInstance()
         //binding.emailTv.text = auth.currentUser?.email
         val contextList = listOf(
@@ -80,13 +79,29 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val adapter = HomeFragmentAdapter(this)
         adapter.fragmentList = contextList
         binding.viewPager.adapter = adapter
-        binding.viewPager.setUserInputEnabled(false);
+        binding.viewPager.setUserInputEnabled(false)
+        binding.pageName.text="메인"
 
         //하단에 탭 바 구성, 클릭 시 해당 프레그먼트로 이동
         val tabTitle = listOf<String>("메인", "게시판", "지도", "마이페이지")
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = tabTitle[position]
         }.attach()
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener{
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                binding.pageName.text=when(tab!!.text){
+                    "메인"->"메인"
+                    "게시판"->"여행 경로 게시판"
+                    "지도"->"지도"
+                    "마이페이지"->"마이페이지"
+                    else->""
+                }
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+            }
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+            }
+        })
         //좌측 상단의 버튼 클릭-> 사이드메뉴 나옴
         binding.menuButton.setOnClickListener() {
             binding.mainDrawerLayout.openDrawer((GravityCompat.START))

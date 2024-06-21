@@ -173,7 +173,14 @@ class MyRouteActivity : AppCompatActivity() {
                             }
                         }
                         else -> { //게시글로 만들기 클릭
-                            Toast.makeText(this@MyRouteActivity, "게시글", Toast.LENGTH_SHORT).show()
+                            if(routelistAdapter.list[position].owner==currentId){
+                            // Toast.makeText(this@MyRouteActivity, "게시글", Toast.LENGTH_SHORT).show()
+                               // MenuFragment2.getInstance()!!.showFilterPopup()
+                            }
+                            else{
+                                swipeHelperCallback.removeClamp(binding.recyclerList)
+                                Toast.makeText(this@MyRouteActivity, "경로 생성자만이 사용할 수 있는 기능입니다.", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
                     true
@@ -304,7 +311,7 @@ class MyRouteActivity : AppCompatActivity() {
      private fun showFriendDialog(friendList:MutableList<Friend>,docId:String,docName:String):AlertDialog{ //다이어로그로 팝업창 구현
         val dBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(this).setView(dBinding.root)
-        dialogBuild.setTitle("My friends")
+        dialogBuild.setTitle("공유할 친구 목록")
         var myFriendAdapter=FriendAdapter()
         myFriendAdapter.run {
             mode="RouteShare"
