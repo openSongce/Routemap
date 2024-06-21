@@ -2,31 +2,34 @@ package com.example.rootmap
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.rootmap.databinding.ActivityFavoriteTouristBinding
+import com.example.rootmap.databinding.ActivityFavoriteTouristSpotsBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import kotlinx.coroutines.*
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory
 
 class FavoriteTouristSpotsActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityFavoriteTouristBinding
-    private lateinit var apiService: TouristApiService
-    private lateinit var database: DatabaseReference
+    private lateinit var binding: ActivityFavoriteTouristSpotsBinding
     private lateinit var auth: FirebaseAuth
-    private val job = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.Main + job)
+    private lateinit var database: DatabaseReference
+    private lateinit var apiService: TouristApiService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityFavoriteTouristBinding.inflate(layoutInflater)
+        binding = ActivityFavoriteTouristSpotsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Firebase Auth 초기화
+        auth = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance().reference
 
         // Retrofit 초기화
         val retrofit = Retrofit.Builder()
@@ -36,95 +39,92 @@ class FavoriteTouristSpotsActivity : AppCompatActivity() {
 
         apiService = retrofit.create(TouristApiService::class.java)
 
-        // Firebase Database 초기화
-        database = FirebaseDatabase.getInstance().reference
-        auth = FirebaseAuth.getInstance()
-
-        fetchSelectedTouristInfo()
+        // 데이터베이스에서 좋아요한 관광지 가져오기
+        fetchFavoriteTouristSpots()
     }
 
-    private fun fetchSelectedTouristInfo() {
-        coroutineScope.launch {
-            val allItems = mutableListOf<TouristItem>()
-            val deferredList = mutableListOf<Deferred<Unit>>()
-            val areaCodes = listOf(1, 2, 3, 4, 5, 6, 7, 8, 31, 32) // 대표적인 지역 코드만 사용
-            val contentTypeIds = listOf(12, 14, 15, 25, 28, 32, 38, 39) // 대표적인 콘텐츠 타입만 사용
-
-            for (areaCode in areaCodes) {
-                for (contentTypeId in contentTypeIds) {
-                    val deferred = async(Dispatchers.IO) {
-                        fetchTouristInfo(areaCode, contentTypeId) { items ->
-                            synchronized(allItems) {
-                                allItems.addAll(items)
+    private fun fetchFavoriteTouristSpots() {
+        auth.currentUser?.uid?.let { userId ->
+            database.child("userLikes").child(userId)
+                .orderByValue().equalTo(true)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        val likedTitles = dataSnapshot.children.mapNotNull { it.key }
+                        if (likedTitles.isEmpty()) {
+                            displayNoFavoritesMessage()
+                        } else {
+                            likedTitles.forEach { title ->
+                                fetchTouristSpotByTitle(title)
                             }
                         }
                     }
-                    deferredList.add(deferred)
-                }
-            }
 
-            deferredList.awaitAll()
-            filterLikedItems(allItems)
+                    override fun onCancelled(databaseError: DatabaseError) {
+                        Log.w("FavoriteTouristSpots", "fetchFavoriteTouristSpots:onCancelled", databaseError.toException())
+                    }
+                })
         }
     }
 
-    private fun fetchTouristInfo(areaCode: Int, contentTypeId: Int, callback: (List<TouristItem>) -> Unit) {
-        apiService.getTouristInfo(
-            numOfRows = 10, // 한 번에 적은 수의 데이터를 가져옵니다.
-            pageNo = 1, // 첫 번째 페이지의 데이터를 가져옵니다.
-            mobileOS = "AND",
-            mobileApp = "MobileApp",
-            contentTypeId = contentTypeId,
-            areaCode = areaCode,
-            serviceKey = "iIzVkyvN4jIuoBR82vVZ0iFXlV65w0gsaiuOlUboGQ45v7PnBXkVOsDoBxoqMul10rfSMk7J+X5YKBxqu2ANRQ=="
-        ).enqueue(object : Callback<TouristResponse> {
-            override fun onResponse(
-                call: Call<TouristResponse>,
-                response: Response<TouristResponse>
-            ) {
-                if (response.isSuccessful) {
-                    val items = response.body()?.body?.items?.item ?: emptyList()
-                    callback(items)
-                } else {
-                    Log.e("API_ERROR", "Response code: ${response.code()}")
-                    callback(emptyList())
+    private fun fetchTouristSpotByTitle(title: String) {
+        lifecycleScope.launch {
+            val touristItem = try {
+                withContext(Dispatchers.IO) {
+                    val response = apiService.searchKeyword(
+                        keyword = title,
+                        numOfRows = 10,
+                        pageNo = 1,
+                        mobileOS = "AND",
+                        mobileApp = "Test",
+                        serviceKey = "iIzVkyvN4jIuoBR82vVZ0iFXlV65w0gsaiuOlUboGQ45v7PnBXkVOsDoBxoqMul10rfSMk7J+X5YKBxqu2ANRQ=="
+                    ).execute()
+                    if (response.isSuccessful) {
+                        response.body()?.body?.items?.item?.firstOrNull { it.title == title }?.apply {
+                            // 좋아요 수를 Firebase에서 가져오기
+                            likeCount = fetchLikeCount(title)
+                            isLiked = true
+                        }
+                    } else {
+                        Log.e("FavoriteTouristSpots", "API call failed: ${response.errorBody()?.string()}")
+                        null
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e("FavoriteTouristSpots", "Network request failed", e)
+                null
             }
 
-            override fun onFailure(call: Call<TouristResponse>, t: Throwable) {
-                Log.e("API_FAILURE", "Failed to fetch data", t)
-                callback(emptyList())
+            touristItem?.let {
+                addTouristItemToUI(it)
             }
-        })
-    }
-
-    private fun filterLikedItems(allItems: List<TouristItem>) {
-        val userId = auth.currentUser?.uid ?: return
-        database.child("userLikes").child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val likedContentIds = dataSnapshot.children.filter {
-                    it.getValue(Boolean::class.java) == true
-                }.mapNotNull { it.key }
-                val likedItems = allItems.filter { likedContentIds.contains(it.contentid) }
-                displayLikedItems(likedItems)
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                Log.e("FavoriteTouristSpots", "Failed to fetch liked items", databaseError.toException())
-            }
-        })
-    }
-
-    private fun displayLikedItems(items: List<TouristItem>) {
-        val adapter = TouristAdapter(items, database, auth) { item ->
-            // 아이템 클릭 시 동작을 정의할 수 있습니다.
         }
-        binding.recyclerView.layoutManager = LinearLayoutManager(this@FavoriteTouristSpotsActivity)
+    }
+
+    private suspend fun fetchLikeCount(title: String): Int {
+        return try {
+            val snapshot = database.child("likes").child(title).get().await()
+            snapshot.getValue(Int::class.java) ?: 0
+        } catch (e: Exception) {
+            Log.e("FavoriteTouristSpots", "Failed to fetch like count for $title", e)
+            0
+        }
+    }
+
+    private fun addTouristItemToUI(touristItem: TouristItem) {
+        val currentList = (binding.recyclerView.adapter as? TouristAdapter)?.items?.toMutableList() ?: mutableListOf()
+        currentList.add(touristItem)
+        val adapter = TouristAdapter(currentList, database, auth) { item ->
+            // Tourist item click handler (if needed)
+        }
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
+        binding.noFavoritesText.visibility = View.GONE
+        binding.recyclerView.visibility = View.VISIBLE
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        job.cancel()
+    private fun displayNoFavoritesMessage() {
+        binding.noFavoritesText.visibility = View.VISIBLE
+        binding.recyclerView.visibility = View.GONE
     }
+
 }

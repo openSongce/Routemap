@@ -1,0 +1,33 @@
+<!-- activity_favorite_tourist_spots.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        tools:context=".FavoriteTouristSpotsActivity">
+
+    <TextView
+            android:id="@+id/no_favorites_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:text="아직 좋아요를 누른 관광지가 없습니다. 마음에 드는 관광지에 좋아요를 눌러보세요!"
+            android:textSize="18sp"
+            android:textColor="@android:color/darker_gray"
+            android:padding="16dp"
+            android:gravity="center" />
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="16dp"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
+            android:scrollbars="vertical" />
+
+</LinearLayout>
