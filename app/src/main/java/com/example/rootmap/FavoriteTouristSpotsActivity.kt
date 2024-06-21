@@ -2,6 +2,7 @@ package com.example.rootmap
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -49,7 +50,11 @@ class FavoriteTouristSpotsActivity : AppCompatActivity() {
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(dataSnapshot: DataSnapshot) {
                         val likedTitles = dataSnapshot.children.mapNotNull { it.key }
-                        fetchTouristSpotsByTitles(likedTitles)
+                        if (likedTitles.isEmpty()) {
+                            displayNoFavoritesMessage()
+                        } else {
+                            fetchTouristSpotsByTitles(likedTitles)
+                        }
                     }
 
                     override fun onCancelled(databaseError: DatabaseError) {
@@ -88,7 +93,11 @@ class FavoriteTouristSpotsActivity : AppCompatActivity() {
                     null
                 }
             }
-            displayTouristSpots(touristItems)
+            if (touristItems.isEmpty()) {
+                displayNoFavoritesMessage()
+            } else {
+                displayTouristSpots(touristItems)
+            }
         }
     }
 
@@ -103,11 +112,18 @@ class FavoriteTouristSpotsActivity : AppCompatActivity() {
     }
 
     private fun displayTouristSpots(touristItems: List<TouristItem?>) {
+        binding.noFavoritesText.visibility = View.GONE
+        binding.recyclerView.visibility = View.VISIBLE
         val nonNullItems = touristItems.filterNotNull()
         val adapter = TouristAdapter(nonNullItems, database, auth) { item ->
             // Tourist item click handler (if needed)
         }
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
+    }
+
+    private fun displayNoFavoritesMessage() {
+        binding.noFavoritesText.visibility = View.VISIBLE
+        binding.recyclerView.visibility = View.GONE
     }
 }
