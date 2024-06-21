@@ -86,9 +86,9 @@ class TouristAdapter(
                 binding.likeCount.text = item.likeCount.toString()
 
                 // Firebase에 추천 수 저장
-                item.contentid?.let { contentId ->
-                    database.child("likes").child(contentId).setValue(item.likeCount)
-                    database.child("userLikes").child(userId).child(contentId).setValue(item.isLiked)
+                item.title?.let { title ->
+                    database.child("likes").child(title).setValue(item.likeCount)
+                    database.child("userLikes").child(userId).child(title).setValue(item.isLiked)
                 }
             }
 
