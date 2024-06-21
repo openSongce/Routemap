@@ -30,10 +30,16 @@ interface TouristApiService {
         @Query("contentId") contentId: Int,
         @Query("MobileOS") mobileOS: String = "AND",
         @Query("MobileApp") mobileApp: String = "MobileApp",
-        @Query("defaultYN") defaultYN: String = "Y",
-        @Query("addrinfoYN") addrinfoYN: String = "Y",
-        @Query("mapinfoYN") mapinfoYN: String = "Y",
-        @Query("overviewYN") overviewYN: String = "Y",
         @Query("serviceKey") serviceKey: String = "iIzVkyvN4jIuoBR82vVZ0iFXlV65w0gsaiuOlUboGQ45v7PnBXkVOsDoBxoqMul10rfSMk7J+X5YKBxqu2ANRQ=="
     ): Call<TouristItemResponse>
+
+    @GET("searchKeyword1")
+    fun searchKeyword(
+        @Query("keyword") keyword: String,
+        @Query("numOfRows") numOfRows: Int,
+        @Query("pageNo") pageNo: Int,
+        @Query("MobileOS") mobileOS: String,
+        @Query("MobileApp") mobileApp: String,
+        @Query("serviceKey") serviceKey: String
+    ): Call<TouristResponse>
 }
