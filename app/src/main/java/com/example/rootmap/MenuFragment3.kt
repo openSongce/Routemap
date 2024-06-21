@@ -517,7 +517,7 @@ class MenuFragment3 : Fragment() {
             Toast.makeText(this.context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
         }
     }
-    suspend fun loadMyList(): MutableList<MyRouteDocument> {
+    private suspend fun loadMyList(): MutableList<MyRouteDocument> {
         var list= mutableListOf<MyRouteDocument>()
         return try {
             val myList = returnDb(currentId).get().await()

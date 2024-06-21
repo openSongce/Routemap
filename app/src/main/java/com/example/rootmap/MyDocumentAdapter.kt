@@ -56,6 +56,11 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
                 binding.friendButton2.setOnClickListener {
                     itemClickListener.onClick(it, position)
                 }
+            }else if(mode=="makePost"){
+                binding.friendButton2.text="선택"
+                binding.friendButton2.setOnClickListener {
+                    itemClickListener.onClick(it, position)
+                }
             } else{ //내 여행경로 액티비티의 설정(mode==MyRoute)
                 binding.run{
                     friendButton2.visibility=View.GONE
