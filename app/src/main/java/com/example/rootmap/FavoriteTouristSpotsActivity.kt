@@ -53,7 +53,9 @@ class FavoriteTouristSpotsActivity : AppCompatActivity() {
                         if (likedTitles.isEmpty()) {
                             displayNoFavoritesMessage()
                         } else {
-                            fetchTouristSpotsByTitles(likedTitles)
+                            likedTitles.forEach { title ->
+                                fetchTouristSpotByTitle(title)
+                            }
                         }
                     }
 
@@ -64,39 +66,36 @@ class FavoriteTouristSpotsActivity : AppCompatActivity() {
         }
     }
 
-    private fun fetchTouristSpotsByTitles(titles: List<String>) {
+    private fun fetchTouristSpotByTitle(title: String) {
         lifecycleScope.launch {
-            val touristItems = titles.mapNotNull { title ->
-                try {
-                    withContext(Dispatchers.IO) {
-                        val response = apiService.searchKeyword(
-                            keyword = title,
-                            numOfRows = 10,
-                            pageNo = 1,
-                            mobileOS = "AND",
-                            mobileApp = "Test",
-                            serviceKey = "iIzVkyvN4jIuoBR82vVZ0iFXlV65w0gsaiuOlUboGQ45v7PnBXkVOsDoBxoqMul10rfSMk7J+X5YKBxqu2ANRQ=="
-                        ).execute()
-                        if (response.isSuccessful) {
-                            response.body()?.body?.items?.item?.firstOrNull()?.apply {
-                                // 좋아요 수를 Firebase에서 가져오기
-                                likeCount = fetchLikeCount(title)
-                                isLiked = true
-                            }
-                        } else {
-                            Log.e("FavoriteTouristSpots", "API call failed: ${response.errorBody()?.string()}")
-                            null
+            val touristItem = try {
+                withContext(Dispatchers.IO) {
+                    val response = apiService.searchKeyword(
+                        keyword = title,
+                        numOfRows = 10,
+                        pageNo = 1,
+                        mobileOS = "AND",
+                        mobileApp = "Test",
+                        serviceKey = "iIzVkyvN4jIuoBR82vVZ0iFXlV65w0gsaiuOlUboGQ45v7PnBXkVOsDoBxoqMul10rfSMk7J+X5YKBxqu2ANRQ=="
+                    ).execute()
+                    if (response.isSuccessful) {
+                        response.body()?.body?.items?.item?.firstOrNull { it.title == title }?.apply {
+                            // 좋아요 수를 Firebase에서 가져오기
+                            likeCount = fetchLikeCount(title)
+                            isLiked = true
                         }
+                    } else {
+                        Log.e("FavoriteTouristSpots", "API call failed: ${response.errorBody()?.string()}")
+                        null
                     }
-                } catch (e: Exception) {
-                    Log.e("FavoriteTouristSpots", "Network request failed", e)
-                    null
                 }
+            } catch (e: Exception) {
+                Log.e("FavoriteTouristSpots", "Network request failed", e)
+                null
             }
-            if (touristItems.isEmpty()) {
-                displayNoFavoritesMessage()
-            } else {
-                displayTouristSpots(touristItems)
+
+            touristItem?.let {
+                addTouristItemToUI(it)
             }
         }
     }
@@ -111,19 +110,21 @@ class FavoriteTouristSpotsActivity : AppCompatActivity() {
         }
     }
 
-    private fun displayTouristSpots(touristItems: List<TouristItem?>) {
-        binding.noFavoritesText.visibility = View.GONE
-        binding.recyclerView.visibility = View.VISIBLE
-        val nonNullItems = touristItems.filterNotNull()
-        val adapter = TouristAdapter(nonNullItems, database, auth) { item ->
+    private fun addTouristItemToUI(touristItem: TouristItem) {
+        val currentList = (binding.recyclerView.adapter as? TouristAdapter)?.items?.toMutableList() ?: mutableListOf()
+        currentList.add(touristItem)
+        val adapter = TouristAdapter(currentList, database, auth) { item ->
             // Tourist item click handler (if needed)
         }
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
+        binding.noFavoritesText.visibility = View.GONE
+        binding.recyclerView.visibility = View.VISIBLE
     }
 
     private fun displayNoFavoritesMessage() {
         binding.noFavoritesText.visibility = View.VISIBLE
         binding.recyclerView.visibility = View.GONE
     }
+
 }

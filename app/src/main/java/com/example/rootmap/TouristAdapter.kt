@@ -15,7 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 
 class TouristAdapter(
-    private val items: List<TouristItem>,
+    val items: List<TouristItem>,
     private val database: DatabaseReference,
     private val auth: FirebaseAuth,
     private val onItemClick: (TouristItem) -> Unit
