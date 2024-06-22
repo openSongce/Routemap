@@ -2,9 +2,11 @@ package com.example.rootmap
 
 import android.app.AlertDialog
 import android.graphics.Canvas
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
@@ -30,18 +32,16 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
     lateinit var myDb: CollectionReference
     lateinit var docId:String
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):Holder {
+        this.parent = parent
         val binding =
             LocationListLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return Holder(binding)
     }
-
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bind(list[position],position)
-
-       // var screen = list.get(position)
-
-       // holder.setData(screen,position)
+        var screen = list.get(position)
+        holder.setData(screen,position)
     }
+
     override fun getItemCount(): Int {
         return list.size
     }
@@ -57,49 +57,8 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
         val binding: LocationListLayoutBinding
     ) :
         RecyclerView.ViewHolder(binding.root) {
-        init {
-            binding.tvRemove.setOnClickListener {
-                removeData(this.layoutPosition)
-            }
-        }
-        fun bind(myLocation: MyLocation,position: Int) {
-            // 제목 달기
-            var memo=myLocation.memo
-            var spending=myLocation.spending
-            binding.triplocationName.text=myLocation.name
-            binding.memoText.text=memo
-            binding.costText.text=spending
-            binding.textViewOptions.setOnClickListener {
-                val popup = PopupMenu(binding.textViewOptions.context, binding.textViewOptions)
-                popup.inflate(R.menu.recyclerview_item_menu)
-                popup.setOnMenuItemClickListener { item ->
-                    when (item.itemId) {
-                        R.id.memo -> { //메모 클릭
-                            showMemoDialog(memo,position)
-                        }
-                        else -> { //금액 클릭
-                            Toast.makeText(binding.textViewOptions.context, "금액", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    true
-                }
-                popup.show()
-            }
+        //  fun bind
 
-            // 삭제 텍스트뷰 클릭시 토스트 표시
-            binding.tvRemove.setOnClickListener {
-                removeData(this.layoutPosition)
-                Toast.makeText(binding.root.context, "삭제했습니다.", Toast.LENGTH_SHORT).show()
-            }
-        }
-        /*
-        init {
-          binding.tvRemove.setOnClickListener {
-              removeData(this.layoutPosition)
-              Toast.makeText(binding.root.context, "삭제했습니다.", Toast.LENGTH_SHORT).show()
-          }
-
-        }
         fun setData(myLocation: MyLocation,position: Int) {
             var memo=myLocation.memo
             var spending=myLocation.spending
@@ -115,16 +74,17 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                             showMemoDialog(memo,position)
                         }
                         else -> { //금액 클릭
-                            Toast.makeText(binding.textViewOptions.context, "금액", Toast.LENGTH_SHORT).show()
+                            showSpendingDialog(spending, position)
                         }
                     }
                     true
                 }
                 popup.show()
             }
-
+            binding.tvRemove.setOnClickListener {
+                removeData(this.layoutPosition)
+            }
         }
-        */
         private fun showMemoDialog(memo:String,position: Int): AlertDialog { //다이어로그로 팝업창 구현
             val dBinding = MemoEditLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             val dialogBuild = AlertDialog.Builder(parent.context).setView(dBinding.root)
@@ -133,20 +93,20 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                 memoCancleButton.text="닫기"
                 memoSaveButton.text="확인"
                 if(memo!=""){
-                   memoArea.setText(memo)
+                    memoArea.setText(memo)
                 }
             }
             val dialog = dialogBuild.show()
             dBinding.apply {
                 memoSaveButton.setOnClickListener {
                     //확인 버튼 클릭
-                        //저장 기능
-                        var text=memoArea.text.toString()
+                    //저장 기능
+                    var text=memoArea.text.toString()
                     if(memo!=text){ //내용 수정이 된 경우
                         list[layoutPosition].memo=text
                         notifyDataSetChanged()
                     }
-                  dialog.dismiss()
+                    dialog.dismiss()
                 }
             }
             dBinding.memoCancleButton.setOnClickListener {
@@ -155,6 +115,52 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
             }
             return dialog
         }
+
+        private fun showSpendingDialog(spending: String, position: Int) {
+            try {
+                val dialogView = LayoutInflater.from(parent.context).inflate(R.layout.dialog_edit_spending, parent, false)
+                val spendingEditText: EditText = dialogView.findViewById(R.id.editSpending)
+                spendingEditText.setText(spending)
+
+                val dialog = AlertDialog.Builder(parent.context)
+                    .setTitle("금액 수정")
+                    .setView(dialogView)
+                    .setPositiveButton("저장") { _, _ ->
+                        val newSpending = spendingEditText.text.toString()
+                        if (spending != newSpending) {
+                            list[position].spending = newSpending
+                            notifyDataSetChanged()
+                           // updateFirestoreSpending(list[position].name, newSpending)
+                        }
+                    }
+                    .setNegativeButton("취소", null)
+                    .create()
+                dialog.show()
+            } catch (e: Exception) {
+                Log.e("ListLocationAdapter", "Error showing spending dialog", e)
+                Toast.makeText(parent.context, "Error showing spending dialog", Toast.LENGTH_SHORT).show()
+            }
+        }
+/*
+        private fun updateFirestoreSpending(name: String, newSpending: String) {
+            myDb.document(docId).get().addOnSuccessListener { document ->
+                val routeList = document.get("routeList") as? MutableList<Map<String, Any>>
+                if (routeList != null) {
+                    val mutableRouteList = routeList.toMutableList()
+                    for (item in mutableRouteList) {
+                        if (item["name"] == name) {
+                            val mutableItem = item.toMutableMap()
+                            mutableItem["spending"] = newSpending
+                            mutableRouteList[mutableRouteList.indexOf(item)] = mutableItem
+                            break
+                        }
+                    }
+                    myDb.document(docId).update("routeList", mutableRouteList)
+                }
+            }
+        }
+
+ */
 
     }
     // 현재 선택된 데이터와 드래그한 위치에 있는 데이터를 교환
