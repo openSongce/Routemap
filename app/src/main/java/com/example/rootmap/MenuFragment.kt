@@ -193,6 +193,11 @@ class MenuFragment : Fragment() {
     }
 
     private fun fetchTotalPages(areaCode: Int, contentTypeId: Int) { // 전체 페이지 수 가져오기
+        if (totalPages > 0) {
+            fetchTouristInfo(areaCode, contentTypeId, randomPage = true)
+            return
+        }
+
         apiService.getTouristInfo(
             numOfRows = 10,
             pageNo = 1,
