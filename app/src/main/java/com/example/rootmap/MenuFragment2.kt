@@ -10,6 +10,7 @@ import android.widget.CheckBox
 import android.widget.Toast
 import android.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.FragmentMenu2Binding
 import com.example.rootmap.databinding.PopupFilterBinding
@@ -78,6 +79,7 @@ class MenuFragment2 : Fragment() {
                  routeDialog=makeMyPost()
             }
         }
+        binding.postListView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         CoroutineScope(Dispatchers.Main).launch {
             loadPostList()
             postlistAdapter.postList=postList
@@ -103,9 +105,9 @@ class MenuFragment2 : Fragment() {
         postlistAdapter.setItemClickListener(object: RouteListAdapter.OnItemClickListener{
             override fun onClick(v: View, position: Int) {
                 //해당 경로 내의 여행지 리스트 보기
+
                 Toast.makeText(this@MenuFragment2.context,"클릭",Toast.LENGTH_SHORT).show()
             }
-
             override fun onButtonClick(v: View, position: Int) {
                 //다운
                 Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
@@ -289,16 +291,24 @@ class MenuFragment2 : Fragment() {
             val postListData=Firebase.firestore.collection("route").get().await()
             if(!postListData.isEmpty){
                 postListData.forEach {
-                    //임시로 일단 좋아요 수는 0,닉네임-> 닉네임으로
-
-
-                    postList.add(RoutePost(it.data?.get("tripname").toString(),0,it.id,it.data?.get("owner").toString(),"닉네임",))
+                    //임시로 일단 좋아요 수는 0
+                    val user=it.data?.get("owner").toString()
+                    postList.add(RoutePost(it.data?.get("tripname").toString(),0,it.id,user,loadUserName(user)))
                 }
             }
             true
         } catch (e: FirebaseException) {
             Log.d("list_test", "error")
             false
+        }
+    }
+    private suspend fun loadUserName(id:String):String{
+        return try {
+            val nickname=Firebase.firestore.collection("user").document(id).get().await().get("nickname").toString()
+            return nickname
+        } catch (e: FirebaseException) {
+            Log.d("list_test", "error")
+            return "error"
         }
     }
 
