@@ -46,12 +46,4 @@
             android:text="0원 지출"
             android:textSize="30sp"/>
 
-    <Button
-            android:id="@+id/btnAddExpenditure"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:backgroundTint="@color/custum_color"
-            android:text="비용 추가"/>
-
 </LinearLayout>

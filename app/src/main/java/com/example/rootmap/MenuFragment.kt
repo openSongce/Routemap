@@ -479,10 +479,11 @@ class MenuFragment : Fragment() {
 
         Log.d("WEATHER_UPDATE", "Updating temperature to ${temp ?: "null"}° for city $city")
 
-        tvNowCelsius.text = temp?.let { "$it°" } ?: "null°"
+        if (temp != null) {
+            tvNowCelsius.text = "$temp°"
+        }
         tvLocation.text = city
     }
-
 
     private fun updateSkyInfo(skyValue: String?) {
         val tvSkyCondition = binding.root.findViewById<TextView>(R.id.tvSkyCondition)
@@ -504,20 +505,24 @@ class MenuFragment : Fragment() {
                 imageView.setImageResource(R.drawable.weather_04)
                 "흐림"
             }
-            else -> {
-                imageView.setImageResource(R.drawable.weather_01) // Default image
-                //"null"
-                "맑음"
-            }
+            else -> null
         }
-        Log.d("WEATHER_UPDATE", "Updating sky condition to $skyCondition")
-        tvSkyCondition.text = "하늘: $skyCondition"
+
+        if (skyCondition != null) {
+            Log.d("WEATHER_UPDATE", "Updating sky condition to $skyCondition")
+            tvSkyCondition.text = "하늘: $skyCondition"
+        }
     }
+
     private fun updateShortTermWeatherInfo(tmx: String?, tmn: String?) {
         val tvTodayCelsius = binding.root.findViewById<TextView>(R.id.tvTodayCelsius)
         Log.d("WEATHER_UPDATE", "Updating today's temperature: TMX: ${tmx ?: "null"}°, TMN: ${tmn ?: "null"}°")
-        tvTodayCelsius.text = "최고: ${tmx ?: "null"}°/최저: ${tmn ?: "null"}°"
+
+        if (tmx != null && tmn != null) {
+            tvTodayCelsius.text = "최고: $tmx°/최저: $tmn°"
+        }
     }
+
 
     companion object {
         @JvmStatic
