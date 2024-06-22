@@ -81,7 +81,6 @@ class MenuFragment2 : Fragment() {
         }
         binding.postListView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         CoroutineScope(Dispatchers.Main).launch {
-            loadPostList()
             postlistAdapter.postList=postList
             binding.postListView.adapter=postlistAdapter
             binding.postListView.layoutManager=LinearLayoutManager(this@MenuFragment2.context)
@@ -114,6 +113,13 @@ class MenuFragment2 : Fragment() {
 
         })
         return binding.root
+    }
+    override fun onResume() {
+        CoroutineScope(Dispatchers.Main).launch {
+            loadPostList()
+            postlistAdapter.notifyDataSetChanged()
+        }
+        super.onResume()
     }
 
     private fun showFilterPopup(mode:String) {
@@ -182,7 +188,7 @@ class MenuFragment2 : Fragment() {
             Toast.makeText(this.context,"성공적으로 업로드하였습니다.",Toast.LENGTH_SHORT).show()
             CoroutineScope(Dispatchers.Main).launch {
                 loadPostList()
-                postlistAdapter.notifyItemInserted(postList.size)
+                postlistAdapter.notifyDataSetChanged()
             }
         }
     }
