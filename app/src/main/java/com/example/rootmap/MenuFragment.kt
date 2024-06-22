@@ -248,8 +248,8 @@ class MenuFragment : Fragment() {
 
                     // 각 아이템의 추천 수를 Firebase에서 가져옴
                     items.forEach { item ->
-                        item.contentid?.let { contentId ->
-                            database.child("likes").child(contentId)
+                        item.title?.let { title ->
+                            database.child("likes").child(title)
                                 .addListenerForSingleValueEvent(object : ValueEventListener {
                                     override fun onDataChange(dataSnapshot: DataSnapshot) {
                                         val likeCount = dataSnapshot.getValue(Int::class.java) ?: 0
@@ -264,7 +264,7 @@ class MenuFragment : Fragment() {
 
                             // 사용자 하트 상태 가져오기
                             auth.currentUser?.uid?.let { userId ->
-                                database.child("userLikes").child(userId).child(contentId)
+                                database.child("userLikes").child(userId).child(title)
                                     .addListenerForSingleValueEvent(object : ValueEventListener {
                                         override fun onDataChange(dataSnapshot: DataSnapshot) {
                                             val isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
@@ -279,6 +279,7 @@ class MenuFragment : Fragment() {
                             }
                         }
                     }
+
 
                     if (items.isNotEmpty()) {
                         val adapter = TouristAdapter(items, database, auth) { item ->

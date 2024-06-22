@@ -2,11 +2,9 @@ package com.example.rootmap
 
 import android.app.AlertDialog
 import android.graphics.Canvas
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
@@ -32,7 +30,6 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
     lateinit var myDb: CollectionReference
     lateinit var docId:String
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):Holder {
-        this.parent = parent
         val binding =
             LocationListLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return Holder(binding)
@@ -81,8 +78,7 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                             showMemoDialog(memo,position)
                         }
                         else -> { //금액 클릭
-                            //Toast.makeText(binding.textViewOptions.context, "금액", Toast.LENGTH_SHORT).show()
-                            showSpendingDialog(spending, position)
+                            Toast.makeText(binding.textViewOptions.context, "금액", Toast.LENGTH_SHORT).show()
                         }
                     }
                     true
@@ -158,50 +154,6 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                 dialog.dismiss()
             }
             return dialog
-        }
-
-        private fun showSpendingDialog(spending: String, position: Int) {
-            try {
-                val dialogView = LayoutInflater.from(parent.context).inflate(R.layout.dialog_edit_spending, parent, false)
-                val spendingEditText: EditText = dialogView.findViewById(R.id.editSpending)
-                spendingEditText.setText(spending)
-
-                val dialog = AlertDialog.Builder(parent.context)
-                    .setTitle("금액 수정")
-                    .setView(dialogView)
-                    .setPositiveButton("저장") { _, _ ->
-                        val newSpending = spendingEditText.text.toString()
-                        if (spending != newSpending) {
-                            list[position].spending = newSpending
-                            notifyDataSetChanged()
-                            updateFirestoreSpending(list[position].name, newSpending)
-                        }
-                    }
-                    .setNegativeButton("취소", null)
-                    .create()
-                dialog.show()
-            } catch (e: Exception) {
-                Log.e("ListLocationAdapter", "Error showing spending dialog", e)
-                Toast.makeText(parent.context, "Error showing spending dialog", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        private fun updateFirestoreSpending(name: String, newSpending: String) {
-            myDb.document(docId).get().addOnSuccessListener { document ->
-                val routeList = document.get("routeList") as? MutableList<Map<String, Any>>
-                if (routeList != null) {
-                    val mutableRouteList = routeList.toMutableList()
-                    for (item in mutableRouteList) {
-                        if (item["name"] == name) {
-                            val mutableItem = item.toMutableMap()
-                            mutableItem["spending"] = newSpending
-                            mutableRouteList[mutableRouteList.indexOf(item)] = mutableItem
-                            break
-                        }
-                    }
-                    myDb.document(docId).update("routeList", mutableRouteList)
-                }
-            }
         }
 
     }

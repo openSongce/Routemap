@@ -37,6 +37,11 @@
             android:hint="Search"
             android:textIsSelectable="false" />
 
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"></LinearLayout>
+
     <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -67,16 +72,16 @@
             android:layout_marginTop="80dp"
             android:layout_marginStart="40dp" />
 
-    <Button
-            android:text="저장"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+    <ImageButton
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:id="@+id/routeSaveButton"
+            android:src="@android:drawable/ic_menu_save"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/listButton"
-            android:layout_marginBottom="10dp"
-            android:layout_marginEnd="10dp"
-            android:backgroundTint="@color/black"
+            android:layout_marginBottom="5dp"
+            android:layout_marginEnd="5dp"
+            android:background="@color/black"
             android:visibility="gone" />
 
     <ImageButton

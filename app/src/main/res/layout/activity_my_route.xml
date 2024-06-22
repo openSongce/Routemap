@@ -27,7 +27,9 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="7dp"
-            app:layout_constraintTop_toBottomOf="@+id/backButton" />
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp" />
 
     <LinearLayout
             android:id="@+id/linearLayout"
@@ -48,7 +50,7 @@
                 android:src="@drawable/search" />
 
         <EditText
-                android:id="@+id/searchFriendText"
+                android:id="@+id/searchMyRouteText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -58,7 +60,7 @@
                 android:layout_marginEnd="10dp" />
 
         <ImageView
-                android:id="@+id/sendButton"
+                android:id="@+id/mRSearchButton"
                 android:layout_width="40dp"
                 android:layout_height="wrap_content"
                 android:scaleType="fitCenter"
@@ -76,5 +78,63 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="10dp" />
+
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:text="Name"
+            android:ems="10"
+            android:id="@+id/routeNameText2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:background="@drawable/memo_border"
+            android:gravity="center_horizontal|center_vertical"
+            android:textSize="24sp"
+            android:visibility="gone"
+            app:layout_constraintHorizontal_bias="0.496"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/routeDataListView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            app:layout_constraintTop_toBottomOf="@+id/routeNameText2"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="gone" />
+
+    <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/routeCloseButton"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            app:layout_constraintBottom_toTopOf="@+id/textViewMyRoute"
+            android:background="@android:color/transparent"
+            android:visibility="gone"
+            android:tint="@color/light_blue_900"
+            app:layout_constraintEnd_toStartOf="@+id/routeSaveButton2"
+            android:layout_marginEnd="10dp" />
+
+    <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@android:drawable/ic_menu_save"
+            android:id="@+id/routeSaveButton2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@android:color/transparent"
+            android:tint="@color/light_blue_900"
+            app:layout_constraintBottom_toTopOf="@+id/textViewMyRoute"
+            android:layout_marginEnd="10dp"
+            android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

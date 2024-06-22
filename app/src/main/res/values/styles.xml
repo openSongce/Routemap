@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="GreenRouteArrowLineStyle" parent="RouteLineStyle">
+        <item name="mapLineWidth">26.0</item>
+        <item name="mapLineColor">#49D907</item>
+        <item name="mapStrokeWidth">3</item>
+        <item name="mapStrokeColor">#ffffff</item>
+        <item name="mapPatternImage">@drawable/route_pattern_arrow</item>
+        <item name="mapDistance">10</item>
+    </style>
+</resources>
