@@ -160,7 +160,7 @@ class MenuFragment2 : Fragment() {
 
     private fun postMyRouteDb(list: MutableList<String>,list2: MutableList<String>,list3: MutableList<String> ){
         var emptyList= listOf<String>()
-        Firebase.firestore.collection("route").document().set(hashMapOf("docId" to docId,"owner" to docOwner,"tripname" to docName,"comment" to emptyList,"location" to list,"duration" to list2, "theme" to list3)).addOnSuccessListener {
+        Firebase.firestore.collection("route").document(docId).set(hashMapOf("owner" to docOwner,"tripname" to docName,"comment" to emptyList,"location" to list,"duration" to list2, "theme" to list3)).addOnSuccessListener {
             Toast.makeText(this.context,"성공적으로 업로드하였습니다.",Toast.LENGTH_SHORT).show()
         }
     }
