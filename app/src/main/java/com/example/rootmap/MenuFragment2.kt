@@ -105,7 +105,6 @@ class MenuFragment2 : Fragment() {
         postlistAdapter.setItemClickListener(object: RouteListAdapter.OnItemClickListener{
             override fun onClick(v: View, position: Int) {
                 //해당 경로 내의 여행지 리스트 보기
-
                 Toast.makeText(this@MenuFragment2.context,"클릭",Toast.LENGTH_SHORT).show()
             }
             override fun onButtonClick(v: View, position: Int) {

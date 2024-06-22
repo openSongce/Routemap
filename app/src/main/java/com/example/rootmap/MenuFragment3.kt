@@ -394,8 +394,10 @@ class MenuFragment3 : Fragment() {
             }
             //삭제 버튼을 눌렀을 때 DB에서 삭제하는 기능
             override fun deleteDoc(v: View, position: Int) {
-                if(routelistAdapter.list[position].owner==currentId.toString())
+                if(routelistAdapter.list[position].owner==currentId){
                     showDeleteDialog(position)
+                    db.collection("route").document(routelistAdapter.list[position].docId).delete()
+                }
                 else{
                     swipeHelperCallbackRoute.removeClamp(routeDialog.listView)
                     Toast.makeText(this@MenuFragment3.context, "경로 생성자만이 삭제할 수 있습니다.", Toast.LENGTH_SHORT).show()

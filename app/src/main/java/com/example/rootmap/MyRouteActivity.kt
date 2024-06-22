@@ -192,8 +192,10 @@ class MyRouteActivity : AppCompatActivity() {
             }
             override fun deleteDoc(v: View, position: Int) {
                 //삭제버튼 코드
-                if(routelistAdapter.list[position].owner==currentId)
-                     showDeleteDialog(position)
+                if(routelistAdapter.list[position].owner==currentId){
+                    showDeleteDialog(position)
+                    Firebase.firestore.collection("route").document(routelistAdapter.list[position].docId).delete()
+                }
                 else{
                     swipeHelperCallback.removeClamp(binding.recyclerList)
                     Toast.makeText(this@MyRouteActivity, "경로 생성자만이 삭제할 수 있습니다.", Toast.LENGTH_SHORT).show()
