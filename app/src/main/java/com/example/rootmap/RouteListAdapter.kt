@@ -60,12 +60,22 @@ class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>()  {
                 addLcationBt.setOnClickListener {
                     itemClickListener.onButtonClick(it, position)
                 }
+                heartClickButton.setOnClickListener {
+                    heartClickButton.setImageResource(R.drawable.heart_filled)
+                    itemClickListener.heartClick(it, position)
+                }
+                commentButton.setOnClickListener {
+                    itemClickListener.commentClick(it, position)
+                }
             }
         }
         }
     interface OnItemClickListener {
         fun onClick(v: View, position: Int)
         fun onButtonClick(v: View, position: Int)
+
+        fun heartClick(v: View, position: Int)
+        fun commentClick(v: View, position: Int)
     }
 
     fun setItemClickListener(onItemClickListener: OnItemClickListener) {

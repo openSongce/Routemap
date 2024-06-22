@@ -42,4 +42,32 @@
             app:layout_constraintBottom_toTopOf="@+id/addTripRouteText"
             app:layout_constraintTop_toTopOf="parent"
             android:visibility="gone" />
+
+    <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:srcCompat="@android:drawable/stat_notify_chat"
+            android:id="@+id/commentButton2"
+            android:scaleType="fitCenter"
+            android:background="@android:color/transparent"
+            android:tint="@color/gray"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@+id/listView"
+            app:layout_constraintEnd_toStartOf="@+id/downloadButton"
+            android:layout_marginEnd="10dp" />
+
+    <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:srcCompat="@android:drawable/stat_sys_download"
+            android:id="@+id/downloadButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/listView"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:scaleType="fitCenter"
+            app:layout_constraintVertical_bias="0.0"
+            android:layout_marginEnd="10dp"
+            android:backgroundTint="@color/custum_color"
+            android:visibility="gone" />
 </androidx.constraintlayout.widget.ConstraintLayout>

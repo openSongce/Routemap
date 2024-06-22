@@ -49,7 +49,7 @@
                 android:paddingStart="10dp" />
     </LinearLayout>
 
-    <ImageButton
+    <ImageView
             android:src="@drawable/heart_empty"
             android:layout_width="40dp"
             android:layout_height="40dp"

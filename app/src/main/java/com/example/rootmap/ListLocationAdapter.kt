@@ -31,6 +31,8 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
     lateinit var parent: ViewGroup
     lateinit var myDb: CollectionReference
     lateinit var docId:String
+
+     var postView=false
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):Holder {
         this.parent = parent
         val binding =
@@ -65,6 +67,9 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
             binding.triplocationName.text=myLocation.name
             binding.memoText.text=memo
             binding.costText.text=spending
+
+            if(postView) binding.textViewOptions.visibility=View.GONE
+
             binding.textViewOptions.setOnClickListener {
                 val popup = PopupMenu(binding.textViewOptions.context, binding.textViewOptions)
                 popup.inflate(R.menu.recyclerview_item_menu)
