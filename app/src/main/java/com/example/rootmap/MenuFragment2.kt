@@ -7,11 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import android.widget.PopupMenu
 import android.widget.Toast
 import android.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.FragmentMenu2Binding
 import com.example.rootmap.databinding.PopupFilterBinding
@@ -19,11 +17,11 @@ import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
 import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 
 private const val ARG_PARAM1 = "param1_board"
 private const val ARG_PARAM2 = "param2_board"
@@ -47,8 +45,7 @@ class MenuFragment2 : Fragment() {
     lateinit var docOwner:String
 
     lateinit var postlistAdapter: RouteListAdapter
-   // lateinit var postList: ↓
-//↓
+   lateinit var postList: MutableList<RoutePost>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -59,6 +56,8 @@ class MenuFragment2 : Fragment() {
         routelistAdapter= MyDocumentAdapter()
         routelistAdapter.mode="makePost"
         routelistAdapter.userId=currentId
+
+        postList= mutableListOf()
         postlistAdapter=RouteListAdapter()
        postlistAdapter.postMode=true
 
@@ -79,6 +78,12 @@ class MenuFragment2 : Fragment() {
                  routeDialog=makeMyPost()
             }
         }
+        CoroutineScope(Dispatchers.Main).launch {
+            loadPostList()
+            postlistAdapter.postList=postList
+            binding.postListView.adapter=postlistAdapter
+            binding.postListView.layoutManager=LinearLayoutManager(this@MenuFragment2.context)
+        }
 
         routelistAdapter.setItemClickListener(object: MyDocumentAdapter.OnItemClickListener{
             //리스트의 버튼 클릭시 동작
@@ -95,7 +100,18 @@ class MenuFragment2 : Fragment() {
             }
 
         })
+        postlistAdapter.setItemClickListener(object: RouteListAdapter.OnItemClickListener{
+            override fun onClick(v: View, position: Int) {
+                //해당 경로 내의 여행지 리스트 보기
+                Toast.makeText(this@MenuFragment2.context,"클릭",Toast.LENGTH_SHORT).show()
+            }
 
+            override fun onButtonClick(v: View, position: Int) {
+                //다운
+                Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
+            }
+
+        })
         return binding.root
     }
 
@@ -127,6 +143,7 @@ class MenuFragment2 : Fragment() {
                     checkForPost(popupBinding.themesContainer,themes)
                     postMyRouteDb(locations,duration,themes)
                     routeDialog.dismiss()
+
                 }
             }
             .setNegativeButton("취소", null)
@@ -162,6 +179,10 @@ class MenuFragment2 : Fragment() {
         var emptyList= listOf<String>()
         Firebase.firestore.collection("route").document(docId).set(hashMapOf("owner" to docOwner,"tripname" to docName,"comment" to emptyList,"location" to list,"duration" to list2, "theme" to list3)).addOnSuccessListener {
             Toast.makeText(this.context,"성공적으로 업로드하였습니다.",Toast.LENGTH_SHORT).show()
+            CoroutineScope(Dispatchers.Main).launch {
+                loadPostList()
+                postlistAdapter.notifyItemInserted(postList.size)
+            }
         }
     }
     private fun checkForPost(container: ViewGroup, list: MutableList<String>){
@@ -253,6 +274,25 @@ class MenuFragment2 : Fragment() {
             if(!myList.isEmpty){
                 myList.forEach {
                     routeList.add(MyRouteDocument(it.data?.get("tripname").toString(),it.id,currentId))
+                }
+            }
+            true
+        } catch (e: FirebaseException) {
+            Log.d("list_test", "error")
+            false
+        }
+    }
+
+    private suspend fun loadPostList(): Boolean {
+        postList.clear()
+        return try {
+            val postListData=Firebase.firestore.collection("route").get().await()
+            if(!postListData.isEmpty){
+                postListData.forEach {
+                    //임시로 일단 좋아요 수는 0,닉네임-> 닉네임으로
+
+
+                    postList.add(RoutePost(it.data?.get("tripname").toString(),0,it.id,it.data?.get("owner").toString(),"닉네임",))
                 }
             }
             true

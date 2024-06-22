@@ -3,20 +3,13 @@ package com.example.rootmap
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.example.rootmap.databinding.FragmentMenu3Binding
 import com.example.rootmap.databinding.RoutelistLayoutBinding
-import com.google.firebase.FirebaseException
-import com.google.firebase.storage.FirebaseStorage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.tasks.await
 
 class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>()  {
     var list = mutableListOf<SearchLocation>()
-    var postList= mutableListOf<MyRouteDocument>()
+    var postList= mutableListOf<RoutePost>()
     var postMode=false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
@@ -54,10 +47,21 @@ class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>()  {
             }
         }
 
-        fun postSetData(myRouteDocument: MyRouteDocument){
-
+        fun postSetData(routePost:RoutePost){
+            binding.run {
+                locationName.text=routePost.routeName
+                locationAdress.text=routePost.ownerName
+                addLcationBt.text="↓"
+                heartClickButton.visibility=View.VISIBLE
+                commentButton.visibility=View.VISIBLE
+                root.setOnClickListener {
+                    itemClickListener.onClick(it, position)
+                }
+                addLcationBt.setOnClickListener {
+                    itemClickListener.onButtonClick(it, position)
+                }
+            }
         }
-
         }
     interface OnItemClickListener {
         fun onClick(v: View, position: Int)
