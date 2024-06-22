@@ -46,9 +46,9 @@ class MenuFragment2 : Fragment() {
     lateinit var docName:String
     lateinit var docOwner:String
 
-    //lateinit var postlistAdapter:
-   // lateinit var postList:
-
+    lateinit var postlistAdapter: RouteListAdapter
+   // lateinit var postList: ↓
+//↓
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -59,6 +59,9 @@ class MenuFragment2 : Fragment() {
         routelistAdapter= MyDocumentAdapter()
         routelistAdapter.mode="makePost"
         routelistAdapter.userId=currentId
+        postlistAdapter=RouteListAdapter()
+       postlistAdapter.postMode=true
+
     }
 
     override fun onCreateView(
@@ -157,11 +160,10 @@ class MenuFragment2 : Fragment() {
 
     private fun postMyRouteDb(list: MutableList<String>,list2: MutableList<String>,list3: MutableList<String> ){
         var emptyList= listOf<String>()
-        Firebase.firestore.collection("route").document(docId).set(hashMapOf("owner" to docOwner,"like" to 0,"tripname" to docName,"comment" to emptyList,"location" to list,"duration" to list2, "theme" to list3)).addOnSuccessListener {
+        Firebase.firestore.collection("route").document().set(hashMapOf("docId" to docId,"owner" to docOwner,"tripname" to docName,"comment" to emptyList,"location" to list,"duration" to list2, "theme" to list3)).addOnSuccessListener {
             Toast.makeText(this.context,"성공적으로 업로드하였습니다.",Toast.LENGTH_SHORT).show()
         }
     }
-
     private fun checkForPost(container: ViewGroup, list: MutableList<String>){
         for (i in 0 until container.childCount) {
             val checkBox = container.getChildAt(i) as CheckBox

@@ -132,9 +132,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val myRouteIntent = Intent(this, MyRouteActivity::class.java)
                 startActivity(myRouteIntent)
             }
-            R.id.menuRoutePost -> {
-                Toast.makeText(this, "게시판 클릭", Toast.LENGTH_SHORT).show()
-            }
 
             R.id.menuPlans -> {
                 Toast.makeText(this, "일정 클릭", Toast.LENGTH_SHORT).show()

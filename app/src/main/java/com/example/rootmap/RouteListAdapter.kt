@@ -16,6 +16,8 @@ import kotlinx.coroutines.tasks.await
 
 class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>()  {
     var list = mutableListOf<SearchLocation>()
+    var postList= mutableListOf<MyRouteDocument>()
+    var postMode=false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val binding =
@@ -24,12 +26,18 @@ class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>()  {
     }
 
     override fun getItemCount(): Int {
+        if(postMode) return postList.size
         return list.size
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        var screen = list.get(position)
-        holder.setData(screen)
+        if(postMode){
+            var screen=postList.get(position)
+            holder.postSetData(screen)
+        }else{
+            var screen =list.get(position)
+            holder.setData(screen)
+        }
     }
     inner class Holder(
         val binding: RoutelistLayoutBinding,
@@ -45,6 +53,11 @@ class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>()  {
                 itemClickListener.onButtonClick(it, position)
             }
         }
+
+        fun postSetData(myRouteDocument: MyRouteDocument){
+
+        }
+
         }
     interface OnItemClickListener {
         fun onClick(v: View, position: Int)
