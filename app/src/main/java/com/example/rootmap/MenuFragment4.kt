@@ -93,7 +93,8 @@ class MenuFragment4 : Fragment() {
             binding.userNickname.text = nickname
         }
         binding.MyRouteButton.setOnClickListener {
-            Toast.makeText(this.context, "루트 이동 구현하기", Toast.LENGTH_SHORT).show()
+            val intent = Intent(requireContext(), MyRouteActivity::class.java)
+            startActivity(intent)
         }
         binding.favoriteTouristSpotsButton.setOnClickListener {
             val intent = Intent(requireContext(), FavoriteTouristSpotsActivity::class.java)
