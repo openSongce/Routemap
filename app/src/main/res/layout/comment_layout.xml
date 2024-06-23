@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/scrollView2">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/linearLayout7"
+            tools:layout_conversion_absoluteHeight="258dp"
+            tools:layout_editor_absoluteY="0dp"
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_conversion_absoluteWidth="411dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/commentRecyclerView"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/commentWriteText"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:layout_conversion_absoluteHeight="194dp"
+                tools:layout_conversion_absoluteWidth="411dp" />
+
+        <EditText
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:ems="10"
+                android:id="@+id/commentWriteText"
+                android:hint="댓글을 달아보세요."
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/commentSendButton"
+                tools:layout_conversion_absoluteHeight="47dp"
+                tools:layout_conversion_absoluteWidth="379dp" />
+
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@android:drawable/ic_menu_send"
+                android:id="@+id/commentSendButton"
+                android:background="@android:color/transparent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:tint="@color/light_blue_600"
+                app:layout_constraintTop_toBottomOf="@+id/commentRecyclerView"
+                tools:layout_conversion_absoluteHeight="32dp"
+                tools:layout_editor_absoluteY="218dp"
+                tools:layout_editor_absoluteX="379dp"
+                tools:layout_conversion_absoluteWidth="32dp" />
+
+        <TextView
+                android:text="아직 달린 댓글이 없습니다."
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/noComment"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/commentRecyclerView"
+                app:layout_constraintBottom_toBottomOf="@+id/commentRecyclerView"
+                android:visibility="gone"
+                tools:layout_conversion_absoluteHeight="0dp"
+                tools:layout_editor_absoluteY="0dp"
+                tools:layout_editor_absoluteX="0dp"
+                tools:layout_conversion_absoluteWidth="0dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

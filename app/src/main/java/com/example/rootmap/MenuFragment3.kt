@@ -335,10 +335,6 @@ class MenuFragment3 : Fragment() {
             override fun heartClick(v: View, position: Int) {
                 TODO("Not yet implemented")
             }
-
-            override fun commentClick(v: View, position: Int) {
-                TODO("Not yet implemented")
-            }
         })
         //유저가 만든 경로 모음의 리스트
         routelistAdapter.setItemClickListener(object: MyDocumentAdapter.OnItemClickListener {

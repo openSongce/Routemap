@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ReportFragment.Companion.reportFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.ActivityFavoriteTouristSpotsBinding
@@ -120,11 +121,13 @@ class FavoriteTouristSpotsActivity : AppCompatActivity() {
         binding.recyclerView.adapter = adapter
         binding.noFavoritesText.visibility = View.GONE
         binding.recyclerView.visibility = View.VISIBLE
+        binding.progressBar2.visibility=View.GONE
     }
 
     private fun displayNoFavoritesMessage() {
         binding.noFavoritesText.visibility = View.VISIBLE
         binding.recyclerView.visibility = View.GONE
+        binding.progressBar2.visibility=View.GONE
     }
 
 }

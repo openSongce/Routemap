@@ -53,7 +53,6 @@ class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>()  {
                 locationAdress.text=routePost.ownerName
                 addLcationBt.text="↓"
                 heartClickButton.visibility=View.VISIBLE
-                commentButton.visibility=View.VISIBLE
                 root.setOnClickListener {
                     itemClickListener.onClick(it, position)
                 }
@@ -64,9 +63,6 @@ class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>()  {
                     heartClickButton.setImageResource(R.drawable.heart_filled)
                     itemClickListener.heartClick(it, position)
                 }
-                commentButton.setOnClickListener {
-                    itemClickListener.commentClick(it, position)
-                }
             }
         }
         }
@@ -75,7 +71,6 @@ class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>()  {
         fun onButtonClick(v: View, position: Int)
 
         fun heartClick(v: View, position: Int)
-        fun commentClick(v: View, position: Int)
     }
 
     fun setItemClickListener(onItemClickListener: OnItemClickListener) {

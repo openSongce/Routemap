@@ -10,11 +10,14 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.Toast
 import android.app.AlertDialog
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.rootmap.databinding.CommentLayoutBinding
 import com.example.rootmap.databinding.FragmentMenu2Binding
 import com.example.rootmap.databinding.PopupFilterBinding
 import com.example.rootmap.databinding.RecyclerviewDialogBinding
@@ -29,6 +32,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.time.LocalDate
 
 private const val ARG_PARAM1 = "param1_board"
 private const val ARG_PARAM2 = "param2_board"
@@ -57,6 +61,13 @@ class MenuFragment2 : Fragment() {
 
    lateinit var routeListDataAdapter:ListLocationAdapter
 
+   lateinit var commentList:MutableList<String>
+   lateinit var commentListAdapter: CommentListAdapter
+   lateinit var commentBinding: CommentLayoutBinding
+
+   lateinit var selectedOptions:List<String>
+   lateinit var user:String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -73,8 +84,13 @@ class MenuFragment2 : Fragment() {
         postlistAdapter=RouteListAdapter()
        postlistAdapter.postMode=true
 
+        selectedOptions= listOf()
+
         routeListDataAdapter=ListLocationAdapter()
         routeListDataAdapter.postView=true
+
+        commentList= mutableListOf()
+        commentListAdapter= CommentListAdapter()
 
     }
 
@@ -115,6 +131,7 @@ class MenuFragment2 : Fragment() {
             }
         })
         postlistAdapter.setItemClickListener(object: RouteListAdapter.OnItemClickListener{
+            @RequiresApi(Build.VERSION_CODES.O)
             override fun onClick(v: View, position: Int) {
                 //해당 경로 내의 여행지 리스트 보기
                 var clickItem=postlistAdapter.postList[position]
@@ -126,28 +143,30 @@ class MenuFragment2 : Fragment() {
             }
 
             override fun heartClick(v: View, position: Int) {
-                Toast.makeText(this@MenuFragment2.context,"하트",Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MenuFragment2.context, "하트", Toast.LENGTH_SHORT).show()
             }
-
-            override fun commentClick(v: View, position: Int) {
-
-            }
-
         })
         if (container != null) {
             routeListDataAdapter.parent=container
         }
-
+        Firebase.firestore.collection("user").document(currentId).get().addOnSuccessListener {
+            user=it.get("nickname").toString()
+        }
         return binding.root
     }
     override fun onResume() {
         CoroutineScope(Dispatchers.Main).launch {
             loadPostList()
+            if(!selectedOptions.isEmpty()){
+                filter()
+            }
             postlistAdapter.notifyDataSetChanged()
+            binding.postProgressBar.visibility=View.GONE
         }
         super.onResume()
     }
-    private fun viewRoute(routeName:String,docId:String,ownerId:String):AlertDialog { //다이어로그로 팝업창 구현
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun viewRoute(routeName:String, docId:String, ownerId:String):AlertDialog { //다이어로그로 팝업창 구현
         val dialogBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
         val dialogBuild =AlertDialog.Builder(context).setView(dialogBinding.root)
         var routeData= mutableListOf<MyLocation>()
@@ -157,6 +176,9 @@ class MenuFragment2 : Fragment() {
             routeListDataAdapter.list=routeData
             dialogBinding.listView.adapter = routeListDataAdapter
         }
+        CoroutineScope(Dispatchers.IO).launch {
+            commentdataLoading(docId)
+        }
         dialogBinding.run{
             listView.layoutManager = LinearLayoutManager(context)
             addTripRouteText.visibility=View.INVISIBLE
@@ -164,7 +186,7 @@ class MenuFragment2 : Fragment() {
             commentButton2.visibility=View.VISIBLE
             downloadButton.visibility=View.VISIBLE
             commentButton2.setOnClickListener {
-                Toast.makeText(this@MenuFragment2.context,"댓글",Toast.LENGTH_SHORT).show()
+                commentDialog(docId,currentId)
             }
             downloadButton.setOnClickListener {
                 Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
@@ -226,8 +248,10 @@ class MenuFragment2 : Fragment() {
             }
             .setNegativeButton("취소", null)
             .setNeutralButton("초기화") { _, _ ->
-                resetFilters(popupBinding)
-                applyFilters(popupBinding)
+                if(mode=="filter"){
+                    resetFilters(popupBinding)
+                    applyFilters(popupBinding)
+                }
             }
             .create()
         dialog.show()
@@ -300,7 +324,7 @@ class MenuFragment2 : Fragment() {
 
     private fun filter(){
         var filterResult= listOf<RoutePost>()
-        val selectedOptions=selectedLocations+selectedDurations+selectedThemes
+        selectedOptions=selectedLocations+selectedDurations+selectedThemes
 
         if(selectedOptions.isEmpty()){
             //초기화
@@ -309,7 +333,7 @@ class MenuFragment2 : Fragment() {
             postlistAdapter.notifyDataSetChanged()
         }else{
             //필터 적용
-            filterResult=postLists.filter {
+            filterResult=postListCopy.filter {
                 it.option.containsAll(selectedOptions)
             }
             postLists.clear()
@@ -385,6 +409,7 @@ class MenuFragment2 : Fragment() {
 
     private suspend fun loadPostList(): Boolean {
         postLists.clear()
+        postListCopy.clear()
         return try {
             val postListData=Firebase.firestore.collection("route").get().await()
             if(!postListData.isEmpty){
@@ -416,6 +441,56 @@ class MenuFragment2 : Fragment() {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun commentDialog(docId:String, ownerName:String):AlertDialog{
+        commentBinding=CommentLayoutBinding.inflate(layoutInflater)
+        val dialogBuild = AlertDialog.Builder(context).setView(commentBinding.root)
+        //dialogBuild.setTitle("댓글")
+        commentListAdapter.list=commentList
+        commentBinding.commentRecyclerView.adapter = commentListAdapter
+        if(commentList.isNullOrEmpty()){
+            commentBinding.noComment.visibility=View.VISIBLE
+        }
+        commentBinding.run {
+            commentRecyclerView.layoutManager = LinearLayoutManager(context)
+            commentRecyclerView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+            commentSendButton.setOnClickListener {
+                sendComment(docId)
+            }
+            commentWriteText.setOnEditorActionListener{ _,_,_ ->
+                sendComment(docId)
+                true
+            }
+        }
+
+
+        val dialog = dialogBuild.show()
+        return dialog
+    }
+
+    private suspend fun commentdataLoading(docId:String){
+        commentList.clear()
+        try {
+            val commentListDB=Firebase.firestore.collection("route").document(docId).get().await().get("comment") as List<String>
+            if(!commentListDB.isNullOrEmpty()){
+                commentListDB.forEach {
+                    commentList.add(it)
+                }
+            }
+        } catch (e: FirebaseException) {
+            Log.d("list_test", "error")
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun sendComment(docId: String){
+        var text=commentBinding.commentWriteText.text.toString()
+        commentList.add(user+"@comment@:"+text+"@date@:"+LocalDate.now().toString())
+        commentListAdapter.notifyItemInserted(commentList.size)
+        //  val commentData=currentId+text+LocalDate.now().toString()
+        Firebase.firestore.collection("route").document(docId).update("comment",commentList)
+        commentBinding.noComment.visibility=View.GONE
+    }
 
     companion object {
         @JvmStatic
