@@ -78,9 +78,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         )
         val adapter = HomeFragmentAdapter(this)
         adapter.fragmentList = contextList
-        binding.viewPager.adapter = adapter
-        binding.viewPager.setUserInputEnabled(false)
-        binding.pageName.text="메인"
+        binding.run{
+            viewPager.adapter = adapter
+            viewPager.setUserInputEnabled(false)
+            pageName.text="메인"
+            infoButton.setOnClickListener {
+                when(pageName.text){
+                    "메인"->{
+                        
+                    }
+                    "여행 경로 게시판"->{
+                        
+                    }
+                    "지도"->{
+
+                    }
+                    "마이페이지"->{
+
+                    }
+                    else->{}
+                }
+            }
+        }
 
         //하단에 탭 바 구성, 클릭 시 해당 프레그먼트로 이동
         val tabTitle = listOf<String>("메인", "게시판", "지도", "마이페이지")
@@ -132,11 +151,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val myRouteIntent = Intent(this, MyRouteActivity::class.java)
                 startActivity(myRouteIntent)
             }
-
-            R.id.menuPlans -> {
-                Toast.makeText(this, "일정 클릭", Toast.LENGTH_SHORT).show()
-            }
-
             R.id.menuMoney -> {
                 val expenditureIntent = Intent(this, ExpenditureActivity::class.java)
                 startActivity(expenditureIntent)
@@ -195,5 +209,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-
+    private fun infoDialog(mode:String){
+        //각 메뉴의 설명
+    }
 }

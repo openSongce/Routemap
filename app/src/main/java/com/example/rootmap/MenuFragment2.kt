@@ -10,20 +10,29 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.Toast
 import android.app.AlertDialog
+import android.content.Intent
+import android.graphics.Typeface
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.CommentLayoutBinding
+import com.example.rootmap.databinding.DialogLayoutBinding
 import com.example.rootmap.databinding.FragmentMenu2Binding
 import com.example.rootmap.databinding.PopupFilterBinding
 import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.example.rootmap.databinding.RouteaddLayoutBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
@@ -68,6 +77,8 @@ class MenuFragment2 : Fragment() {
    lateinit var selectedOptions:List<String>
    lateinit var user:String
 
+   lateinit var database: DatabaseReference
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -91,6 +102,8 @@ class MenuFragment2 : Fragment() {
 
         commentList= mutableListOf()
         commentListAdapter= CommentListAdapter()
+
+       database = FirebaseDatabase.getInstance().reference
 
     }
 
@@ -138,12 +151,8 @@ class MenuFragment2 : Fragment() {
                 viewRoute(clickItem.routeName,clickItem.docId,clickItem.ownerId)
             }
             override fun onButtonClick(v: View, position: Int) {
-                //다운
-                Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
             }
-
             override fun heartClick(v: View, position: Int) {
-                Toast.makeText(this@MenuFragment2.context, "하트", Toast.LENGTH_SHORT).show()
             }
         })
         if (container != null) {
@@ -151,6 +160,15 @@ class MenuFragment2 : Fragment() {
         }
         Firebase.firestore.collection("user").document(currentId).get().addOnSuccessListener {
             user=it.get("nickname").toString()
+        }
+        binding.run {
+            searchPostText.setOnEditorActionListener{ _,_,_ ->
+                searchPost()
+                true
+            }
+            postSearchButton.setOnClickListener {
+                searchPost()
+            }
         }
         return binding.root
     }
@@ -185,11 +203,14 @@ class MenuFragment2 : Fragment() {
             listView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
             commentButton2.visibility=View.VISIBLE
             downloadButton.visibility=View.VISIBLE
+            heartClickButton2.visibility=View.VISIBLE
+            likeNum.visibility=View.VISIBLE
             commentButton2.setOnClickListener {
                 commentDialog(docId,currentId)
             }
             downloadButton.setOnClickListener {
-                Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
+              //  Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
+                showDownloadDialog(routeName,routeData)
             }
         }
         val dialog = dialogBuild.show()
@@ -436,9 +457,47 @@ class MenuFragment2 : Fragment() {
             return "error"
         }
     }
-    private fun loadLike(docId:String){
+    private fun loadLike(){
         //일단 보류
+        postLists.forEach { item ->
+            item.docId?.let { id ->
+                database.child("postLike").child(id)
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+                            val likeCount = dataSnapshot.getValue(Int::class.java) ?: 0
+                            item.like = likeCount
+                            postlistAdapter.notifyDataSetChanged()
+                        }
 
+                        override fun onCancelled(databaseError: DatabaseError) {
+                            Log.w("MenuFragment", "loadLikeCount:onCancelled", databaseError.toException())
+                        }
+                    })
+            }
+        }
+    }
+    private fun showDownloadDialog(tripname:String,list:List<MyLocation>){
+        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
+        dBinding.wButton.text = "아니요" //다이어로그의 텍스트 변경
+        dBinding.bButton.text = "네"
+        dBinding.content.text = "해당 경로를 다운로드하겠습니까?"
+
+        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        val dialog = dialogBuild.show() //다이어로그 창 띄우기
+        dBinding.bButton.setOnClickListener {//다이어로그 기능 설정
+            downloadRoute(tripname,list)
+            dialog.dismiss()
+        }
+        dBinding.wButton.setOnClickListener {//취소버튼
+            //회색 버튼의 기능 구현 ↓
+            dialog.dismiss()
+        }
+    }
+
+    private fun downloadRoute(tripname:String,list:List<MyLocation>){
+        Firebase.firestore.collection("user").document(currentId).collection("route").document().set(hashMapOf("tripname" to tripname,"routeList" to list,"created" to currentId,"shared" to listOf<String>())).addOnSuccessListener {
+            Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -462,8 +521,6 @@ class MenuFragment2 : Fragment() {
                 true
             }
         }
-
-
         val dialog = dialogBuild.show()
         return dialog
     }
@@ -490,6 +547,15 @@ class MenuFragment2 : Fragment() {
         //  val commentData=currentId+text+LocalDate.now().toString()
         Firebase.firestore.collection("route").document(docId).update("comment",commentList)
         commentBinding.noComment.visibility=View.GONE
+    }
+
+    private fun searchPost(){
+        postLists.clear()
+        var searchText=binding.searchPostText.text
+        postListCopy.forEach {
+            if(it.routeName.contains(searchText)||it.ownerName.contains(searchText)) postLists.add(it)
+        }
+        postlistAdapter.notifyDataSetChanged()
     }
 
     companion object {

@@ -4,11 +4,6 @@
         android:id="@+id/menuMyRoute"
         android:icon="@drawable/route"
         android:title="나의 여행경로" />
-
-    <item
-            android:id="@+id/menuPlans"
-            android:icon="@android:drawable/ic_menu_month"
-            android:title="여행 일정" />
     <item
             android:id="@+id/menuMoney"
             android:icon="@drawable/money"

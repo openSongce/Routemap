@@ -51,13 +51,10 @@ class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>()  {
             binding.run {
                 locationName.text=routePost.routeName
                 locationAdress.text=routePost.ownerName
-                addLcationBt.text="↓"
+                addLcationBt.visibility=View.GONE
                 heartClickButton.visibility=View.VISIBLE
                 root.setOnClickListener {
                     itemClickListener.onClick(it, position)
-                }
-                addLcationBt.setOnClickListener {
-                    itemClickListener.onButtonClick(it, position)
                 }
                 heartClickButton.setOnClickListener {
                     heartClickButton.setImageResource(R.drawable.heart_filled)

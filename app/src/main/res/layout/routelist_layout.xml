@@ -57,7 +57,7 @@
             app:layout_constraintStart_toEndOf="@+id/linearLayout6"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:visibility="visible"
+            android:visibility="gone"
             app:layout_constraintEnd_toStartOf="@+id/addLcationBt"
             android:layout_marginEnd="10dp" />
 
