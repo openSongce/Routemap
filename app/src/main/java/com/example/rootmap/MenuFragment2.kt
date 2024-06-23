@@ -516,7 +516,7 @@ class MenuFragment2 : Fragment() {
             }
         })
 
-        val userLikeRef = database.child("userLikes").child(userId).child(post.docId)
+        val userLikeRef = database.child("userPostLikes").child(userId).child(post.docId)
         userLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 post.isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
@@ -642,7 +642,7 @@ class MenuFragment2 : Fragment() {
     private fun handleHeartClick(post: RoutePost) {
         val userId = auth.currentUser?.uid ?: return
         val postRef = database.child("postLikes").child(post.docId)
-        val userLikeRef = database.child("userLikes").child(userId).child(post.docId)
+        val userLikeRef = database.child("userPostLikes").child(userId).child(post.docId)
 
         post.isLiked = !post.isLiked
         if (post.isLiked) {
