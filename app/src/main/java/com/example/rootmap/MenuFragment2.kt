@@ -172,7 +172,8 @@ class MenuFragment2 : Fragment() {
         }
         return binding.root
     }
-    override fun onResume() {
+
+    override fun onStart() {
         CoroutineScope(Dispatchers.Main).launch {
             loadPostList()
             if(!selectedOptions.isEmpty()){
@@ -181,8 +182,9 @@ class MenuFragment2 : Fragment() {
             postlistAdapter.notifyDataSetChanged()
             binding.postProgressBar.visibility=View.GONE
         }
-        super.onResume()
+        super.onStart()
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun viewRoute(routeName:String, docId:String, ownerId:String):AlertDialog { //다이어로그로 팝업창 구현
         val dialogBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
