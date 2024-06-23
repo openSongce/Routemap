@@ -20,6 +20,7 @@ import com.example.rootmap.databinding.FragmentMenuBinding
 import com.example.rootmap.databinding.DialogTouristDetailBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -30,6 +31,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 private const val ARG_PARAM1 = "param1"
@@ -77,8 +79,6 @@ class MenuFragment : Fragment() {
             .build()
 
         weatherApiService = weatherRetrofit.create(WeatherApiService::class.java)
-
-
 
         // Firebase Database 초기화
         database = FirebaseDatabase.getInstance().reference
@@ -387,56 +387,23 @@ class MenuFragment : Fragment() {
             }
         }
 
-        // 초단기 실황 -> 현재기온
-        weatherApiService.getUltraSrtNcst(
+        var ptyValue: String? = null
+        var skyValue: String? = null
+        var temperature: String? = null
+        var humidity: String? = null
+
+        val ultraSrtNcstCall = weatherApiService.getUltraSrtNcst(
             serviceKey = "oX0uqL6VzriCMyNDlwDB23W4%2Bb9mn8EPDaqry2QN4hO9qaQCMH5oQOhK9oIi92TiDYQ6vAY9nv9XDubAGOdugw%3D%3D",
-            numOfRows = 10,
+            numOfRows = 50,
             pageNo = 1,
             dataType = "XML",
             baseDate = baseDate,
             baseTime = baseTime,
             nx = nx,
             ny = ny
-        ).enqueue(object : Callback<WeatherResponse> {
-            override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
-                if (response.isSuccessful) {
-                    Log.d("WEATHER_RESPONSE", response.body().toString())
-                    val items = response.body()?.body?.items?.item
-                    val temperatureItem = items?.find { it.category == "T1H" }
-                    val precipitationItem = items?.find { it.category == "PTY" }
+        )
 
-                    if (temperatureItem != null) {
-                        Log.d("WEATHER_SUCCESS", "Temperature: ${temperatureItem.obsrValue}")
-                        updateWeatherInfo(temperatureItem.obsrValue, city)
-                    } else {
-                        Log.e("WEATHER_ERROR", "Temperature data not found")
-                        handleWeatherFailure(nx, ny, city)
-                    }
-
-                    if (precipitationItem != null) {
-                        Log.d("WEATHER_SUCCESS", "Precipitation Type: ${precipitationItem.obsrValue}")
-                        updatePrecipitationInfo(precipitationItem.obsrValue, items?.find { it.category == "SKY" }?.fcstValue)
-                    } else {
-                        Log.e("WEATHER_ERROR", "Precipitation data not found")
-                        handleWeatherFailure(nx, ny, city)
-                    }
-
-                    retryCountWeather = 0 // Reset retry count on success
-                } else {
-                    Log.e("WEATHER_ERROR", "Response code: ${response.code()}")
-                    Log.e("WEATHER_ERROR_BODY", response.errorBody()?.string() ?: "No error body")
-                    handleWeatherFailure(nx, ny, city)
-                }
-            }
-
-            override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                Log.e("WEATHER_FAILURE", "Failed to fetch weather data", t)
-                handleWeatherFailure(nx, ny, city)
-            }
-        })
-
-        // 단기 예보
-        weatherApiService.getVilageFcst(
+        val vilageFcstCall = weatherApiService.getVilageFcst(
             serviceKey = "oX0uqL6VzriCMyNDlwDB23W4%2Bb9mn8EPDaqry2QN4hO9qaQCMH5oQOhK9oIi92TiDYQ6vAY9nv9XDubAGOdugw%3D%3D",
             numOfRows = 50,
             pageNo = 1,
@@ -445,42 +412,62 @@ class MenuFragment : Fragment() {
             baseTime = "0200",  // 단기 예보의 baseTime은 0200 고정
             nx = nx,
             ny = ny
-        ).enqueue(object : Callback<WeatherResponse> {
+        )
+
+        ultraSrtNcstCall.enqueue(object : Callback<WeatherResponse> {
             override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
                 if (response.isSuccessful) {
-                    Log.d("WEATHER_RESPONSE", "Short-term: ${response.body().toString()}")
+                    Log.d("WEATHER_RESPONSE_ULTRA_SRT_NCST", response.body().toString())
                     val items = response.body()?.body?.items?.item
-                    //val tmx = items?.find { it.category == "TMX" }?.fcstValue
-                    //val tmn = items?.find { it.category == "TMN" }?.fcstValue
-                    val sky = items?.find { it.category == "SKY" }?.fcstValue
-                    val reh = items?.find { it.category == "REH" }?.fcstValue
+                    temperature = items?.find { it.category == "T1H" }?.obsrValue
+                    humidity = items?.find { it.category == "REH" }?.obsrValue
+                    ptyValue = items?.find { it.category == "PTY" }?.obsrValue
 
-                    //Log.d("WEATHER_SUCCESS", "Today's Temperature: TMX: ${tmx ?: "null"}, TMN: ${tmn ?: "null"}")
-                    //updateShortTermWeatherInfo(tmx, tmn)
-                    retryCountWeather = 0 // Reset retry count on success
-                    Log.d("WEATHER_SUCCESS", "Sky Condition: ${sky ?: "null"}")
-                    Log.d("WEATHER_SUCCESS", "Humidity Condition: ${reh ?: "null"}")
-                    updateSkyInfo(sky)
-                    updateHumidityInfo(reh)
+                    updateWeather(ptyValue, skyValue, temperature, humidity, city)
                 } else {
-                    Log.e("WEATHER_ERROR", "Short-term Forecast Response code: ${response.code()}")
-                    Log.e("WEATHER_ERROR_BODY", response.errorBody()?.string() ?: "No error body")
-                    handleWeatherFailure(nx, ny, city)
+                    Log.e("WEATHER_ERROR_ULTRA_SRT_NCST", "Response code: ${response.code()}")
                 }
             }
 
             override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                Log.e("WEATHER_FAILURE", "Failed to fetch short-term forecast data", t)
-                handleWeatherFailure(nx, ny, city)
+                Log.e("WEATHER_FAILURE_ULTRA_SRT_NCST", "Failed to fetch weather data", t)
+            }
+        })
+
+        vilageFcstCall.enqueue(object : Callback<WeatherResponse> {
+            override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
+                if (response.isSuccessful) {
+                    Log.d("WEATHER_RESPONSE_VILAGE_FCST", response.body().toString())
+                    val items = response.body()?.body?.items?.item
+                    skyValue = items?.find { it.category == "SKY" }?.fcstValue
+
+                    updateWeather(ptyValue, skyValue, temperature, humidity, city)
+                } else {
+                    Log.e("WEATHER_ERROR_VILAGE_FCST", "Response code: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                Log.e("WEATHER_FAILURE_VILAGE_FCST", "Failed to fetch short-term forecast data", t)
             }
         })
     }
 
-    private fun updateWeatherInfo(temp: String?, city: String) {
+    private fun updateWeather(
+        ptyValue: String?,
+        skyValue: String?,
+        temperature: String?,
+        humidity: String?,
+        city: String
+    ) {
+        updateTemperature(temperature, city)
+        updateHumidity(humidity)
+        updateSky(ptyValue, skyValue)
+    }
+
+    private fun updateTemperature(temp: String?, city: String) {
         val tvNowCelsius = binding.root.findViewById<TextView>(R.id.tvNowCelsius)
         val tvLocation = binding.root.findViewById<TextView>(R.id.tvLocation)
-
-        Log.d("WEATHER_UPDATE", "Updating temperature to ${temp ?: "null"}° for city $city")
 
         if (temp != null) {
             tvNowCelsius.text = "$temp°"
@@ -488,7 +475,15 @@ class MenuFragment : Fragment() {
         tvLocation.text = city
     }
 
-    private fun updatePrecipitationInfo(ptyValue: String?, skyValue: String?) {
+    private fun updateHumidity(rehValue: String?) {
+        val tvHumidity = binding.root.findViewById<TextView>(R.id.tvHumidity)
+
+        if (rehValue != null) {
+            tvHumidity.text = "습도: $rehValue%"
+        }
+    }
+
+    private fun updateSky(ptyValue: String?, skyValue: String?) {
         val imageView = binding.root.findViewById<ImageView>(R.id.imageView)
         val tvSkyCondition = binding.root.findViewById<TextView>(R.id.tvSkyCondition)
 
@@ -511,85 +506,22 @@ class MenuFragment : Fragment() {
                     imageView.setImageResource(R.drawable.weather_04)
                     "흐림"
                 }
-                else -> null
+                //else -> null
+                else -> {
+                    imageView.setImageResource(R.drawable.weather_04)
+                    "흐림"
+                }
             }
 
             if (skyCondition != null) {
-                Log.d("WEATHER_UPDATE", "Updating sky condition to $skyCondition")
                 tvSkyCondition.text = "하늘: $skyCondition"
             }
         } else {
             // If precipitation exists, update to rain icon
             imageView.setImageResource(R.drawable.weather_03)
-            tvSkyCondition.text = "비"
-            Log.d("WEATHER_UPDATE", "Updating to rain condition")
+            tvSkyCondition.text = "하늘: 비"
         }
     }
-
-
-    private fun updateSkyInfo(skyValue: String?) {
-        val tvSkyCondition = binding.root.findViewById<TextView>(R.id.tvSkyCondition)
-        val imageView = binding.root.findViewById<ImageView>(R.id.imageView)
-        val skyCondition = when (skyValue) {
-            "1" -> {
-                imageView.setImageResource(R.drawable.weather_01)
-                "맑음"
-            }
-            "2" -> {
-                imageView.setImageResource(R.drawable.weather_02)
-                "구름 조금"
-            }
-            "3" -> {
-                imageView.setImageResource(R.drawable.weather_02)
-                "구름 많음"
-            }
-            "4" -> {
-                imageView.setImageResource(R.drawable.weather_04)
-                "흐림"
-            }
-            else -> null
-        }
-
-        if (skyCondition != null) {
-            Log.d("WEATHER_UPDATE", "Updating sky condition to $skyCondition")
-            tvSkyCondition.text = "하늘: $skyCondition"
-        }
-    }
-
-    private fun updateHumidityInfo(rehValue: String?) {
-        val tvHumidity = binding.root.findViewById<TextView>(R.id.tvHumidity)
-
-        if (rehValue != null) {
-            Log.d("WEATHER_UPDATE", "Updating humidity to $rehValue%")
-            tvHumidity.text = "습도: $rehValue%"
-        } else {
-            Log.d("WEATHER_UPDATE", "Humidity data not available")
-            //tvHumidity.text = "습도: N/A"
-        }
-    }
-
-    private fun handleWeatherFailure(nx: Int, ny: Int, city: String) {
-        if (retryCountWeather < maxRetriesWeather) {
-            retryCountWeather++
-            Log.d("WEATHER_RETRY", "Retrying fetchWeather... Attempt: $retryCountWeather")
-            fetchWeather(nx, ny, city)
-        } else {
-            Log.e("WEATHER_RETRY", "Max retries reached. Could not fetch weather data.")
-            //updateWeatherInfo(null, city)
-            //updateSkyInfo(null)
-            //updateHumidityInfo(null)
-        }
-    }
-
-    /*
-    private fun updateShortTermWeatherInfo(tmx: String?, tmn: String?) {
-        val tvTodayCelsius = binding.root.findViewById<TextView>(R.id.tvTodayCelsius)
-        Log.d("WEATHER_UPDATE", "Updating today's temperature: TMX: ${tmx ?: "null"}°, TMN: ${tmn ?: "null"}°")
-
-        if (tmx != null && tmn != null) {
-            tvTodayCelsius.text = "최고: $tmx°/최저: $tmn°"
-        }
-    }*/
 
 
     companion object {
