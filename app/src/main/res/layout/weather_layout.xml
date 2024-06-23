@@ -16,7 +16,7 @@
                 android:id="@+id/imageView"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:background="@drawable/weather_01"
+                android:background="@drawable/weather_04"
                 android:layout_margin="10dp"
                 />
 
@@ -55,7 +55,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/tvSkyCondition"
-                    android:text="하늘: 맑음"/>
+                    android:text="하늘: 흐림"/>
             <!--TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -65,7 +65,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/tvHumidity"
-                    android:text="습도: 0%"/>
+                    android:text="습도: 80%"/>
 
         </LinearLayout>
     </LinearLayout>
