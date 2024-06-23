@@ -200,7 +200,7 @@ class MenuFragment2 : Fragment() {
         if (isSortedByLikes) {
             postLists.sortByDescending { it.like }
         } else {
-            postLists.sortBy { it.routeName } // 이름순 정렬
+            postLists.sortByDescending { it.timestamp } // Sort by timestamp for the latest posts
         }
         postlistAdapter.notifyDataSetChanged()
     }
@@ -330,17 +330,26 @@ class MenuFragment2 : Fragment() {
         clearAllCheckBoxes(popupBinding.themesContainer, "themes")
     }
 
-    private fun postMyRouteDb(list: MutableList<String>,list2: MutableList<String>,list3: MutableList<String> ){
-        var emptyList= listOf<String>()
-        var uploadList=list+list2+list3
-        Firebase.firestore.collection("route").document(docId).set(hashMapOf("owner" to docOwner,"tripname" to docName,"comment" to emptyList,"option" to uploadList)).addOnSuccessListener {
-            Toast.makeText(this.context,"성공적으로 업로드하였습니다.",Toast.LENGTH_SHORT).show()
+    private fun postMyRouteDb(list: MutableList<String>, list2: MutableList<String>, list3: MutableList<String>) {
+        val emptyList = listOf<String>()
+        val uploadList = list + list2 + list3
+        val currentTimestamp = System.currentTimeMillis() // Get the current timestamp
+
+        Firebase.firestore.collection("route").document(docId).set(hashMapOf(
+            "owner" to docOwner,
+            "tripname" to docName,
+            "comment" to emptyList,
+            "option" to uploadList,
+            "timestamp" to currentTimestamp // Save the timestamp
+        )).addOnSuccessListener {
+            Toast.makeText(this.context, "성공적으로 업로드하였습니다.", Toast.LENGTH_SHORT).show()
             CoroutineScope(Dispatchers.Main).launch {
                 loadPostList()
                 postlistAdapter.notifyDataSetChanged()
             }
         }
     }
+
     private fun checkForPost(container: ViewGroup, list: MutableList<String>){
         for (i in 0 until container.childCount) {
             val checkBox = container.getChildAt(i) as CheckBox
@@ -475,24 +484,23 @@ class MenuFragment2 : Fragment() {
                         document.id,
                         user,
                         loadUserName(user),
-                        document.data["option"] as List<String>
+                        document.data["option"] as List<String>,
+                        timestamp = document.getLong("timestamp") ?: 0L // Load the timestamp field
                     )
                     loadLikeStatus(data)
                     postLists.add(data)
                     postListCopy.add(data)
                 }
             }
-            // 좋아요 수에 따라 정렬
-            if (isSortedByLikes) {
-                postLists.sortByDescending { it.like }
-            }
-            postlistAdapter.notifyDataSetChanged()
+            // Sort the list based on the current sorting order
+            sortPostList()
             true
         } catch (e: FirebaseException) {
             Log.d("list_test", "error")
             false
         }
     }
+
 
     private fun loadLikeStatus(post: RoutePost) {
         val userId = auth.currentUser?.uid ?: return

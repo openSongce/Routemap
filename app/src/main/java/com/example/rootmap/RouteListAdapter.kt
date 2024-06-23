@@ -5,9 +5,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rootmap.databinding.RoutelistLayoutBinding
-import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>() {
+class RouteListAdapter : RecyclerView.Adapter<RouteListAdapter.Holder>() {
     var list = mutableListOf<SearchLocation>()
     var postList = mutableListOf<RoutePost>()
     var postMode = false
@@ -19,24 +21,23 @@ class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>() {
     }
 
     override fun getItemCount(): Int {
-        if (postMode) return postList.size
-        return list.size
+        return if (postMode) postList.size else list.size
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
         if (postMode) {
-            var screen = postList.get(position)
+            val screen = postList[position]
             holder.postSetData(screen)
         } else {
-            var screen = list.get(position)
+            val screen = list[position]
             holder.setData(screen)
         }
     }
 
     inner class Holder(
         val binding: RoutelistLayoutBinding,
-    ) :
-        RecyclerView.ViewHolder(binding.root) {
+    ) : RecyclerView.ViewHolder(binding.root) {
+
         fun setData(searchLocation: SearchLocation) {
             binding.locationName.text = searchLocation.name
             binding.locationAdress.text = searchLocation.adress
@@ -56,6 +57,11 @@ class RouteListAdapter() : RecyclerView.Adapter<RouteListAdapter.Holder>() {
                 addLcationBt.visibility = View.GONE
                 heartClickButton.visibility = View.VISIBLE
                 updateHeartButton(routePost.isLiked)
+
+                // Format the timestamp and set it to the TextView
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                val date = Date(routePost.timestamp)
+                timestamp.text = dateFormat.format(date)
 
                 root.setOnClickListener {
                     itemClickListener.onClick(it, adapterPosition)
