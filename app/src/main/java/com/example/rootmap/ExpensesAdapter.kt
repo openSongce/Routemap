@@ -10,6 +10,8 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.NumberFormat
+import java.util.Locale
 
 class ExpensesAdapter(
     private val expensesList: MutableList<Expense>,
@@ -40,7 +42,8 @@ class ExpensesAdapter(
 
         fun bind(expense: Expense) {
             nameTextView.text = expense.name
-            spendingTextView.text = expense.spending
+            val spendingFormatted = NumberFormat.getNumberInstance(Locale.US).format(expense.spending.replace(",", "").toIntOrNull() ?: 0)
+            spendingTextView.text = spendingFormatted
 
             editButton.setOnClickListener {
                 showEditDialog(expense)
@@ -60,7 +63,7 @@ class ExpensesAdapter(
                     val newSpending = spendingEditText.text.toString()
                     val oldSpending = expense.spending
                     expense.spending = newSpending
-                    spendingTextView.text = newSpending
+                    spendingTextView.text = NumberFormat.getNumberInstance(Locale.US).format(newSpending.replace(",", "").toIntOrNull() ?: 0)
                     updateTotalExpenditure()
                     updateFirestore(expense.name, oldSpending, newSpending)
                 }
@@ -98,4 +101,3 @@ class ExpensesAdapter(
         }
     }
 }
-

@@ -7,14 +7,16 @@
         android:orientation="vertical"
         tools:context=".ExpenditureDetailActivity">
 
-    <Button
-            android:id="@+id/btnGoBack"
+    <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:srcCompat="@android:drawable/ic_menu_revert"
+            android:id="@+id/btnGoBack"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
-            android:backgroundTint="@color/custum_color"
-            android:text="뒤로"/>
+            android:backgroundTint="@color/custum_color" />
 
     <TextView
             android:id="@+id/tourPlanName"
@@ -39,11 +41,25 @@
             android:id="@+id/totalExpenditure"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="20dp"
-            android:layout_gravity="center"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
             android:text="0원 지출"
+            android:textStyle="bold"
+            android:padding="8dp"
+
             android:textSize="30sp"/>
+
+    <TextView
+            android:id="@+id/sharedInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:text="공유 정보"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:padding="8dp"
+            android:visibility="gone"/> <!-- 초기에는 숨겨져 있도록 -->
 
 </LinearLayout>

@@ -10,7 +10,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:textColor="@android:color/black" />
+
+    <TextView
+            android:id="@+id/sharedTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="공유받은 경로"
+            android:textSize="14sp"
+            android:textColor="@android:color/holo_blue_light"
+            android:visibility="gone"
+            android:layout_marginEnd="8dp" />
 
     <Button
             android:id="@+id/tripDetailButton"

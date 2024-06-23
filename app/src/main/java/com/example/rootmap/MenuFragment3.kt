@@ -569,7 +569,7 @@ class MenuFragment3 : Fragment() {
         dialogBuild.setTitle("내 여행 리스트")
         routeDialog.listView.adapter = routelistAdapter
         routeDialog.listView.layoutManager = LinearLayoutManager(context)
-         swipeHelperCallbackRoute = SwapeManageAdapter(routelistAdapter).apply {
+        swipeHelperCallbackRoute = SwapeManageAdapter(routelistAdapter).apply {
             // 스와이프한 뒤 고정시킬 위치 지정
             setClamp(resources.displayMetrics.widthPixels.toFloat()/4)
         }

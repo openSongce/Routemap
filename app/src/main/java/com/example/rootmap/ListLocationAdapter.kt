@@ -135,7 +135,7 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                         if (spending != newSpending) {
                             list[position].spending = newSpending
                             notifyDataSetChanged()
-                           // updateFirestoreSpending(list[position].name, newSpending)
+                            // updateFirestoreSpending(list[position].name, newSpending)
                         }
                     }
                     .setNegativeButton("취소", null)
@@ -146,26 +146,26 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                 Toast.makeText(parent.context, "Error showing spending dialog", Toast.LENGTH_SHORT).show()
             }
         }
-/*
-        private fun updateFirestoreSpending(name: String, newSpending: String) {
-            myDb.document(docId).get().addOnSuccessListener { document ->
-                val routeList = document.get("routeList") as? MutableList<Map<String, Any>>
-                if (routeList != null) {
-                    val mutableRouteList = routeList.toMutableList()
-                    for (item in mutableRouteList) {
-                        if (item["name"] == name) {
-                            val mutableItem = item.toMutableMap()
-                            mutableItem["spending"] = newSpending
-                            mutableRouteList[mutableRouteList.indexOf(item)] = mutableItem
-                            break
+        /*
+                private fun updateFirestoreSpending(name: String, newSpending: String) {
+                    myDb.document(docId).get().addOnSuccessListener { document ->
+                        val routeList = document.get("routeList") as? MutableList<Map<String, Any>>
+                        if (routeList != null) {
+                            val mutableRouteList = routeList.toMutableList()
+                            for (item in mutableRouteList) {
+                                if (item["name"] == name) {
+                                    val mutableItem = item.toMutableMap()
+                                    mutableItem["spending"] = newSpending
+                                    mutableRouteList[mutableRouteList.indexOf(item)] = mutableItem
+                                    break
+                                }
+                            }
+                            myDb.document(docId).update("routeList", mutableRouteList)
                         }
                     }
-                    myDb.document(docId).update("routeList", mutableRouteList)
                 }
-            }
-        }
 
- */
+         */
 
     }
     // 현재 선택된 데이터와 드래그한 위치에 있는 데이터를 교환

@@ -3,17 +3,20 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         tools:context=".ExpenditureActivity">
 
-    <Button
-            android:id="@+id/btnGoBack"
+    <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:srcCompat="@android:drawable/ic_menu_revert"
+            android:id="@+id/btnGoBack"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
-            android:backgroundTint="@color/custum_color"
-            android:text="뒤로"/>
+            android:backgroundTint="@color/custum_color" />
 
     <TextView
             android:layout_width="wrap_content"
