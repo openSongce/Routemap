@@ -176,7 +176,7 @@ class MenuFragment2 : Fragment() {
         CoroutineScope(Dispatchers.Main).launch {
             loadPostList()
             if(!selectedOptions.isEmpty()){
-                filter()
+               // filter()
             }
             postlistAdapter.notifyDataSetChanged()
             binding.postProgressBar.visibility=View.GONE
