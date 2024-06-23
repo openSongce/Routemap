@@ -254,7 +254,9 @@ class MenuFragment : Fragment() {
                     // 각 아이템의 추천 수를 Firebase에서 가져옴
                     items.forEach { item ->
                         item.title?.let { title ->
-                            database.child("likes").child(title)
+                            // Firebase 경로에서 사용할 수 없는 문자를 대체
+                            val sanitizedTitle = title.replace("[.\\#\\$\\[\\]]".toRegex(), "")
+                            database.child("likes").child(sanitizedTitle)
                                 .addListenerForSingleValueEvent(object : ValueEventListener {
                                     override fun onDataChange(dataSnapshot: DataSnapshot) {
                                         val likeCount = dataSnapshot.getValue(Int::class.java) ?: 0
@@ -269,7 +271,7 @@ class MenuFragment : Fragment() {
 
                             // 사용자 하트 상태 가져오기
                             auth.currentUser?.uid?.let { userId ->
-                                database.child("userLikes").child(userId).child(title)
+                                database.child("userLikes").child(userId).child(sanitizedTitle)
                                     .addListenerForSingleValueEvent(object : ValueEventListener {
                                         override fun onDataChange(dataSnapshot: DataSnapshot) {
                                             val isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
@@ -284,7 +286,6 @@ class MenuFragment : Fragment() {
                             }
                         }
                     }
-
 
                     if (items.isNotEmpty()) {
                         val adapter = TouristAdapter(items, database, auth) { item ->
@@ -312,6 +313,7 @@ class MenuFragment : Fragment() {
             }
         })
     }
+
 
     private fun fetchTouristDetail(contentId: String) {
         apiService.getTouristDetail(
@@ -446,7 +448,7 @@ class MenuFragment : Fragment() {
                     val sky = items?.find { it.category == "SKY" }?.fcstValue
 
                     Log.d("WEATHER_SUCCESS", "Today's Temperature: TMX: ${tmx ?: "null"}, TMN: ${tmn ?: "null"}")
-                    updateShortTermWeatherInfo(tmx, tmn)
+                    //updateShortTermWeatherInfo(tmx, tmn)
                     retryCountWeather = 0 // Reset retry count on success
 
                     Log.d("WEATHER_SUCCESS", "Sky Condition: ${sky ?: "null"}")
@@ -473,7 +475,7 @@ class MenuFragment : Fragment() {
         } else {
             Log.e("WEATHER_RETRY", "Max retries reached. Could not fetch weather data.")
             updateWeatherInfo(null, city)
-            updateShortTermWeatherInfo(null, null)
+            //updateShortTermWeatherInfo(null, null)
             updateSkyInfo(null)
         }
     }
@@ -519,6 +521,7 @@ class MenuFragment : Fragment() {
         }
     }
 
+    /*
     private fun updateShortTermWeatherInfo(tmx: String?, tmn: String?) {
         val tvTodayCelsius = binding.root.findViewById<TextView>(R.id.tvTodayCelsius)
         Log.d("WEATHER_UPDATE", "Updating today's temperature: TMX: ${tmx ?: "null"}°, TMN: ${tmn ?: "null"}°")
@@ -526,7 +529,7 @@ class MenuFragment : Fragment() {
         if (tmx != null && tmn != null) {
             tvTodayCelsius.text = "최고: $tmx°/최저: $tmn°"
         }
-    }
+    }*/
 
 
     companion object {

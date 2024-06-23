@@ -31,8 +31,8 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/tvNowCelsius"
                 android:layout_margin="10dp"
-                android:text="31°"
-                android:textSize="60dp"/>
+                android:text="29.4°"
+                android:textSize="50dp"/>
     </LinearLayout>
 
     <LinearLayout
@@ -56,11 +56,16 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/tvSkyCondition"
                     android:text="하늘: 맑음"/>
-            <TextView
+            <!--TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/tvTodayCelsius"
-                    android:text="최고: 31°/최저 16°"/>
+                    android:text="최고: 31°/최저 16°"/-->
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tvHumidity"
+                    android:text="습도: 0%"/>
 
         </LinearLayout>
     </LinearLayout>
