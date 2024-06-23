@@ -28,10 +28,13 @@ import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.example.rootmap.databinding.RouteaddLayoutBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.MutableData
+import com.google.firebase.database.Transaction
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
@@ -65,19 +68,20 @@ class MenuFragment2 : Fragment() {
     lateinit var docOwner:String
 
     lateinit var postlistAdapter: RouteListAdapter
-   lateinit var postLists: MutableList<RoutePost>
-   lateinit var postListCopy: MutableList<RoutePost>
+    lateinit var postLists: MutableList<RoutePost>
+    lateinit var postListCopy: MutableList<RoutePost>
 
-   lateinit var routeListDataAdapter:ListLocationAdapter
+    lateinit var routeListDataAdapter:ListLocationAdapter
 
-   lateinit var commentList:MutableList<String>
-   lateinit var commentListAdapter: CommentListAdapter
-   lateinit var commentBinding: CommentLayoutBinding
+    lateinit var commentList:MutableList<String>
+    lateinit var commentListAdapter: CommentListAdapter
+    lateinit var commentBinding: CommentLayoutBinding
 
-   lateinit var selectedOptions:List<String>
-   lateinit var user:String
+    lateinit var selectedOptions:List<String>
+    lateinit var user:String
 
-   lateinit var database: DatabaseReference
+    lateinit var database: DatabaseReference
+    lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,7 +97,7 @@ class MenuFragment2 : Fragment() {
         postLists= mutableListOf()
         postListCopy= mutableListOf()
         postlistAdapter=RouteListAdapter()
-       postlistAdapter.postMode=true
+        postlistAdapter.postMode=true
 
         selectedOptions= listOf()
 
@@ -103,8 +107,8 @@ class MenuFragment2 : Fragment() {
         commentList= mutableListOf()
         commentListAdapter= CommentListAdapter()
 
-       database = FirebaseDatabase.getInstance().reference
-
+        database = FirebaseDatabase.getInstance().reference
+        auth = FirebaseAuth.getInstance()
     }
 
     override fun onCreateView(
@@ -119,7 +123,7 @@ class MenuFragment2 : Fragment() {
         binding.postMyRouteButton.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
                 loadMyList()
-                 routeDialog=makeMyPost()
+                routeDialog=makeMyPost()
             }
         }
         binding.postListView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
@@ -153,6 +157,8 @@ class MenuFragment2 : Fragment() {
             override fun onButtonClick(v: View, position: Int) {
             }
             override fun heartClick(v: View, position: Int) {
+                val post = postlistAdapter.postList[position]
+                handleHeartClick(post)
             }
         })
         if (container != null) {
@@ -172,6 +178,7 @@ class MenuFragment2 : Fragment() {
         }
         return binding.root
     }
+
     override fun onResume() {
         CoroutineScope(Dispatchers.Main).launch {
             loadPostList()
@@ -209,7 +216,7 @@ class MenuFragment2 : Fragment() {
                 commentDialog(docId,currentId)
             }
             downloadButton.setOnClickListener {
-              //  Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
+                //  Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
                 showDownloadDialog(routeName,routeData)
             }
         }
@@ -237,9 +244,9 @@ class MenuFragment2 : Fragment() {
 
     private fun showFilterPopup(mode:String) {
         val popupBinding = PopupFilterBinding.inflate(LayoutInflater.from(context))
-         val locations = mutableListOf<String>()
-         val duration=mutableListOf<String>()
-         val themes = mutableListOf<String>()
+        val locations = mutableListOf<String>()
+        val duration=mutableListOf<String>()
+        val themes = mutableListOf<String>()
         if(mode=="filter"){
             // 여행지, 여행일, 테마 체크박스 동적 생성
             addCheckBoxes(R.array.locations_array, popupBinding.locationsContainer, "locations")
@@ -256,7 +263,7 @@ class MenuFragment2 : Fragment() {
             .setView(popupBinding.root)
             .setPositiveButton("확인") { _, _ ->
                 if(mode=="filter"){
-                //필터버튼 사용시
+                    //필터버튼 사용시
                     applyFilters(popupBinding)
                 }
                 else{//게시글 만들때
@@ -432,12 +439,19 @@ class MenuFragment2 : Fragment() {
         postLists.clear()
         postListCopy.clear()
         return try {
-            val postListData=Firebase.firestore.collection("route").get().await()
-            if(!postListData.isEmpty){
-                postListData.forEach {
-                    //임시로 일단 좋아요 수는 0
-                    val user=it.data?.get("owner").toString()
-                    val data=RoutePost(it.data?.get("tripname").toString(),0,it.id,user,loadUserName(user),it.data?.get("option") as List<String>)
+            val postListData = Firebase.firestore.collection("route").get().await()
+            if (!postListData.isEmpty) {
+                postListData.forEach { document ->
+                    val user = document.data["owner"].toString()
+                    val data = RoutePost(
+                        document.data["tripname"].toString(),
+                        0,
+                        document.id,
+                        user,
+                        loadUserName(user),
+                        document.data["option"] as List<String>
+                    )
+                    loadLikeStatus(data)
                     postLists.add(data)
                     postListCopy.add(data)
                 }
@@ -448,6 +462,34 @@ class MenuFragment2 : Fragment() {
             false
         }
     }
+
+    private fun loadLikeStatus(post: RoutePost) {
+        val userId = auth.currentUser?.uid ?: return
+        val postRef = database.child("postLikes").child(post.docId)
+        postRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                post.like = dataSnapshot.getValue(Int::class.java) ?: 0
+                postlistAdapter.notifyItemChanged(postLists.indexOf(post))
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("MenuFragment2", "loadLikeStatus:onCancelled", databaseError.toException())
+            }
+        })
+
+        val userLikeRef = database.child("userLikes").child(userId).child(post.docId)
+        userLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                post.isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
+                postlistAdapter.notifyItemChanged(postLists.indexOf(post))
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("MenuFragment2", "loadLikeStatus:onCancelled", databaseError.toException())
+            }
+        })
+    }
+
     private suspend fun loadUserName(id:String):String{
         return try {
             val nickname=Firebase.firestore.collection("user").document(id).get().await().get("nickname").toString()
@@ -557,6 +599,64 @@ class MenuFragment2 : Fragment() {
         }
         postlistAdapter.notifyDataSetChanged()
     }
+
+    private fun handleHeartClick(post: RoutePost) {
+        val userId = auth.currentUser?.uid ?: return
+        val postRef = database.child("postLikes").child(post.docId)
+        val userLikeRef = database.child("userLikes").child(userId).child(post.docId)
+
+        post.isLiked = !post.isLiked
+        if (post.isLiked) {
+            post.like += 1
+        } else {
+            post.like -= 1
+        }
+        postlistAdapter.notifyItemChanged(postLists.indexOf(post))
+
+        userLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val liked = dataSnapshot.getValue(Boolean::class.java) ?: false
+                if (liked) {
+                    userLikeRef.setValue(false)
+                    postRef.runTransaction(object : Transaction.Handler {
+                        override fun doTransaction(currentData: MutableData): Transaction.Result {
+                            val currentLikes = currentData.getValue(Int::class.java) ?: 0
+                            currentData.value = currentLikes - 1
+                            return Transaction.success(currentData)
+                        }
+
+                        override fun onComplete(
+                            databaseError: DatabaseError?,
+                            committed: Boolean,
+                            currentData: DataSnapshot?
+                        ) {
+                        }
+                    })
+                } else {
+                    userLikeRef.setValue(true)
+                    postRef.runTransaction(object : Transaction.Handler {
+                        override fun doTransaction(currentData: MutableData): Transaction.Result {
+                            val currentLikes = currentData.getValue(Int::class.java) ?: 0
+                            currentData.value = currentLikes + 1
+                            return Transaction.success(currentData)
+                        }
+
+                        override fun onComplete(
+                            databaseError: DatabaseError?,
+                            committed: Boolean,
+                            currentData: DataSnapshot?
+                        ) {
+                        }
+                    })
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("MenuFragment2", "handleHeartClick:onCancelled", databaseError.toException())
+            }
+        })
+    }
+
 
     companion object {
         @JvmStatic
