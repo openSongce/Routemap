@@ -192,12 +192,9 @@ class MenuFragment : Fragment() {
         selectedButton?.setTextColor(ContextCompat.getColor(requireContext(), R.color.default_button_text))
     }
 
-    private fun fetchTotalPages(areaCode: Int, contentTypeId: Int) { // 전체 페이지 수 가져오기
-        if (totalPages > 0) {
-            fetchTouristInfo(areaCode, contentTypeId, randomPage = true)
-            return
-        }
+    private var isInitialLoad = true
 
+    private fun fetchTotalPages(areaCode: Int, contentTypeId: Int) { // 전체 페이지 수 가져오기
         apiService.getTouristInfo(
             numOfRows = 10,
             pageNo = 1,
@@ -214,7 +211,8 @@ class MenuFragment : Fragment() {
                 if (response.isSuccessful) {
                     val totalCount = response.body()?.body?.totalCount?.toIntOrNull() ?: 0
                     totalPages = (totalCount / 10) + 1
-                    fetchTouristInfo(areaCode, contentTypeId, randomPage = true)
+                    fetchTouristInfo(areaCode, contentTypeId, randomPage = !isInitialLoad)
+                    isInitialLoad = false
                 } else {
                     Log.e("API_ERROR", "Response code: ${response.code()}")
                 }
@@ -226,7 +224,7 @@ class MenuFragment : Fragment() {
         })
     }
 
-    private fun fetchTouristInfo(areaCode: Int, contentTypeId: Int, randomPage: Boolean = true) { // 여행지 정보 가져오기
+    private fun fetchTouristInfo(areaCode: Int, contentTypeId: Int, randomPage: Boolean = false) { // 여행지 정보 가져오기
         currentContentTypeId = contentTypeId
         if (retryCount >= maxRetries) {
             binding.swipeRefreshLayout.isRefreshing = false
@@ -313,7 +311,6 @@ class MenuFragment : Fragment() {
             }
         })
     }
-
 
     private fun fetchTouristDetail(contentId: String) {
         apiService.getTouristDetail(
