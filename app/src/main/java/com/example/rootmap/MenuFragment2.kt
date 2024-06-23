@@ -13,6 +13,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Typeface
 import android.os.Build
+import android.widget.Button
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -83,6 +84,9 @@ class MenuFragment2 : Fragment() {
     lateinit var database: DatabaseReference
     lateinit var auth: FirebaseAuth
 
+    private lateinit var sortButton: Button
+    private var isSortedByLikes = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -116,6 +120,13 @@ class MenuFragment2 : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentMenu2Binding.inflate(inflater, container, false)
+
+        // 정렬 버튼 초기화
+        sortButton = binding.sortButton
+        sortButton.setOnClickListener {
+            toggleSortOrder()
+        }
+
         // 필터 버튼 클릭 이벤트
         binding.filterButton.setOnClickListener {
             showFilterPopup("filter")
@@ -178,6 +189,22 @@ class MenuFragment2 : Fragment() {
         }
         return binding.root
     }
+
+    private fun toggleSortOrder() {
+        isSortedByLikes = !isSortedByLikes
+        sortButton.text = if (isSortedByLikes) "최신 순 정렬" else "좋아요 순 정렬"
+        sortPostList()
+    }
+
+    private fun sortPostList() {
+        if (isSortedByLikes) {
+            postLists.sortByDescending { it.like }
+        } else {
+            postLists.sortBy { it.routeName } // 이름순 정렬
+        }
+        postlistAdapter.notifyDataSetChanged()
+    }
+
 
     override fun onResume() {
         CoroutineScope(Dispatchers.Main).launch {
@@ -456,6 +483,11 @@ class MenuFragment2 : Fragment() {
                     postListCopy.add(data)
                 }
             }
+            // 좋아요 수에 따라 정렬
+            if (isSortedByLikes) {
+                postLists.sortByDescending { it.like }
+            }
+            postlistAdapter.notifyDataSetChanged()
             true
         } catch (e: FirebaseException) {
             Log.d("list_test", "error")
