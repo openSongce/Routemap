@@ -56,6 +56,8 @@ class RouteListAdapter : RecyclerView.Adapter<RouteListAdapter.Holder>() {
                 heartCount.text = routePost.like.toString()
                 addLcationBt.visibility = View.GONE
                 heartClickButton.visibility = View.VISIBLE
+                heartCount.visibility = View.VISIBLE
+                timestamp.visibility=View.VISIBLE
                 updateHeartButton(routePost.isLiked)
 
                 // Format the timestamp and set it to the TextView

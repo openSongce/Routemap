@@ -64,7 +64,8 @@
                 android:layout_height="40dp"
                 android:src="@drawable/heart_empty"
                 android:scaleType="fitCenter"
-                android:background="@android:color/transparent" />
+                android:background="@android:color/transparent"
+                android:visibility="gone" />
 
         <TextView
                 android:id="@+id/heartCount"
@@ -73,7 +74,8 @@
                 android:text="0"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                android:layout_marginStart="8dp" />
+                android:layout_marginStart="8dp"
+                android:visibility="gone" />
     </LinearLayout>
 
     <TextView
@@ -87,6 +89,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="10dp"
-            android:layout_marginBottom="0dp" />
+            android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
