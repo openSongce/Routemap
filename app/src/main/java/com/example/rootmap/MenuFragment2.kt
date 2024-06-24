@@ -508,7 +508,7 @@ class MenuFragment2 : Fragment() {
         postRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 post.like = dataSnapshot.getValue(Int::class.java) ?: 0
-                postlistAdapter.notifyItemChanged(postLists.indexOf(post))
+             //   postlistAdapter.notifyItemChanged(postLists.indexOf(post))
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
@@ -520,7 +520,7 @@ class MenuFragment2 : Fragment() {
         userLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 post.isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
-                postlistAdapter.notifyItemChanged(postLists.indexOf(post))
+              //  postlistAdapter.notifyItemChanged(postLists.indexOf(post))
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
