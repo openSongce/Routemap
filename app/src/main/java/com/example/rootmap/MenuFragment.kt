@@ -73,9 +73,17 @@ class MenuFragment : Fragment() {
         apiService = retrofit.create(TouristApiService::class.java)
 
         // Weather API 초기화
+        /*
         val weatherRetrofit = Retrofit.Builder()
             .baseUrl("https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/")
             .addConverterFactory(SimpleXmlConverterFactory.create())
+            .build()
+        */
+
+
+        val weatherRetrofit = Retrofit.Builder()
+            .baseUrl("https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/")
+            .addConverterFactory(SimpleXmlConverterFactory.createNonStrict())  // NonStrict로 변경
             .build()
 
         weatherApiService = weatherRetrofit.create(WeatherApiService::class.java)
@@ -375,8 +383,9 @@ class MenuFragment : Fragment() {
         val timeFormat = SimpleDateFormat("HHmm", Locale.getDefault())
         val currentTime = Calendar.getInstance()
 
-        val baseDate = dateFormat.format(Date())
-        val baseTime = timeFormat.format(currentTime.time).let {
+        // 초단기실황의 baseTime 설정
+        val ultraSrtNcstBaseDate = dateFormat.format(currentTime.time)
+        val ultraSrtNcstBaseTime = timeFormat.format(currentTime.time).let {
             val hour = currentTime.get(Calendar.HOUR_OF_DAY)
             val minute = currentTime.get(Calendar.MINUTE)
 
@@ -387,37 +396,28 @@ class MenuFragment : Fragment() {
             }
         }
 
+        // 단기예보의 baseTime과 baseDate 설정
+        val (vilageFcstBaseTime, vilageFcstBaseDate) = getVilageFcstBaseTimeAndDate()
+
         var ptyValue: String? = null
         var skyValue: String? = null
         var temperature: String? = null
         var humidity: String? = null
 
-        val ultraSrtNcstCall = weatherApiService.getUltraSrtNcst(
-            serviceKey = "oX0uqL6VzriCMyNDlwDB23W4%2Bb9mn8EPDaqry2QN4hO9qaQCMH5oQOhK9oIi92TiDYQ6vAY9nv9XDubAGOdugw%3D%3D",
-            numOfRows = 50,
-            pageNo = 1,
-            dataType = "XML",
-            baseDate = baseDate,
-            baseTime = baseTime,
-            nx = nx,
-            ny = ny
-        )
+        val ultraSrtNcstUrl = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=oX0uqL6VzriCMyNDlwDB23W4%2Bb9mn8EPDaqry2QN4hO9qaQCMH5oQOhK9oIi92TiDYQ6vAY9nv9XDubAGOdugw%3D%3D&numOfRows=50&pageNo=1&dataType=XML&base_date=$ultraSrtNcstBaseDate&base_time=$ultraSrtNcstBaseTime&nx=$nx&ny=$ny"
+        Log.d("WEATHER_API_ULTRA_SRT_NCST_URL", ultraSrtNcstUrl)
 
-        val vilageFcstCall = weatherApiService.getVilageFcst(
-            serviceKey = "oX0uqL6VzriCMyNDlwDB23W4%2Bb9mn8EPDaqry2QN4hO9qaQCMH5oQOhK9oIi92TiDYQ6vAY9nv9XDubAGOdugw%3D%3D",
-            numOfRows = 50,
-            pageNo = 1,
-            dataType = "XML",
-            baseDate = baseDate,
-            baseTime = "0200",  // 단기 예보의 baseTime은 0200 고정
-            nx = nx,
-            ny = ny
-        )
+        val vilageFcstUrl = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=oX0uqL6VzriCMyNDlwDB23W4%2Bb9mn8EPDaqry2QN4hO9qaQCMH5oQOhK9oIi92TiDYQ6vAY9nv9XDubAGOdugw%3D%3D&numOfRows=50&pageNo=1&dataType=XML&base_date=$vilageFcstBaseDate&base_time=$vilageFcstBaseTime&nx=$nx&ny=$ny"
+        Log.d("WEATHER_API_VILAGE_FCST_URL", vilageFcstUrl)
+
+        val ultraSrtNcstCall = weatherApiService.getUltraSrtNcst(ultraSrtNcstUrl)
+        val vilageFcstCall = weatherApiService.getVilageFcst(vilageFcstUrl)
 
         ultraSrtNcstCall.enqueue(object : Callback<WeatherResponse> {
             override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
                 if (response.isSuccessful) {
                     Log.d("WEATHER_RESPONSE_ULTRA_SRT_NCST", response.body().toString())
+                    Log.d("WEATHER_RAW_RESPONSE_ULTRA_SRT_NCST", response.raw().toString())
                     val items = response.body()?.body?.items?.item
                     temperature = items?.find { it.category == "T1H" }?.obsrValue
                     humidity = items?.find { it.category == "REH" }?.obsrValue
@@ -452,6 +452,40 @@ class MenuFragment : Fragment() {
             }
         })
     }
+
+
+    private fun getVilageFcstBaseTimeAndDate(): Pair<String, String> {
+        val currentTime = Calendar.getInstance()
+        val hour = currentTime.get(Calendar.HOUR_OF_DAY)
+        val minute = currentTime.get(Calendar.MINUTE)
+        val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        var baseDate: String
+
+        val baseTime = when {
+            hour < 2 || (hour == 2 && minute < 10) -> {
+                baseDate = dateFormat.format(Date(currentTime.timeInMillis - 24 * 60 * 60 * 1000))
+                "2300"
+            }
+            hour < 5 || (hour == 5 && minute < 10) -> "0200"
+            hour < 8 || (hour == 8 && minute < 10) -> "0500"
+            hour < 11 || (hour == 11 && minute < 10) -> "0800"
+            hour < 14 || (hour == 14 && minute < 10) -> "1100"
+            hour < 17 || (hour == 17 && minute < 10) -> "1400"
+            hour < 20 || (hour == 20 && minute < 10) -> "1700"
+            hour < 23 || (hour == 23 && minute < 10) -> "2000"
+            else -> "2300"
+        }
+
+        baseDate = if (hour < 2 || (hour == 2 && minute < 10)) {
+            dateFormat.format(Date(currentTime.timeInMillis - 24 * 60 * 60 * 1000))
+        } else {
+            dateFormat.format(currentTime.time)
+        }
+
+        return Pair(baseTime, baseDate)
+    }
+
+
 
     private fun updateWeather(
         ptyValue: String?,
