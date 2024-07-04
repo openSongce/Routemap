@@ -85,10 +85,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             infoButton.setOnClickListener {
                 when(pageName.text){
                     "메인"->{
-                        
+
                     }
                     "여행 경로 게시판"->{
-                        
+
                     }
                     "지도"->{
 
