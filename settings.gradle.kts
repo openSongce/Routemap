@@ -12,8 +12,9 @@ dependencyResolutionManagement {
         mavenCentral()
 
         maven {
-            setUrl("https://devrepo.kakao.com/nexus/repository/kakaomap-releases/")
-        } //카카오맵 v2저장소
+            setUrl("https://devrepo.kakao.com/nexus/repository/kakaomap-releases/") //카카오맵 v2저장소
+            url = uri("https://devrepo.kakao.com/nexus/content/groups/public/")
+        }
     }
 }
 
