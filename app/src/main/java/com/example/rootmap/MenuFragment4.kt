@@ -96,6 +96,15 @@ class MenuFragment4 : Fragment() {
             val intent = Intent(requireContext(), MyRouteActivity::class.java)
             startActivity(intent)
         }
+        binding.MyExpenditureButton.setOnClickListener {
+            val expenditureIntent = Intent(this@MenuFragment4.context, ExpenditureActivity::class.java)
+            startActivity(expenditureIntent)
+        }
+        binding.MyFriendButton.setOnClickListener {
+            val friendIntent = Intent(this@MenuFragment4.context, FriendActivity::class.java)
+            friendIntent.putExtra("id", id)
+            startActivity(friendIntent)
+        }
         binding.favoriteTouristSpotsButton.setOnClickListener {
             val intent = Intent(requireContext(), FavoriteTouristSpotsActivity::class.java)
             startActivity(intent)

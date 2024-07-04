@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+            android:id="@+id/menu_tourist"
+            android:icon="@android:drawable/ic_menu_gallery"
+            android:title="관광지 추천"
+             />
+    <item
+            android:id="@+id/menu_post"
+            android:icon="@drawable/post"
+            android:title="게시판"
+             />
+    <item android:id="@+id/blank"
+            android:title=""
+            android:enabled="false"/>
+    <item
+            android:id="@+id/menu_map"
+            android:icon="@android:drawable/ic_menu_mapmode"
+            android:title="지도"
+             />
+    <item
+            android:id="@+id/menu_myPage"
+            android:icon="@drawable/profile_img"
+            android:title="마이페이지"
+            />
+</menu>

@@ -13,11 +13,15 @@ import android.widget.Toast
 import android.window.OnBackInvokedDispatcher
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.example.myapplication.Friend
 import com.example.rootmap.databinding.ActivityMainBinding
 import com.example.rootmap.databinding.HeaderBinding
+import com.google.android.material.bottomnavigation.BottomNavigationMenuView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -35,41 +39,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    //private lateinit var binding: ActivityMainBinding
+class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
     private lateinit var auth: FirebaseAuth
     val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     lateinit var name: String
     lateinit var nickname: String
-    var fdStrage: FirebaseStorage = FirebaseStorage.getInstance()
-    var fileUri: Uri? = null
-    var backPressedTime:Long =0
+    private val manager = supportFragmentManager
+    var backPressedTime: Long = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         val currentId = intent.getStringExtra("id") //intent에서 id 꺼내기
-        val navigation: NavigationView = findViewById(R.id.main_navigationView)
-        navigation.setNavigationItemSelectedListener(this)
-        val head = navigation.getHeaderView(0)
-        val userName: TextView = head.findViewById(R.id.menuUserName)
-        val userNickame: TextView = head.findViewById(R.id.menuNickname)
-        val userProfile: ImageView = head.findViewById(R.id.header_icon)
         KakaoMapSdk.init(this, "adbabacb6eeba95fa1b0adf991f6505c")
-
-        CoroutineScope(Dispatchers.Main).async {
-            if (currentId != null) {
-                loadMyData(currentId)
-                loadImg(currentId.replace(".",""))
-            }
-            userName.setText(name) //이름
-            userNickame.setText(nickname)
-            if(fileUri!=null){
-                Glide.with(this@MainActivity).load(fileUri).into(userProfile)
-            }
-
-        }
         auth = FirebaseAuth.getInstance()
-        //binding.emailTv.text = auth.currentUser?.email
         val contextList = listOf(
             MenuFragment.newInstance("param1_value", "param2_value"),
             MenuFragment2.newInstance("param1_value", "param2_value"),
@@ -78,65 +60,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         )
         val adapter = HomeFragmentAdapter(this)
         adapter.fragmentList = contextList
-        binding.run{
-            viewPager.adapter = adapter
-            viewPager.setUserInputEnabled(false)
-            pageName.text="메인"
-            infoButton.setOnClickListener {
-                when(pageName.text){
-                    "메인"->{
-                        
-                    }
-                    "여행 경로 게시판"->{
-                        
-                    }
-                    "지도"->{
-
-                    }
-                    "마이페이지"->{
-
-                    }
-                    else->{}
-                }
-            }
+        binding.run {
+            mainFrm.adapter = adapter
+            mainFrm.setUserInputEnabled(false)
+            pageName.text = "메인"
         }
 
+        binding.mainFrm.registerOnPageChangeCallback(
+            object : ViewPager2.OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) {
+                    super.onPageSelected(position)
+                    binding.mainBottomNav.menu.getItem(position).isChecked = true
+                }
+            }
+        )
+        binding.mainBottomNav.setOnNavigationItemSelectedListener(this)
         //하단에 탭 바 구성, 클릭 시 해당 프레그먼트로 이동
-        val tabTitle = listOf<String>("메인", "게시판", "지도", "마이페이지")
-        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-            tab.text = tabTitle[position]
-        }.attach()
-        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener{
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                binding.pageName.text=when(tab!!.text){
-                    "메인"->"메인"
-                    "게시판"->"여행 경로 게시판"
-                    "지도"->"지도"
-                    "마이페이지"->"마이페이지"
-                    else->""
-                }
-            }
-            override fun onTabUnselected(tab: TabLayout.Tab?) {
-            }
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-            }
-        })
-        //좌측 상단의 버튼 클릭-> 사이드메뉴 나옴
-        binding.menuButton.setOnClickListener() {
-            binding.mainDrawerLayout.openDrawer((GravityCompat.START))
-            CoroutineScope(Dispatchers.Main).async {
-                if (currentId != null) {
-                    loadMyData(currentId)
-                    loadImg(currentId.replace(".",""))
-                }
-                userName.setText(name) //이름
-                userNickame.setText(nickname)
-                if(fileUri!=null){
-                    Glide.with(this@MainActivity).load(fileUri).into(userProfile)
-                }
-            }
-        }
-        binding.mainNavigationView.setNavigationItemSelectedListener(this) //드로우 사이드 메뉴바 리스너 등록
+        binding.mainBottomNav.itemIconTintList = null
+        binding.mainBottomNav.background = null
+        binding.mainBottomNav.menu.getItem(2).isEnabled = false
+        binding.mainBottomNav.setOnItemReselectedListener { }
         var bundle = Bundle()
         bundle.putString("id", currentId)
         for (fragment in contextList) {
@@ -144,72 +87,40 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        //사이드 메뉴 항목 클릭 이벤트 구현
-        when (item.itemId) {
-            R.id.menuMyRoute -> {
-                val myRouteIntent = Intent(this, MyRouteActivity::class.java)
-                startActivity(myRouteIntent)
-            }
-            R.id.menuMoney -> {
-                val expenditureIntent = Intent(this, ExpenditureActivity::class.java)
-                startActivity(expenditureIntent)
-            }
-
-            R.id.menuFriend -> {
-                val friendIntent = Intent(this, FriendActivity::class.java)
-                friendIntent.putExtra("id", intent.getStringExtra("id"))
-                startActivity(friendIntent)
-            }
-
-            R.id.menuLogout -> {
-                auth.signOut() // 로그아웃 처리
-                val intent = Intent(this, LoginActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent) // LoginActivity로 화면 전환
-            }
-        }
-        return false
-    }
-
     override fun onBackPressed() {
-        if (binding.mainDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            binding.mainDrawerLayout.closeDrawers()
+        if (backPressedTime + 3000 > System.currentTimeMillis()) {
+            super.onBackPressed()
+            finish()
         } else {
-            if(backPressedTime+3000> System.currentTimeMillis()){
-                super.onBackPressed()
-                finish()
-            }else{
-                Toast.makeText(this,"한번 더 뒤로가기를 누르면 종료됩니다.",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "한번 더 뒤로가기를 누르면 종료됩니다.", Toast.LENGTH_SHORT).show()
+        }
+        backPressedTime = System.currentTimeMillis()
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_tourist -> {
+                binding.mainFrm.currentItem = 0
+                return true
             }
-            backPressedTime=System.currentTimeMillis()
+
+            R.id.menu_post -> {
+                binding.mainFrm.currentItem = 1
+                return true
+            }
+
+            R.id.menu_map -> {
+                binding.mainFrm.currentItem = 2
+                return true
+            }
+
+            R.id.menu_myPage -> {
+                binding.mainFrm.currentItem = 3
+                return true
+            }
+            else-> return false
         }
     }
 
-    suspend fun loadMyData(id: String): Boolean {
-        return try {
-            val mydb = Firebase.firestore.collection("user").document(id).get().await()
-            name = mydb.data?.get("name").toString()
-            nickname = mydb.data?.get("nickname").toString()
-            true
-        } catch (e: FirebaseException) {
-            Log.d("load_error", "error")
-            false
-        }
-    }
 
-    suspend fun loadImg(id: String): Boolean {
-        return try {
-            fileUri=fdStrage.reference.child("profile/${id}.png").downloadUrl.await()
-            true
-        } catch (e: FirebaseException) {
-            Log.d("img_error", "error")
-            //  photoUri=null
-            false
-        }
-    }
-
-    private fun infoDialog(mode:String){
-        //각 메뉴의 설명
-    }
 }
