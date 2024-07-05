@@ -403,7 +403,12 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.heritage1).text = if (detail.heritage1 == "1") "O" else "X"
                 dialogBinding.findViewById<TextView>(R.id.heritage2).text = if (detail.heritage2 == "1") "O" else "X"
                 dialogBinding.findViewById<TextView>(R.id.heritage3).text = if (detail.heritage3 == "1") "O" else "X"
-                dialogBinding.findViewById<TextView>(R.id.infocenter).text = detail.infocenter
+                dialogBinding.findViewById<TextView>(R.id.infocenter).apply {
+                    text = detail.infocenter
+                    // 전화번호에 대한 자동 링크 설정
+                    autoLinkMask = Linkify.PHONE_NUMBERS
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
                 dialogBinding.findViewById<TextView>(R.id.opendate).text = detail.opendate
                 dialogBinding.findViewById<TextView>(R.id.parking).text = detail.parking
                 dialogBinding.findViewById<TextView>(R.id.restdate).text = detail.restdate
