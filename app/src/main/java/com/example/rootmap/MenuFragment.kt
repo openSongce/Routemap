@@ -517,7 +517,12 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.openperiod).text = detail.openperiod
                 dialogBinding.findViewById<TextView>(R.id.parkingfeeleports).text = detail.parkingfeeleports
                 dialogBinding.findViewById<TextView>(R.id.parkingleports).text = detail.parkingleports
-                dialogBinding.findViewById<TextView>(R.id.reservation).text = detail.reservation
+                dialogBinding.findViewById<TextView>(R.id.reservation).apply {
+                    text = detail.infocenter
+                    // 전화번호에 대한 자동 링크 설정
+                    autoLinkMask = Linkify.PHONE_NUMBERS
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
                 dialogBinding.findViewById<TextView>(R.id.restdateleports).text = detail.restdateleports
                 dialogBinding.findViewById<TextView>(R.id.scaleleports).text = detail.scaleleports
                 dialogBinding.findViewById<TextView>(R.id.usefeeleports).text = detail.usefeeleports
@@ -608,7 +613,12 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.opentimefood).text = detail.opentimefood
                 dialogBinding.findViewById<TextView>(R.id.packing).text = detail.packing
                 dialogBinding.findViewById<TextView>(R.id.parkingfood).text = detail.parkingfood
-                dialogBinding.findViewById<TextView>(R.id.reservationfood).text = detail.reservationfood
+                dialogBinding.findViewById<TextView>(R.id.reservationfood).apply {
+                    text = detail.infocenter
+                    // 전화번호에 대한 자동 링크 설정
+                    autoLinkMask = Linkify.PHONE_NUMBERS
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
                 dialogBinding.findViewById<TextView>(R.id.restdatefood).text = detail.restdatefood
                 dialogBinding.findViewById<TextView>(R.id.scalefood).text = detail.scalefood
                 dialogBinding.findViewById<TextView>(R.id.seat).text = detail.seat
