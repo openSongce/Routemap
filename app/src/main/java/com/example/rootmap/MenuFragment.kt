@@ -357,6 +357,18 @@ class MenuFragment : Fragment() {
                     detail.parkingfee = removeHtmlTags(detail.parkingfee)
                     detail.parkingfeeleports = removeHtmlTags(detail.parkingfeeleports)
                     detail.checkintime = removeHtmlTags(detail.checkintime)
+                    detail.usetimeculture = removeHtmlTags(detail.usetimeculture)
+                    detail.parkingculture = removeHtmlTags(detail.parkingculture)
+                    detail.restdateculture = removeHtmlTags(detail.restdateculture)
+                    detail.usefee = removeHtmlTags(detail.usefee)
+                    detail.scale = removeHtmlTags(detail.scale)
+                    detail.usetimefestival = removeHtmlTags(detail.usetimefestival)
+                    detail.playtime = removeHtmlTags(detail.playtime)
+                    detail.parkingleports = removeHtmlTags(detail.parkingleports)
+                    detail.usefeeleports = removeHtmlTags(detail.usefeeleports)
+                    detail.opentimefood = removeHtmlTags(detail.opentimefood)
+                    detail.parkingfood = removeHtmlTags(detail.parkingfood)
+                    detail.restdatefood = removeHtmlTags(detail.restdatefood)
 
                     showTouristDetailDialog(detail)
                 } else {
@@ -421,7 +433,12 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.chkcreditcardculture).text = detail.chkcreditcardculture
                 dialogBinding.findViewById<TextView>(R.id.chkpetculture).text = detail.chkpetculture
                 dialogBinding.findViewById<TextView>(R.id.discountinfo).text = detail.discountinfo
-                dialogBinding.findViewById<TextView>(R.id.infocenterculture).text = detail.infocenterculture
+                dialogBinding.findViewById<TextView>(R.id.infocenterculture).apply {
+                    text = detail.infocenter
+                    // 전화번호에 대한 자동 링크 설정
+                    autoLinkMask = Linkify.PHONE_NUMBERS
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
                 dialogBinding.findViewById<TextView>(R.id.parkingculture).text = detail.parkingculture
                 dialogBinding.findViewById<TextView>(R.id.parkingfee).text = detail.parkingfee
                 dialogBinding.findViewById<TextView>(R.id.restdateculture).text = detail.restdateculture
@@ -432,10 +449,22 @@ class MenuFragment : Fragment() {
             }
             15 -> { // 축제공연행사
                 dialogBinding.findViewById<TextView>(R.id.agelimit).text = detail.agelimit
-                dialogBinding.findViewById<TextView>(R.id.bookingplace).text = detail.bookingplace
+
+                val bookingUrlTextView = dialogBinding.findViewById<TextView>(R.id.bookingplace)
+                val bookingUrl = removeHtmlTags(detail.bookingplace)
+                bookingUrlTextView.text = bookingUrl
+                bookingUrlTextView.autoLinkMask = Linkify.WEB_URLS
+                bookingUrlTextView.movementMethod = LinkMovementMethod.getInstance()
+
                 dialogBinding.findViewById<TextView>(R.id.discountinfofestival).text = detail.discountinfofestival
                 dialogBinding.findViewById<TextView>(R.id.eventenddate).text = detail.eventenddate
-                dialogBinding.findViewById<TextView>(R.id.eventhomepage).text = detail.eventhomepage
+
+                val homepageUrlTextView = dialogBinding.findViewById<TextView>(R.id.eventhomepage)
+                val homepageUrl = removeHtmlTags(detail.eventhomepage)
+                homepageUrlTextView.text = homepageUrl
+                homepageUrlTextView.autoLinkMask = Linkify.WEB_URLS
+                homepageUrlTextView.movementMethod = LinkMovementMethod.getInstance()
+
                 dialogBinding.findViewById<TextView>(R.id.eventplace).text = detail.eventplace
                 dialogBinding.findViewById<TextView>(R.id.eventstartdate).text = detail.eventstartdate
                 dialogBinding.findViewById<TextView>(R.id.festivalgrade).text = detail.festivalgrade
@@ -444,15 +473,30 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.program).text = detail.program
                 dialogBinding.findViewById<TextView>(R.id.spendtimefestival).text = detail.spendtimefestival
                 dialogBinding.findViewById<TextView>(R.id.sponsor1).text = detail.sponsor1
-                dialogBinding.findViewById<TextView>(R.id.sponsor1tel).text = detail.sponsor1tel
+                dialogBinding.findViewById<TextView>(R.id.sponsor1tel).apply {
+                    text = detail.infocenter
+                    // 전화번호에 대한 자동 링크 설정
+                    autoLinkMask = Linkify.PHONE_NUMBERS
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
                 dialogBinding.findViewById<TextView>(R.id.sponsor2).text = detail.sponsor2
-                dialogBinding.findViewById<TextView>(R.id.sponsor2tel).text = detail.sponsor2tel
+                dialogBinding.findViewById<TextView>(R.id.sponsor2tel).apply {
+                    text = detail.infocenter
+                    // 전화번호에 대한 자동 링크 설정
+                    autoLinkMask = Linkify.PHONE_NUMBERS
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
                 dialogBinding.findViewById<TextView>(R.id.subevent).text = detail.subevent
                 dialogBinding.findViewById<TextView>(R.id.usetimefestival).text = detail.usetimefestival
             }
             25 -> { // 여행코스
                 dialogBinding.findViewById<TextView>(R.id.distance).text = detail.distance
-                dialogBinding.findViewById<TextView>(R.id.infocentertourcourse).text = detail.infocentertourcourse
+                dialogBinding.findViewById<TextView>(R.id.infocentertourcourse).apply {
+                    text = detail.infocenter
+                    // 전화번호에 대한 자동 링크 설정
+                    autoLinkMask = Linkify.PHONE_NUMBERS
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
                 dialogBinding.findViewById<TextView>(R.id.schedule).text = detail.schedule
                 dialogBinding.findViewById<TextView>(R.id.taketime).text = detail.taketime
                 dialogBinding.findViewById<TextView>(R.id.theme).text = detail.theme
@@ -463,7 +507,12 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.chkcreditcardleports).text = detail.chkcreditcardleports
                 dialogBinding.findViewById<TextView>(R.id.chkpetleports).text = detail.chkpetleports
                 dialogBinding.findViewById<TextView>(R.id.expagerangeleports).text = detail.expagerangeleports
-                dialogBinding.findViewById<TextView>(R.id.infocenterleports).text = detail.infocenterleports
+                dialogBinding.findViewById<TextView>(R.id.infocenterleports).apply {
+                    text = detail.infocenter
+                    // 전화번호에 대한 자동 링크 설정
+                    autoLinkMask = Linkify.PHONE_NUMBERS
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
                 dialogBinding.findViewById<TextView>(R.id.openperiod).text = detail.openperiod
                 dialogBinding.findViewById<TextView>(R.id.parkingfeeleports).text = detail.parkingfeeleports
                 dialogBinding.findViewById<TextView>(R.id.parkingleports).text = detail.parkingleports
@@ -482,11 +531,21 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.foodplace).text = detail.foodplace
                 dialogBinding.findViewById<TextView>(R.id.goodstay).text = if(detail.goodstay == "1") "O" else "X"
                 dialogBinding.findViewById<TextView>(R.id.hanok).text = if(detail.hanok == "1") "O" else "X"
-                dialogBinding.findViewById<TextView>(R.id.infocenterlodging).text = detail.infocenterlodging
+                dialogBinding.findViewById<TextView>(R.id.infocenterlodging).apply {
+                    text = detail.infocenter
+                    // 전화번호에 대한 자동 링크 설정
+                    autoLinkMask = Linkify.PHONE_NUMBERS
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
                 dialogBinding.findViewById<TextView>(R.id.parkinglodging).text = detail.parkinglodging
                 dialogBinding.findViewById<TextView>(R.id.pickup).text = detail.pickup
                 dialogBinding.findViewById<TextView>(R.id.roomcount).text = detail.roomcount
-                dialogBinding.findViewById<TextView>(R.id.reservationlodging).text = detail.reservationlodging
+                dialogBinding.findViewById<TextView>(R.id.reservationlodging).apply {
+                    text = detail.infocenter
+                    // 전화번호에 대한 자동 링크 설정
+                    autoLinkMask = Linkify.PHONE_NUMBERS
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
                 dialogBinding.findViewById<TextView>(R.id.roomtype).text = detail.roomtype
                 dialogBinding.findViewById<TextView>(R.id.scalelodging).text = detail.scalelodging
                 dialogBinding.findViewById<TextView>(R.id.subfacility).text = detail.subfacility
@@ -517,7 +576,12 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.chkpetshopping).text = detail.chkpetshopping
                 dialogBinding.findViewById<TextView>(R.id.culturecenter).text = detail.culturecenter
                 dialogBinding.findViewById<TextView>(R.id.fairday).text = detail.fairday
-                dialogBinding.findViewById<TextView>(R.id.infocentershopping).text = detail.infocentershopping
+                dialogBinding.findViewById<TextView>(R.id.infocentershopping).apply {
+                    text = detail.infocenter
+                    // 전화번호에 대한 자동 링크 설정
+                    autoLinkMask = Linkify.PHONE_NUMBERS
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
                 dialogBinding.findViewById<TextView>(R.id.opendateshopping).text = detail.opendateshopping
                 dialogBinding.findViewById<TextView>(R.id.opentime).text = detail.opentime
                 dialogBinding.findViewById<TextView>(R.id.parkingshopping).text = detail.parkingshopping
@@ -532,7 +596,12 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.chkcreditcardfood).text = detail.chkcreditcardfood
                 dialogBinding.findViewById<TextView>(R.id.discountinfofood).text = detail.discountinfofood
                 dialogBinding.findViewById<TextView>(R.id.firstmenu).text = detail.firstmenu
-                dialogBinding.findViewById<TextView>(R.id.infocenterfood).text = detail.infocenterfood
+                dialogBinding.findViewById<TextView>(R.id.infocenterfood).apply {
+                    text = detail.infocenter
+                    // 전화번호에 대한 자동 링크 설정
+                    autoLinkMask = Linkify.PHONE_NUMBERS
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
                 dialogBinding.findViewById<TextView>(R.id.kidsfacility).text = detail.kidsfacility
                 dialogBinding.findViewById<TextView>(R.id.opendatefood).text = detail.opendatefood
                 dialogBinding.findViewById<TextView>(R.id.opentimefood).text = detail.opentimefood
