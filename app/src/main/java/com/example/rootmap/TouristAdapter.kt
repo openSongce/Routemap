@@ -18,6 +18,7 @@ class TouristAdapter(
     val items: List<TouristItem>,
     private val database: DatabaseReference,
     private val auth: FirebaseAuth,
+    private val menuFragment: MenuFragment? = null, // MenuFragment 인스턴스를 전달받음
     private val onItemClick: (TouristItem) -> Unit
 ) : RecyclerView.Adapter<TouristAdapter.TouristViewHolder>() {
 
@@ -87,13 +88,18 @@ class TouristAdapter(
 
                 // Firebase에 추천 수 저장
                 item.title?.let { title ->
-                    database.child("likes").child(title).setValue(item.likeCount)
-                    database.child("userLikes").child(userId).child(title).setValue(item.isLiked)
+                    val sanitizedTitle = title.replace("[.\\#\\$\\[\\]]".toRegex(), "")
+                    database.child("likes").child(sanitizedTitle).setValue(item.likeCount)
+                    database.child("userLikes").child(userId).child(sanitizedTitle).setValue(item.isLiked)
                 }
             }
 
             binding.root.setOnClickListener {
-                onItemClick(item)
+                if (item.contentTypeId in listOf(12, 14, 15, 25, 28, 32, 38, 39)) {
+                    item.contentid?.let { menuFragment?.fetchTouristDetailIntro(it, item.contentTypeId) }
+                } else {
+                    onItemClick(item)
+                }
             }
         }
     }

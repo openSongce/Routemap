@@ -17,21 +17,17 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.FragmentMenuBinding
-import com.example.rootmap.databinding.DialogTouristDetailBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 private const val ARG_PARAM1 = "param1"
@@ -294,10 +290,8 @@ class MenuFragment : Fragment() {
                     }
 
                     if (items.isNotEmpty()) {
-                        val adapter = TouristAdapter(items, database, auth) { item ->
-                            if (currentContentTypeId == 25) {
-                                item.contentid?.let { fetchTouristDetail(it) }
-                            }
+                        val adapter = TouristAdapter(items, database, auth, this@MenuFragment) { item ->
+                            item.contentid?.let { fetchTouristDetailIntro(it, currentContentTypeId) }
                         }
                         binding.recyclerView.adapter = adapter
                     } else {
@@ -320,10 +314,10 @@ class MenuFragment : Fragment() {
         })
     }
 
-    private fun fetchTouristDetail(contentId: String) {
+    fun fetchTouristDetailIntro(contentId: String, contentTypeId: Int) {
         apiService.getTouristDetail(
             contentId = contentId.toInt(),
-            contentTypeId = currentContentTypeId,
+            contentTypeId = contentTypeId,
             mobileOS = "AND",
             mobileApp = "MobileApp",
             serviceKey = "iIzVkyvN4jIuoBR82vVZ0iFXlV65w0gsaiuOlUboGQ45v7PnBXkVOsDoBxoqMul10rfSMk7J+X5YKBxqu2ANRQ=="
@@ -347,20 +341,172 @@ class MenuFragment : Fragment() {
     }
 
     private fun showTouristDetailDialog(detail: TouristDetail) {
-        val dialogBinding =
-            DialogTouristDetailBinding.inflate(LayoutInflater.from(requireContext()))
+        val inflater = LayoutInflater.from(requireContext())
+        val dialogBinding: View
 
-        dialogBinding.theme.text = detail.theme
-        dialogBinding.schedule.text = detail.schedule
-        dialogBinding.distance.text = detail.distance
-        dialogBinding.taketime.text = detail.taketime
-        dialogBinding.infocentertourcourse.text = detail.infocentertourcourse
+        when (currentContentTypeId) {
+            12 -> dialogBinding = inflater.inflate(R.layout.dialog_tourist_detail_12, null)
+            14 -> dialogBinding = inflater.inflate(R.layout.dialog_tourist_detail_14, null)
+            15 -> dialogBinding = inflater.inflate(R.layout.dialog_tourist_detail_15, null)
+            25 -> dialogBinding = inflater.inflate(R.layout.dialog_tourist_detail_25, null)
+            28 -> dialogBinding = inflater.inflate(R.layout.dialog_tourist_detail_28, null)
+            32 -> dialogBinding = inflater.inflate(R.layout.dialog_tourist_detail_32, null)
+            38 -> dialogBinding = inflater.inflate(R.layout.dialog_tourist_detail_38, null)
+            39 -> dialogBinding = inflater.inflate(R.layout.dialog_tourist_detail_39, null)
+            else -> return // 만약에 지원되지 않는 contentTypeId라면 다이얼로그를 보여주지 않음
+        }
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("코스 정보")
-            .setView(dialogBinding.root)
-            .setPositiveButton("OK", null)
-            .show()
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogBinding)
+            .setPositiveButton("확인", null)
+            .create()
+
+        when (currentContentTypeId) {
+            12 -> { // 관광지
+                dialogBinding.findViewById<TextView>(R.id.accomcount).text = detail.accomcount
+                dialogBinding.findViewById<TextView>(R.id.chkbabycarriage).text = detail.chkbabycarriage
+                dialogBinding.findViewById<TextView>(R.id.chkcreditcard).text = detail.chkcreditcard
+                dialogBinding.findViewById<TextView>(R.id.chkpet).text = detail.chkpet
+                dialogBinding.findViewById<TextView>(R.id.expagerange).text = detail.expagerange
+                dialogBinding.findViewById<TextView>(R.id.expguide).text = detail.expguide
+                dialogBinding.findViewById<TextView>(R.id.heritage1).text = detail.heritage1
+                dialogBinding.findViewById<TextView>(R.id.heritage2).text = detail.heritage2
+                dialogBinding.findViewById<TextView>(R.id.heritage3).text = detail.heritage3
+                dialogBinding.findViewById<TextView>(R.id.infocenter).text = detail.infocenter
+                dialogBinding.findViewById<TextView>(R.id.opendate).text = detail.opendate
+                dialogBinding.findViewById<TextView>(R.id.parking).text = detail.parking
+                dialogBinding.findViewById<TextView>(R.id.restdate).text = detail.restdate
+                dialogBinding.findViewById<TextView>(R.id.useseason).text = detail.useseason
+                dialogBinding.findViewById<TextView>(R.id.usetime).text = detail.usetime
+            }
+            14 -> { // 문화시설
+                dialogBinding.findViewById<TextView>(R.id.accomcountculture).text = detail.accomcountculture
+                dialogBinding.findViewById<TextView>(R.id.chkbabycarriageculture).text = detail.chkbabycarriageculture
+                dialogBinding.findViewById<TextView>(R.id.chkcreditcardculture).text = detail.chkcreditcardculture
+                dialogBinding.findViewById<TextView>(R.id.chkpetculture).text = detail.chkpetculture
+                dialogBinding.findViewById<TextView>(R.id.discountinfo).text = detail.discountinfo
+                dialogBinding.findViewById<TextView>(R.id.infocenterculture).text = detail.infocenterculture
+                dialogBinding.findViewById<TextView>(R.id.parkingculture).text = detail.parkingculture
+                dialogBinding.findViewById<TextView>(R.id.parkingfee).text = detail.parkingfee
+                dialogBinding.findViewById<TextView>(R.id.restdateculture).text = detail.restdateculture
+                dialogBinding.findViewById<TextView>(R.id.usefee).text = detail.usefee
+                dialogBinding.findViewById<TextView>(R.id.usetimeculture).text = detail.usetimeculture
+                dialogBinding.findViewById<TextView>(R.id.scale).text = detail.scale
+                dialogBinding.findViewById<TextView>(R.id.spendtime).text = detail.spendtime
+            }
+            15 -> { // 축제공연행사
+                dialogBinding.findViewById<TextView>(R.id.agelimit).text = detail.agelimit
+                dialogBinding.findViewById<TextView>(R.id.bookingplace).text = detail.bookingplace
+                dialogBinding.findViewById<TextView>(R.id.discountinfofestival).text = detail.discountinfofestival
+                dialogBinding.findViewById<TextView>(R.id.eventenddate).text = detail.eventenddate
+                dialogBinding.findViewById<TextView>(R.id.eventhomepage).text = detail.eventhomepage
+                dialogBinding.findViewById<TextView>(R.id.eventplace).text = detail.eventplace
+                dialogBinding.findViewById<TextView>(R.id.eventstartdate).text = detail.eventstartdate
+                dialogBinding.findViewById<TextView>(R.id.festivalgrade).text = detail.festivalgrade
+                dialogBinding.findViewById<TextView>(R.id.placeinfo).text = detail.placeinfo
+                dialogBinding.findViewById<TextView>(R.id.playtime).text = detail.playtime
+                dialogBinding.findViewById<TextView>(R.id.program).text = detail.program
+                dialogBinding.findViewById<TextView>(R.id.spendtimefestival).text = detail.spendtimefestival
+                dialogBinding.findViewById<TextView>(R.id.sponsor1).text = detail.sponsor1
+                dialogBinding.findViewById<TextView>(R.id.sponsor1tel).text = detail.sponsor1tel
+                dialogBinding.findViewById<TextView>(R.id.sponsor2).text = detail.sponsor2
+                dialogBinding.findViewById<TextView>(R.id.sponsor2tel).text = detail.sponsor2tel
+                dialogBinding.findViewById<TextView>(R.id.subevent).text = detail.subevent
+                dialogBinding.findViewById<TextView>(R.id.usetimefestival).text = detail.usetimefestival
+            }
+            25 -> { // 여행코스
+                dialogBinding.findViewById<TextView>(R.id.distance).text = detail.distance
+                dialogBinding.findViewById<TextView>(R.id.infocentertourcourse).text = detail.infocentertourcourse
+                dialogBinding.findViewById<TextView>(R.id.schedule).text = detail.schedule
+                dialogBinding.findViewById<TextView>(R.id.taketime).text = detail.taketime
+                dialogBinding.findViewById<TextView>(R.id.theme).text = detail.theme
+            }
+            28 -> { // 레포츠
+                dialogBinding.findViewById<TextView>(R.id.accomcountleports).text = detail.accomcountleports
+                dialogBinding.findViewById<TextView>(R.id.chkbabycarriageleports).text = detail.chkbabycarriageleports
+                dialogBinding.findViewById<TextView>(R.id.chkcreditcardleports).text = detail.chkcreditcardleports
+                dialogBinding.findViewById<TextView>(R.id.chkpetleports).text = detail.chkpetleports
+                dialogBinding.findViewById<TextView>(R.id.expagerangeleports).text = detail.expagerangeleports
+                dialogBinding.findViewById<TextView>(R.id.infocenterleports).text = detail.infocenterleports
+                dialogBinding.findViewById<TextView>(R.id.openperiod).text = detail.openperiod
+                dialogBinding.findViewById<TextView>(R.id.parkingfeeleports).text = detail.parkingfeeleports
+                dialogBinding.findViewById<TextView>(R.id.parkingleports).text = detail.parkingleports
+                dialogBinding.findViewById<TextView>(R.id.reservation).text = detail.reservation
+                dialogBinding.findViewById<TextView>(R.id.restdateleports).text = detail.restdateleports
+                dialogBinding.findViewById<TextView>(R.id.scaleleports).text = detail.scaleleports
+                dialogBinding.findViewById<TextView>(R.id.usefeeleports).text = detail.usefeeleports
+                dialogBinding.findViewById<TextView>(R.id.usetimeleports).text = detail.usetimeleports
+            }
+            32 -> { // 숙박
+                dialogBinding.findViewById<TextView>(R.id.accomcountlodging).text = detail.accomcountlodging
+                dialogBinding.findViewById<TextView>(R.id.benikia).text = detail.benikia
+                dialogBinding.findViewById<TextView>(R.id.checkintime).text = detail.checkintime
+                dialogBinding.findViewById<TextView>(R.id.checkouttime).text = detail.checkouttime
+                dialogBinding.findViewById<TextView>(R.id.chkcooking).text = detail.chkcooking
+                dialogBinding.findViewById<TextView>(R.id.foodplace).text = detail.foodplace
+                dialogBinding.findViewById<TextView>(R.id.goodstay).text = detail.goodstay
+                dialogBinding.findViewById<TextView>(R.id.hanok).text = detail.hanok
+                dialogBinding.findViewById<TextView>(R.id.infocenterlodging).text = detail.infocenterlodging
+                dialogBinding.findViewById<TextView>(R.id.parkinglodging).text = detail.parkinglodging
+                dialogBinding.findViewById<TextView>(R.id.pickup).text = detail.pickup
+                dialogBinding.findViewById<TextView>(R.id.roomcount).text = detail.roomcount
+                dialogBinding.findViewById<TextView>(R.id.reservationlodging).text = detail.reservationlodging
+                dialogBinding.findViewById<TextView>(R.id.reservationurl).text = detail.reservationurl
+                dialogBinding.findViewById<TextView>(R.id.roomtype).text = detail.roomtype
+                dialogBinding.findViewById<TextView>(R.id.scalelodging).text = detail.scalelodging
+                dialogBinding.findViewById<TextView>(R.id.subfacility).text = detail.subfacility
+                dialogBinding.findViewById<TextView>(R.id.barbecue).text = detail.barbecue
+                dialogBinding.findViewById<TextView>(R.id.beauty).text = detail.beauty
+                dialogBinding.findViewById<TextView>(R.id.beverage).text = detail.beverage
+                dialogBinding.findViewById<TextView>(R.id.bicycle).text = detail.bicycle
+                dialogBinding.findViewById<TextView>(R.id.campfire).text = detail.campfire
+                dialogBinding.findViewById<TextView>(R.id.fitness).text = detail.fitness
+                dialogBinding.findViewById<TextView>(R.id.karaoke).text = detail.karaoke
+                dialogBinding.findViewById<TextView>(R.id.publicbath).text = detail.publicbath
+                dialogBinding.findViewById<TextView>(R.id.publicpc).text = detail.publicpc
+                dialogBinding.findViewById<TextView>(R.id.sauna).text = detail.sauna
+                dialogBinding.findViewById<TextView>(R.id.seminar).text = detail.seminar
+                dialogBinding.findViewById<TextView>(R.id.sports).text = detail.sports
+                dialogBinding.findViewById<TextView>(R.id.refundregulation).text = detail.refundregulation
+            }
+            38 -> { // 쇼핑
+                dialogBinding.findViewById<TextView>(R.id.chkbabycarriageshopping).text = detail.chkbabycarriageshopping
+                dialogBinding.findViewById<TextView>(R.id.chkcreditcardshopping).text = detail.chkcreditcardshopping
+                dialogBinding.findViewById<TextView>(R.id.chkpetshopping).text = detail.chkpetshopping
+                dialogBinding.findViewById<TextView>(R.id.culturecenter).text = detail.culturecenter
+                dialogBinding.findViewById<TextView>(R.id.fairday).text = detail.fairday
+                dialogBinding.findViewById<TextView>(R.id.infocentershopping).text = detail.infocentershopping
+                dialogBinding.findViewById<TextView>(R.id.opendateshopping).text = detail.opendateshopping
+                dialogBinding.findViewById<TextView>(R.id.opentime).text = detail.opentime
+                dialogBinding.findViewById<TextView>(R.id.parkingshopping).text = detail.parkingshopping
+                dialogBinding.findViewById<TextView>(R.id.restdateshopping).text = detail.restdateshopping
+                dialogBinding.findViewById<TextView>(R.id.restroom).text = detail.restroom
+                dialogBinding.findViewById<TextView>(R.id.saleitem).text = detail.saleitem
+                dialogBinding.findViewById<TextView>(R.id.saleitemcost).text = detail.saleitemcost
+                dialogBinding.findViewById<TextView>(R.id.scaleshopping).text = detail.scaleshopping
+                dialogBinding.findViewById<TextView>(R.id.shopguide).text = detail.shopguide
+            }
+            39 -> { // 음식점
+                dialogBinding.findViewById<TextView>(R.id.chkcreditcardfood).text = detail.chkcreditcardfood
+                dialogBinding.findViewById<TextView>(R.id.discountinfofood).text = detail.discountinfofood
+                dialogBinding.findViewById<TextView>(R.id.firstmenu).text = detail.firstmenu
+                dialogBinding.findViewById<TextView>(R.id.infocenterfood).text = detail.infocenterfood
+                dialogBinding.findViewById<TextView>(R.id.kidsfacility).text = detail.kidsfacility
+                dialogBinding.findViewById<TextView>(R.id.opendatefood).text = detail.opendatefood
+                dialogBinding.findViewById<TextView>(R.id.opentimefood).text = detail.opentimefood
+                dialogBinding.findViewById<TextView>(R.id.packing).text = detail.packing
+                dialogBinding.findViewById<TextView>(R.id.parkingfood).text = detail.parkingfood
+                dialogBinding.findViewById<TextView>(R.id.reservationfood).text = detail.reservationfood
+                dialogBinding.findViewById<TextView>(R.id.restdatefood).text = detail.restdatefood
+                dialogBinding.findViewById<TextView>(R.id.scalefood).text = detail.scalefood
+                dialogBinding.findViewById<TextView>(R.id.seat).text = detail.seat
+                dialogBinding.findViewById<TextView>(R.id.smoking).text = detail.smoking
+                dialogBinding.findViewById<TextView>(R.id.treatmenu).text = detail.treatmenu
+                dialogBinding.findViewById<TextView>(R.id.lcnsno).text = detail.lcnsno
+            }
+        }
+
+        dialog.show()
     }
 
     private fun retryFetchTouristInfo(areaCode: Int, contentTypeId: Int) {
