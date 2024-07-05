@@ -355,6 +355,8 @@ class MenuFragment : Fragment() {
                     detail.reservationlodging = removeHtmlTags(detail.reservationlodging)
                     detail.eventplace = removeHtmlTags(detail.eventplace)
                     detail.parkingfee = removeHtmlTags(detail.parkingfee)
+                    detail.parkingfeeleports = removeHtmlTags(detail.parkingfeeleports)
+                    detail.checkintime = removeHtmlTags(detail.checkintime)
 
                     showTouristDetailDialog(detail)
                 } else {
@@ -468,13 +470,13 @@ class MenuFragment : Fragment() {
             }
             32 -> { // 숙박
                 dialogBinding.findViewById<TextView>(R.id.accomcountlodging).text = detail.accomcountlodging
-                dialogBinding.findViewById<TextView>(R.id.benikia).text = detail.benikia
+                dialogBinding.findViewById<TextView>(R.id.benikia).text = if(detail.benikia == "1") "O" else "X"
                 dialogBinding.findViewById<TextView>(R.id.checkintime).text = detail.checkintime
                 dialogBinding.findViewById<TextView>(R.id.checkouttime).text = detail.checkouttime
-                dialogBinding.findViewById<TextView>(R.id.chkcooking).text = detail.chkcooking
+                dialogBinding.findViewById<TextView>(R.id.chkcooking).text = if(detail.chkcooking == "1") "O" else "X"
                 dialogBinding.findViewById<TextView>(R.id.foodplace).text = detail.foodplace
-                dialogBinding.findViewById<TextView>(R.id.goodstay).text = detail.goodstay
-                dialogBinding.findViewById<TextView>(R.id.hanok).text = detail.hanok
+                dialogBinding.findViewById<TextView>(R.id.goodstay).text = if(detail.goodstay == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.hanok).text = if(detail.hanok == "1") "O" else "X"
                 dialogBinding.findViewById<TextView>(R.id.infocenterlodging).text = detail.infocenterlodging
                 dialogBinding.findViewById<TextView>(R.id.parkinglodging).text = detail.parkinglodging
                 dialogBinding.findViewById<TextView>(R.id.pickup).text = detail.pickup
@@ -483,18 +485,18 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.roomtype).text = detail.roomtype
                 dialogBinding.findViewById<TextView>(R.id.scalelodging).text = detail.scalelodging
                 dialogBinding.findViewById<TextView>(R.id.subfacility).text = detail.subfacility
-                dialogBinding.findViewById<TextView>(R.id.barbecue).text = detail.barbecue
-                dialogBinding.findViewById<TextView>(R.id.beauty).text = detail.beauty
-                dialogBinding.findViewById<TextView>(R.id.beverage).text = detail.beverage
-                dialogBinding.findViewById<TextView>(R.id.bicycle).text = detail.bicycle
-                dialogBinding.findViewById<TextView>(R.id.campfire).text = detail.campfire
-                dialogBinding.findViewById<TextView>(R.id.fitness).text = detail.fitness
-                dialogBinding.findViewById<TextView>(R.id.karaoke).text = detail.karaoke
-                dialogBinding.findViewById<TextView>(R.id.publicbath).text = detail.publicbath
-                dialogBinding.findViewById<TextView>(R.id.publicpc).text = detail.publicpc
-                dialogBinding.findViewById<TextView>(R.id.sauna).text = detail.sauna
-                dialogBinding.findViewById<TextView>(R.id.seminar).text = detail.seminar
-                dialogBinding.findViewById<TextView>(R.id.sports).text = detail.sports
+                dialogBinding.findViewById<TextView>(R.id.barbecue).text = if(detail.barbecue == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.beauty).text = if(detail.beauty == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.beverage).text = if(detail.beverage == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.bicycle).text = if(detail.bicycle == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.campfire).text = if(detail.campfire == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.fitness).text = if(detail.fitness == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.karaoke).text = if(detail.karaoke == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.publicbath).text = if(detail.publicbath == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.publicpc).text = if(detail.publicpc == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.sauna).text = if(detail.sauna == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.seminar).text = if(detail.seminar == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.sports).text = if(detail.sports == "1") "O" else "X"
                 dialogBinding.findViewById<TextView>(R.id.refundregulation).text = detail.refundregulation
 
                 // 예약안내홈페이지에 하이퍼링크 설정
@@ -535,7 +537,7 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.restdatefood).text = detail.restdatefood
                 dialogBinding.findViewById<TextView>(R.id.scalefood).text = detail.scalefood
                 dialogBinding.findViewById<TextView>(R.id.seat).text = detail.seat
-                dialogBinding.findViewById<TextView>(R.id.smoking).text = detail.smoking
+                dialogBinding.findViewById<TextView>(R.id.smoking).text = if(detail.smoking == "1") "O" else "X"
                 dialogBinding.findViewById<TextView>(R.id.treatmenu).text = detail.treatmenu
                 dialogBinding.findViewById<TextView>(R.id.lcnsno).text = detail.lcnsno
             }

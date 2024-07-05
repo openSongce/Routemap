@@ -24,8 +24,8 @@ class TouristAdapter(
 
     inner class TouristViewHolder(private val binding: ItemTouristBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: TouristItem) {
-            binding.title.text = item.title ?: "No title"
-            binding.addr1.text = item.addr1 ?: "No address"
+            binding.title.text = item.title ?: ""
+            binding.addr1.text = item.addr1 ?: ""
             binding.addr2.text = item.addr2 ?: ""
             binding.likeCount.text = item.likeCount.toString()
             binding.likeButton.setImageResource(
