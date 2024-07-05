@@ -397,9 +397,10 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.chkpet).text = detail.chkpet
                 dialogBinding.findViewById<TextView>(R.id.expagerange).text = detail.expagerange
                 dialogBinding.findViewById<TextView>(R.id.expguide).text = detail.expguide
-                dialogBinding.findViewById<TextView>(R.id.heritage1).text = detail.heritage1
-                dialogBinding.findViewById<TextView>(R.id.heritage2).text = detail.heritage2
-                dialogBinding.findViewById<TextView>(R.id.heritage3).text = detail.heritage3
+                // 유무를 1과 0이 아닌, O와 X로 표시
+                dialogBinding.findViewById<TextView>(R.id.heritage1).text = if (detail.heritage1 == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.heritage2).text = if (detail.heritage2 == "1") "O" else "X"
+                dialogBinding.findViewById<TextView>(R.id.heritage3).text = if (detail.heritage3 == "1") "O" else "X"
                 dialogBinding.findViewById<TextView>(R.id.infocenter).text = detail.infocenter
                 dialogBinding.findViewById<TextView>(R.id.opendate).text = detail.opendate
                 dialogBinding.findViewById<TextView>(R.id.parking).text = detail.parking
