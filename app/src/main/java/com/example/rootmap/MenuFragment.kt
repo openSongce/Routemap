@@ -314,6 +314,10 @@ class MenuFragment : Fragment() {
         })
     }
 
+    fun removeHtmlTags(input: String?): String {
+        return input?.replace(Regex("<[^>]*>"), "")?.replace("<br>", "") ?: ""
+    }
+
     fun fetchTouristDetailIntro(contentId: String, contentTypeId: Int) {
         apiService.getTouristDetail(
             contentId = contentId.toInt(),
@@ -328,6 +332,25 @@ class MenuFragment : Fragment() {
             ) {
                 if (response.isSuccessful) {
                     val detail = response.body()?.body?.items?.item ?: return
+
+                    // 팝업창 내용 중간에 들어간 태그 제거
+                    detail.accomcount = removeHtmlTags(detail.accomcount)
+                    detail.chkbabycarriage = removeHtmlTags(detail.chkbabycarriage)
+                    detail.chkcreditcard = removeHtmlTags(detail.chkcreditcard)
+                    detail.chkpet = removeHtmlTags(detail.chkpet)
+                    detail.expagerange = removeHtmlTags(detail.expagerange)
+                    detail.expguide = removeHtmlTags(detail.expguide)
+                    detail.heritage1 = removeHtmlTags(detail.heritage1)
+                    detail.heritage2 = removeHtmlTags(detail.heritage2)
+                    detail.heritage3 = removeHtmlTags(detail.heritage3)
+                    detail.infocenter = removeHtmlTags(detail.infocenter)
+                    detail.opendate = removeHtmlTags(detail.opendate)
+                    detail.parking = removeHtmlTags(detail.parking)
+                    detail.restdate = removeHtmlTags(detail.restdate)
+                    detail.useseason = removeHtmlTags(detail.useseason)
+                    detail.usetime = removeHtmlTags(detail.usetime)
+                    detail.reservationurl = removeHtmlTags(detail.reservationurl)
+
                     showTouristDetailDialog(detail)
                 } else {
                     Log.e("API_ERROR", "Detail response code: ${response.code()}")
