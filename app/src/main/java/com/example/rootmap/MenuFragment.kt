@@ -608,7 +608,7 @@ class MenuFragment : Fragment() {
                     autoLinkMask = Linkify.PHONE_NUMBERS
                     movementMethod = LinkMovementMethod.getInstance()
                 }
-                dialogBinding.findViewById<TextView>(R.id.kidsfacility).text = detail.kidsfacility
+                dialogBinding.findViewById<TextView>(R.id.kidsfacility).text = if(detail.kidsfacility == "1") "O" else "X"
                 dialogBinding.findViewById<TextView>(R.id.opendatefood).text = detail.opendatefood
                 dialogBinding.findViewById<TextView>(R.id.opentimefood).text = detail.opentimefood
                 dialogBinding.findViewById<TextView>(R.id.packing).text = detail.packing
