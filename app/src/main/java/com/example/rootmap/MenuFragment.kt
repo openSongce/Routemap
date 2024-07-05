@@ -352,6 +352,9 @@ class MenuFragment : Fragment() {
                     detail.useseason = removeHtmlTags(detail.useseason)
                     detail.usetime = removeHtmlTags(detail.usetime)
                     detail.reservationurl = removeHtmlTags(detail.reservationurl)
+                    detail.reservationlodging = removeHtmlTags(detail.reservationlodging)
+                    detail.eventplace = removeHtmlTags(detail.eventplace)
+                    detail.parkingfee = removeHtmlTags(detail.parkingfee)
 
                     showTouristDetailDialog(detail)
                 } else {
