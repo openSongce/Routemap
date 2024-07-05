@@ -3,6 +3,8 @@ package com.example.rootmap
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.text.method.LinkMovementMethod
+import android.text.util.Linkify
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -474,7 +476,6 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.pickup).text = detail.pickup
                 dialogBinding.findViewById<TextView>(R.id.roomcount).text = detail.roomcount
                 dialogBinding.findViewById<TextView>(R.id.reservationlodging).text = detail.reservationlodging
-                dialogBinding.findViewById<TextView>(R.id.reservationurl).text = detail.reservationurl
                 dialogBinding.findViewById<TextView>(R.id.roomtype).text = detail.roomtype
                 dialogBinding.findViewById<TextView>(R.id.scalelodging).text = detail.scalelodging
                 dialogBinding.findViewById<TextView>(R.id.subfacility).text = detail.subfacility
@@ -491,6 +492,13 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.seminar).text = detail.seminar
                 dialogBinding.findViewById<TextView>(R.id.sports).text = detail.sports
                 dialogBinding.findViewById<TextView>(R.id.refundregulation).text = detail.refundregulation
+
+                // 예약안내홈페이지에 하이퍼링크 설정
+                val reservationUrlTextView = dialogBinding.findViewById<TextView>(R.id.reservationurl)
+                val reservationUrl = removeHtmlTags(detail.reservationurl)
+                reservationUrlTextView.text = reservationUrl
+                reservationUrlTextView.autoLinkMask = Linkify.WEB_URLS
+                reservationUrlTextView.movementMethod = LinkMovementMethod.getInstance()
             }
             38 -> { // 쇼핑
                 dialogBinding.findViewById<TextView>(R.id.chkbabycarriageshopping).text = detail.chkbabycarriageshopping
