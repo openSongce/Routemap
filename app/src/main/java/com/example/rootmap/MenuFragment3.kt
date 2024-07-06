@@ -63,6 +63,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import retrofit2.Call
 import retrofit2.Callback
@@ -122,6 +123,8 @@ class MenuFragment3 : Fragment() {
     lateinit var dialog:AlertDialog
     lateinit var routeDialog:RecyclerviewDialogBinding
     lateinit var owner:String
+    private var uivisivle:Int = 1
+
 
     var routeName:String?=null
     private val readyCallback = object: KakaoMapReadyCallback(){
@@ -132,12 +135,11 @@ class MenuFragment3 : Fragment() {
             layer=kakaoMap.labelManager?.layer
             layerR= kakaoMap.routeLineManager?.getLayer()
             val style = kakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
-                R.drawable.mylocation
+                R.drawable.userlocation
             )))
             if(startpositon!=null){
                 val options = LabelOptions.from(startpositon).setStyles(style)
                 currendtMarker=layer?.addLabel(options)
-
             }
             startCamera= kakaoMap.getCameraPosition()!!
             //지도 클릭 시 이벤트 구현
@@ -153,6 +155,17 @@ class MenuFragment3 : Fragment() {
                 }else{
                     layer?.remove(clickMarker)
                     clickMarker=layer?.addLabel(options1) //마크 삭제 후 새로 추가
+                }
+                if(poi.isPoi() && poi.getName().toIntOrNull() == null){
+                    binding.recyclerView2.visibility=View.VISIBLE
+                    binding.bottomButton.visibility=View.VISIBLE
+                    binding.disButton.visibility=View.VISIBLE
+                    runBlocking {
+                        searchPoi(poi.getName(), kakaoMap.getCameraPosition()!!.position)
+                    }
+                    kakaomap!!.setPadding(0,0,0,800)
+                    binding.disButton.setImageResource(R.drawable.search_list_down)
+                    Log.d("Map3poiname", poi.getName())
                 }
 
             }
@@ -238,6 +251,7 @@ class MenuFragment3 : Fragment() {
         binding.disButton.setOnClickListener {
             if (binding.recyclerView2.getVisibility() == View.VISIBLE){
                 binding.recyclerView2.visibility=View.GONE
+                binding.disButton.setImageResource(R.drawable.search_list_up)
                 if(binding.recyclerView3.getVisibility() == View.GONE){
                     binding.bottomButton.visibility=View.GONE
                     kakaomap!!.setPadding(0,0,0,0)
@@ -247,24 +261,24 @@ class MenuFragment3 : Fragment() {
             else{
                 binding.recyclerView2.visibility=View.VISIBLE
                 binding.bottomButton.visibility=View.VISIBLE
+                binding.disButton.setImageResource(R.drawable.search_list_down)
                 kakaomap!!.setPadding(0,0,0,800)
                 Log.d("Map3padding", kakaomap!!.padding.toString())
             }
         }
-        binding.searchText.setOnEditorActionListener{ v, actionId, event //키보드 엔터 사용시
+        binding.searchText.setOnEditorActionListener { v, actionId, event //키보드 엔터 사용시
             ->
-            if(!binding.progressBar.isVisible){
+            if (!binding.progressBar.isVisible) {
                 context?.hideKeyboard(binding.root)
-                searchText=binding.searchText.text.toString()
-                if(searchText==""){
+                searchText = binding.searchText.text.toString()
+                if (searchText == "") {
                     Toast.makeText(context, "빈칸입니다.", Toast.LENGTH_SHORT).show()
-                }else{
-                    binding.recyclerView2.visibility=View.VISIBLE
-                    binding.bottomButton.visibility=View.VISIBLE
-                    binding.disButton.visibility=View.VISIBLE
+                } else {
                     searchKeyword(searchText)
-                    kakaomap!!.setPadding(0,0,0,800)
-                    //kakaomap!!.setViewport(0, 0, widthPixel, heightPixel-900)
+                    binding.recyclerView2.visibility = View.VISIBLE
+                    binding.bottomButton.visibility = View.VISIBLE
+                    binding.disButton.visibility = View.VISIBLE
+                    kakaomap!!.setPadding(0, 0, 0, 800)
                     Log.d("Map3padding", kakaomap!!.padding.toString())
                 }
             }
@@ -373,14 +387,21 @@ class MenuFragment3 : Fragment() {
                 binding.apply {
                     listButton.visibility = View.INVISIBLE
                     listCloseButton.visibility = View.VISIBLE
-                    routeSaveButton.visibility=View.VISIBLE
-                    routeNameText.visibility=View.VISIBLE
+                    routeSaveButton.visibility= View.VISIBLE
+                    routeNameText.visibility= View.VISIBLE
                     recyclerView3.visibility = View.VISIBLE
                     bottomButton.visibility = View.VISIBLE
-                    routeNameText.setText(docName)
+                    fullButton.visibility = View.VISIBLE
+                    routeNameText.setHint(docName)
+                    routeNameText.setText("")
                 }
                 binding.routeSaveButton.setOnClickListener {
-                    var text=binding.routeNameText.text.toString()
+                    var text = ""
+                    if (binding.routeNameText.text.isBlank()){
+                        text = docName
+                    } else {
+                        text = binding.routeNameText.text.toString()
+                    }
                     val originalData= returnDb(owner).document(docId)
                     originalData.update(hashMapOf("tripname" to text,"routeList" to loadListData)).addOnSuccessListener {
                         Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
@@ -423,6 +444,37 @@ class MenuFragment3 : Fragment() {
                 doc.remove()
             layerR?.remove(byLevelLine)
         }
+
+        binding.fullButton.setOnClickListener {
+            if(uivisivle == 1) { //ui 끄기
+                binding.fullButton.setImageResource(R.drawable.setui)
+                binding.imageView2.visibility = View.GONE
+                binding.searchText.visibility = View.GONE
+                binding.recyclerView2.visibility = View.GONE
+                binding.recyclerView3.visibility = View.GONE
+                binding.bottomButton.visibility = View.GONE
+                binding.routeNameText.visibility = View.GONE
+                binding.routeSaveButton.visibility = View.GONE
+                binding.listCloseButton.visibility = View.GONE
+                binding.disButton.visibility = View.GONE
+                kakaomap!!.setPadding(0,0,0,0)
+                uivisivle = 0
+            } else{ //ui 켜기
+                binding.fullButton.setImageResource(R.drawable.offui)
+                binding.disButton.setImageResource(R.drawable.search_list_up)
+                binding.imageView2.visibility = View.VISIBLE
+                binding.searchText.visibility = View.VISIBLE
+                binding.recyclerView3.visibility = View.VISIBLE
+                binding.bottomButton.visibility = View.VISIBLE
+                binding.routeNameText.visibility = View.VISIBLE
+                binding.routeSaveButton.visibility = View.VISIBLE
+                binding.listCloseButton.visibility = View.VISIBLE
+                binding.disButton.visibility = View.VISIBLE
+                kakaomap!!.setPadding(0,0,0,800)
+                uivisivle = 1
+            }
+        }
+
         return binding.root
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -430,7 +482,6 @@ class MenuFragment3 : Fragment() {
             listAdapter.list=locationData
             binding.recyclerView2.adapter = listAdapter
             binding.recyclerView2.layoutManager = LinearLayoutManager(context)
-
         }
         binding.recyclerView3.layoutManager = LinearLayoutManager(context)
         super.onViewCreated(view, savedInstanceState)
@@ -483,15 +534,54 @@ class MenuFragment3 : Fragment() {
     }
 
     private fun searchKeyword(text:String){
+        runBlocking {
+            val retrofit = Retrofit.Builder() // Retrofit 구성
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+            val api = retrofit.create(KakaoAPI::class.java) // 통신 인터페이스를 객체로 생성
+            val call = api.getSearchKeyword(API_KEY, text, userX, userY) // 검색 조건 입력
+            // API 서버에 요청
+            call.enqueue(object : Callback<ResultSearchKeyword> {
+                override fun onResponse(
+                    call: Call<ResultSearchKeyword>,
+                    response: Response<ResultSearchKeyword>
+                ) {
+// 통신 성공
+                    addItemsAndMarkers(response.body())
+                }
+
+                override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
+// 통신 실패
+                    Log.w("LocalSearch", "통신 실패: ${t.message}")
+                }
+            })
+        }
+    }
+    private fun searchPoi(text:String, latLng: LatLng){
         val retrofit = Retrofit.Builder() // Retrofit 구성
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val api = retrofit.create(KakaoAPI::class.java) // 통신 인터페이스를 객체로 생성
-        val call = api.getSearchKeyword(API_KEY,text,userX,userY) // 검색 조건 입력
+        var newtext = ""
+        Log.d("Map3indexOf", text.indexOf("세대").toString())
+        if (text.indexOf("세대") != -1 && text.indexOf("아파트") != -1) {
+            val idx = text.indexOf("아파트")
+            newtext = text.substring(0 until idx + 3)
+            Log.d("Map3apart", newtext)
+        } else {
+            newtext = text
+        }
+        val x = latLng.longitude.toString()
+        val y = latLng.latitude.toString()
+        val call = api.getSearchKeyword(API_KEY, newtext, x, y) // 검색 조건 입력
         // API 서버에 요청
-        call.enqueue(object: Callback<ResultSearchKeyword> {
-            override fun onResponse(call: Call<ResultSearchKeyword>, response: Response<ResultSearchKeyword>) {
+        call.enqueue(object : Callback<ResultSearchKeyword> {
+            override fun onResponse(
+                call: Call<ResultSearchKeyword>,
+                response: Response<ResultSearchKeyword>
+            ) {
 // 통신 성공
                 addItemsAndMarkers(response.body())
             }
@@ -503,23 +593,30 @@ class MenuFragment3 : Fragment() {
         })
     }
     private fun addItemsAndMarkers(searchResult: ResultSearchKeyword?) {
-        if (!searchResult?.documents.isNullOrEmpty()) {
+        runBlocking {
+            if (!searchResult?.documents.isNullOrEmpty()) {
 // 검색 결과 있음
-            locationData.clear() // 리스트 초기화
-            //layers
-            for (document in searchResult!!.documents) {
-                // 결과를 리사이클러 뷰에 추가
-                val item = SearchLocation(document.place_name,
-                    document.road_address_name,document.x.toDouble(),
-                    document.y.toDouble())
-                locationData.add(item)
-            }
-            listAdapter.list=locationData
-            Log.d("Map3searchlist", listAdapter.list.toString())
-            listAdapter.notifyDataSetChanged()
-        } else {
+                locationData.clear() // 리스트 초기화
+                //layers
+                for (document in searchResult!!.documents) {
+                    // 결과를 리사이클러 뷰에 추가
+                    val item = SearchLocation(
+                        document.place_name,
+                        document.road_address_name, document.x.toDouble(),
+                        document.y.toDouble()
+                    )
+                    locationData.add(item)
+                }
+                listAdapter.list = locationData
+                Log.d("Map3searchlist", listAdapter.list.toString())
+                listAdapter.notifyDataSetChanged()
+            } else {
 // 검색 결과 없음
-            Toast.makeText(this.context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
+                locationData.clear()
+                listAdapter.list = locationData
+                listAdapter.notifyDataSetChanged()
+            }
         }
     }
     private suspend fun loadMyList(): MutableList<MyRouteDocument> {
