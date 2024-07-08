@@ -96,4 +96,13 @@ dependencies {
     implementation("com.google.firebase:firebase-database:20.0.5")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.0")
     implementation("com.kakao.sdk:v2-user:2.10.0")
+    implementation("com.navercorp.nid:oauth:5.9.1") // jdk 11
+    implementation("androidx.legacy:legacy-support-core-utils:1.0.0")
+    implementation("androidx.browser:browser:1.4.0")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.2.1")
+    implementation("com.airbnb.android:lottie:3.1.0")
 }

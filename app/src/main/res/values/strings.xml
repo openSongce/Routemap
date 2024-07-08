@@ -71,4 +71,8 @@
 
     <!-- 하트 버튼 설명 -->
     <string name="like_button">Like Button</string>
+
+    <string name="naver_client_id">MBV7Tgt0JlnwEy147nfL</string>
+    <string name="naver_client_secret">VXPNBY0VBb</string>
+    <string name="naver_client_name">네이버 로그인</string>
 </resources>
