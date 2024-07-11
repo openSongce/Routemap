@@ -186,7 +186,6 @@ class MenuFragment : Fragment() {
         // 드롭다운 메뉴의 기본값을 내 위치로 설정하고 초기 데이터 로드
         binding.citySpinner.setSelection(0) // 내 위치를 선택된 상태로 설정
         selectButton(binding.btnTourist) // 관광지 버튼을 선택된 상태로 설정
-        fetchTotalPages(1, 12) // 서울의 지역 코드는 1, 관광지는 12, 앱 처음 실행 시 랜덤 페이지로 가져오기
 
         // LocationService 초기화 및 위치 정보 가져오기
         locationService = LocationService(requireContext())
@@ -223,11 +222,13 @@ class MenuFragment : Fragment() {
     private fun selectButton(button: Button) {
         clearButtonSelection()
         button.setTextColor(ContextCompat.getColor(requireContext(), R.color.selected_button_text))
+        button.setTypeface(null, android.graphics.Typeface.BOLD)
         selectedButton = button
     }
 
     private fun clearButtonSelection() {
         selectedButton?.setTextColor(ContextCompat.getColor(requireContext(), R.color.default_button_text))
+        selectedButton?.setTypeface(null, android.graphics.Typeface.NORMAL)
     }
 
     private var isInitialLoad = true
