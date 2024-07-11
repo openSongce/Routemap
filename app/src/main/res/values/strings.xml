@@ -29,7 +29,7 @@
 
     <!-- 위도 격자값-->
     <array name="location_array_nx">
-        <item>0</item> <!-- 내 위치 -->
+        <item>91</item> <!-- 내 위치 (기본값 경산 91,90)-->
         <item>60</item> <!-- 서울 60,127 -->
         <item>55</item> <!-- 인천 55,124-->
         <item>67</item> <!-- 대전 67,100-->
@@ -44,7 +44,7 @@
 
     <!-- 경도 격자값 -->
     <array name="location_array_ny">
-        <item>0</item> <!-- 내 위치 -->
+        <item>90</item> <!-- 내 위치 -->
         <item>127</item> <!-- 서울 60,127 -->
         <item>124</item> <!-- 인천 55,124 -->
         <item>100</item> <!-- 대전 67,100 -->
