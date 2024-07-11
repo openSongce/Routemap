@@ -92,14 +92,6 @@ class MenuFragment : Fragment() {
         apiService = retrofit.create(TouristApiService::class.java)
 
         // Weather API 초기화
-        /*
-        val weatherRetrofit = Retrofit.Builder()
-            .baseUrl("https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/")
-            .addConverterFactory(SimpleXmlConverterFactory.create())
-            .build()
-        */
-
-
         val weatherRetrofit = Retrofit.Builder()
             .baseUrl("https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/")
             .addConverterFactory(SimpleXmlConverterFactory.createNonStrict())  // NonStrict로 변경
@@ -153,16 +145,17 @@ class MenuFragment : Fragment() {
                         else -> 1
                     }
                     fetchTotalPages(currentAreaCode, currentContentTypeId) // 스피너 변경 시에도 랜덤 페이지로 가져오기
+
+                    // 지정된 도시의 날씨 가져오기
+                    val nxArray = resources.getIntArray(R.array.location_array_nx)
+                    val nyArray = resources.getIntArray(R.array.location_array_ny)
+                    val nx = nxArray[position]
+                    val ny = nyArray[position]
+                    val city = cityList[position]
+                    fetchWeather(nx, ny, city)
                 }
                 retryCount = 0 // 스피너가 선택될 때마다 재시도 카운트 초기화
 
-                // Fetch weather for the selected city
-                val nxArray = resources.getIntArray(R.array.location_array_nx)
-                val nyArray = resources.getIntArray(R.array.location_array_ny)
-                val nx = nxArray[position]
-                val ny = nyArray[position]
-                val city = cityList[position]
-                fetchWeather(nx, ny, city)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -696,8 +689,51 @@ class MenuFragment : Fragment() {
                     Log.d("LOCATION", "Nearest area not found")
                     binding.locationButtonText.text = "현재 위치의 관광지를 추천할 수 없습니다."
                 }
+
+                val (nx, ny) = convertToGridCoordinates(latitude, longitude)
+                Log.d("LOCATION_COORDINATES", "Latitude: $latitude, Longitude: $longitude -> NX: $nx, NY: $ny") // 로그 출력
+                fetchWeather(nx, ny, "내 위치")
             }
         }
+    }
+
+    private fun convertToGridCoordinates(lat: Double, lon: Double): Pair<Int, Int> {
+        // Lambert Conformal Conic Projection 변환 공식
+        val RE = 6371.00877 // 지구 반경 (km)
+        val GRID = 5.0 // 격자 간격 (km)
+        val SLAT1 = 30.0 // 표준 위도1 (degree)
+        val SLAT2 = 60.0 // 표준 위도2 (degree)
+        val OLON = 126.0 // 기준점 경도 (degree)
+        val OLAT = 38.0 // 기준점 위도 (degree)
+        val XO = 210.0 / GRID // 기준점 X좌표 (격자 거리)
+        val YO = 675.0 / GRID // 기준점 Y좌표 (격자 거리)
+
+        val DEGRAD = Math.PI / 180.0
+
+        val re = RE / GRID
+        val slat1 = SLAT1 * DEGRAD
+        val slat2 = SLAT2 * DEGRAD
+        val olon = OLON * DEGRAD
+        val olat = OLAT * DEGRAD
+
+        var sn = Math.tan(Math.PI * 0.25 + slat2 * 0.5) / Math.tan(Math.PI * 0.25 + slat1 * 0.5)
+        sn = Math.log(Math.cos(slat1) / Math.cos(slat2)) / Math.log(sn)
+        var sf = Math.tan(Math.PI * 0.25 + slat1 * 0.5)
+        sf = Math.pow(sf, sn) * Math.cos(slat1) / sn
+        var ro = Math.tan(Math.PI * 0.25 + olat * 0.5)
+        ro = re * sf / Math.pow(ro, sn)
+
+        var ra = Math.tan(Math.PI * 0.25 + lat * DEGRAD * 0.5)
+        ra = re * sf / Math.pow(ra, sn)
+        var theta = lon * DEGRAD - olon
+        if (theta > Math.PI) theta -= 2.0 * Math.PI
+        if (theta < -Math.PI) theta += 2.0 * Math.PI
+        theta *= sn
+
+        val x = (ra * Math.sin(theta)) + XO + 0.5
+        val y = (ro - ra * Math.cos(theta)) + YO + 0.5
+
+        return Pair(x.toInt(), y.toInt())
     }
 
     private fun findNearestArea(latitude: Double, longitude: Double): Area? {
@@ -745,6 +781,7 @@ class MenuFragment : Fragment() {
         var skyValue: String? = null
         var temperature: String? = null
         var humidity: String? = null
+        var popValue: String? = null
 
         val ultraSrtNcstUrl = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=oX0uqL6VzriCMyNDlwDB23W4%2Bb9mn8EPDaqry2QN4hO9qaQCMH5oQOhK9oIi92TiDYQ6vAY9nv9XDubAGOdugw%3D%3D&numOfRows=50&pageNo=1&dataType=XML&base_date=$ultraSrtNcstBaseDate&base_time=$ultraSrtNcstBaseTime&nx=$nx&ny=$ny"
         Log.d("WEATHER_API_ULTRA_SRT_NCST_URL", ultraSrtNcstUrl)
@@ -765,7 +802,7 @@ class MenuFragment : Fragment() {
                     humidity = items?.find { it.category == "REH" }?.obsrValue
                     ptyValue = items?.find { it.category == "PTY" }?.obsrValue
 
-                    updateWeather(ptyValue, skyValue, temperature, humidity, city)
+                    updateWeather(ptyValue, skyValue, temperature, humidity, popValue, city)
                 } else {
                     Log.e("WEATHER_ERROR_ULTRA_SRT_NCST", "Response code: ${response.code()}")
                 }
@@ -782,8 +819,9 @@ class MenuFragment : Fragment() {
                     Log.d("WEATHER_RESPONSE_VILAGE_FCST", response.body().toString())
                     val items = response.body()?.body?.items?.item
                     skyValue = items?.find { it.category == "SKY" }?.fcstValue
+                    popValue = items?.find { it.category == "POP" }?.fcstValue
 
-                    updateWeather(ptyValue, skyValue, temperature, humidity, city)
+                    updateWeather(ptyValue, skyValue, temperature, humidity, popValue, city)
                 } else {
                     Log.e("WEATHER_ERROR_VILAGE_FCST", "Response code: ${response.code()}")
                 }
@@ -794,6 +832,7 @@ class MenuFragment : Fragment() {
             }
         })
     }
+
 
 
     private fun getVilageFcstBaseTimeAndDate(): Pair<String, String> {
@@ -834,11 +873,13 @@ class MenuFragment : Fragment() {
         skyValue: String?,
         temperature: String?,
         humidity: String?,
+        popValue: String?,
         city: String
     ) {
         updateTemperature(temperature, city)
         updateHumidity(humidity)
         updateSky(ptyValue, skyValue)
+        updateRainProbability(popValue)
     }
 
     private fun updateTemperature(temp: String?, city: String) {
@@ -896,6 +937,16 @@ class MenuFragment : Fragment() {
             // If precipitation exists, update to rain icon
             imageView.setImageResource(R.drawable.weather_03)
             tvSkyCondition.text = "하늘: 비"
+        }
+    }
+
+    private fun updateRainProbability(popValue: String?) {
+        val tvRainProbability = binding.root.findViewById<TextView>(R.id.tvRainProbability)
+
+        if (popValue != null) {
+            tvRainProbability.text = "강수 확률: $popValue%"
+        } else {
+            tvRainProbability.text = "강수 확률: __%"
         }
     }
 

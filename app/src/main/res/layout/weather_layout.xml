@@ -56,11 +56,11 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/tvSkyCondition"
                     android:text="하늘: 흐림"/>
-            <!--TextView
+            <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/tvTodayCelsius"
-                    android:text="최고: 31°/최저 16°"/-->
+                    android:id="@+id/tvRainProbability"
+                    android:text="강수 확률: __%"/>
             <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
