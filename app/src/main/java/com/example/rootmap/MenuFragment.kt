@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -197,6 +198,7 @@ class MenuFragment : Fragment() {
 
         // locationButton 클릭 리스너 설정
         binding.locationButton.setOnClickListener {
+            binding.locationButtonText.text = "위치 확인 중..."
             binding.citySpinner.setSelection(0)
             fetchLocation()
         }
@@ -677,8 +679,10 @@ class MenuFragment : Fragment() {
                 if (nearestArea != null) {
                     currentAreaCode = nearestArea.code
                     fetchTotalPages(currentAreaCode, currentContentTypeId)
+                    binding.locationButtonText.text = "현 위치 : ${nearestArea.name}"
                 } else {
                     Log.d("LOCATION", "Nearest area not found")
+                    binding.locationButtonText.text = "현 위치의 관광지를 추천할 수 없습니다."
                 }
             }
         }
@@ -689,19 +693,19 @@ class MenuFragment : Fragment() {
     }
 
     private fun distanceBetween(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-        val R = 6371e3; // metres
-        val φ1 = lat1 * Math.PI / 180;
-        val φ2 = lat2 * Math.PI / 180;
-        val Δφ = (lat2 - lat1) * Math.PI / 180;
-        val Δλ = (lon2 - lon1) * Math.PI / 180;
+        val earthRadius = 6371e3; // metres
+        val phi1 = lat1 * Math.PI / 180;
+        val phi2 = lat2 * Math.PI / 180;
+        val deltaPhi = (lat2 - lat1) * Math.PI / 180;
+        val deltaLambda = (lon2 - lon1) * Math.PI / 180;
 
-        val a = sin(Δφ / 2) * sin(Δφ / 2) +
-                cos(φ1) * cos(φ2) *
-                sin(Δλ / 2) * sin(Δλ / 2);
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a));
+        val haversineA = sin(deltaPhi / 2) * sin(deltaPhi / 2) +
+                cos(phi1) * cos(phi2) *
+                sin(deltaLambda / 2) * sin(deltaLambda / 2);
+        val centralAngle = 2 * atan2(sqrt(haversineA), sqrt(1 - haversineA));
 
-        val d = R * c;
-        return d;
+        val distance = earthRadius * centralAngle;
+        return distance;
     }
 
     private fun fetchWeather(nx: Int, ny: Int, city: String) {
