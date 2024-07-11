@@ -195,6 +195,12 @@ class MenuFragment : Fragment() {
             fetchLocation()
         }
 
+        // locationButton 클릭 리스너 설정
+        binding.locationButton.setOnClickListener {
+            binding.citySpinner.setSelection(0)
+            fetchLocation()
+        }
+
         return binding.root
     }
 
