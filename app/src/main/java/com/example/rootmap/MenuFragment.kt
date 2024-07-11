@@ -183,8 +183,8 @@ class MenuFragment : Fragment() {
             fetchTotalPages(currentAreaCode, currentContentTypeId) // 새로고침 시에도 랜덤 페이지로 가져오기
         }
 
-        // 드롭다운 메뉴의 기본값을 현 위치로 설정하고 초기 데이터 로드
-        binding.citySpinner.setSelection(0) // 현 위치를 선택된 상태로 설정
+        // 드롭다운 메뉴의 기본값을 내 위치로 설정하고 초기 데이터 로드
+        binding.citySpinner.setSelection(0) // 내 위치를 선택된 상태로 설정
         selectButton(binding.btnTourist) // 관광지 버튼을 선택된 상태로 설정
         fetchTotalPages(1, 12) // 서울의 지역 코드는 1, 관광지는 12, 앱 처음 실행 시 랜덤 페이지로 가져오기
 
@@ -198,7 +198,7 @@ class MenuFragment : Fragment() {
 
         // locationButton 클릭 리스너 설정
         binding.locationButton.setOnClickListener {
-            binding.locationButtonText.text = "위치 확인 중..."
+            binding.locationButtonText.text = "현재 위치 확인 중..."
             binding.citySpinner.setSelection(0)
             fetchLocation()
         }
@@ -679,10 +679,10 @@ class MenuFragment : Fragment() {
                 if (nearestArea != null) {
                     currentAreaCode = nearestArea.code
                     fetchTotalPages(currentAreaCode, currentContentTypeId)
-                    binding.locationButtonText.text = "현 위치 : ${nearestArea.name}"
+                    binding.locationButtonText.text = "현재 위치 : ${nearestArea.name}"
                 } else {
                     Log.d("LOCATION", "Nearest area not found")
-                    binding.locationButtonText.text = "현 위치의 관광지를 추천할 수 없습니다."
+                    binding.locationButtonText.text = "현재 위치의 관광지를 추천할 수 없습니다."
                 }
             }
         }
