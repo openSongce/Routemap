@@ -134,7 +134,10 @@ class MenuFragment : Fragment() {
                 id: Long
             ) {
                 if (position == 0) {
-                    fetchLocation()
+                    fetchLocation { areaCode ->
+                        currentAreaCode = areaCode
+                        fetchTotalPages(currentAreaCode, currentContentTypeId)
+                    }
                 } else {
                     currentAreaCode = when (position) {
                         1 -> 1
@@ -149,9 +152,9 @@ class MenuFragment : Fragment() {
                         10 -> 32
                         else -> 1
                     }
+                    fetchTotalPages(currentAreaCode, currentContentTypeId) // 스피너 변경 시에도 랜덤 페이지로 가져오기
                 }
                 retryCount = 0 // 스피너가 선택될 때마다 재시도 카운트 초기화
-                fetchTotalPages(currentAreaCode, currentContentTypeId) // 스피너 변경 시에도 랜덤 페이지로 가져오기
 
                 // Fetch weather for the selected city
                 val nxArray = resources.getIntArray(R.array.location_array_nx)
@@ -192,14 +195,20 @@ class MenuFragment : Fragment() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
         } else {
-            fetchLocation()
+            fetchLocation { areaCode ->
+                currentAreaCode = areaCode
+                fetchTotalPages(currentAreaCode, currentContentTypeId)
+            }
         }
 
         // locationButton 클릭 리스너 설정
         binding.locationButton.setOnClickListener {
             binding.locationButtonText.text = "현재 위치 확인 중..."
             binding.citySpinner.setSelection(0)
-            fetchLocation()
+            fetchLocation { areaCode ->
+                currentAreaCode = areaCode
+                fetchTotalPages(currentAreaCode, currentContentTypeId)
+            }
         }
 
         return binding.root
@@ -208,7 +217,10 @@ class MenuFragment : Fragment() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            fetchLocation()
+            fetchLocation { areaCode ->
+                currentAreaCode = areaCode
+                fetchTotalPages(currentAreaCode, currentContentTypeId)
+            }
         }
     }
 
@@ -671,16 +683,15 @@ class MenuFragment : Fragment() {
     }
 
 
-    private fun fetchLocation() {
+    private fun fetchLocation(onLocationFetched: (Int) -> Unit) {
         locationService.fetchLocation { latitude, longitude ->
             activity?.runOnUiThread {
                 //val tvLocation = binding.root.findViewById<TextView>(R.id.tvLocation)
                 //tvLocation.text = "위도: $latitude, 경도: $longitude"
                 val nearestArea = findNearestArea(latitude, longitude)
                 if (nearestArea != null) {
-                    currentAreaCode = nearestArea.code
-                    fetchTotalPages(currentAreaCode, currentContentTypeId)
                     binding.locationButtonText.text = "현재 위치 : ${nearestArea.name}"
+                    onLocationFetched(nearestArea.code)
                 } else {
                     Log.d("LOCATION", "Nearest area not found")
                     binding.locationButtonText.text = "현재 위치의 관광지를 추천할 수 없습니다."
