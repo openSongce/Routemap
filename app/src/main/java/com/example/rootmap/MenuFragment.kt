@@ -26,6 +26,10 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory
+import java.lang.Math.atan2
+import java.lang.Math.cos
+import java.lang.Math.sin
+import java.lang.Math.sqrt
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -54,6 +58,22 @@ class MenuFragment : Fragment() {
     private lateinit var locationService: LocationService
     private var retryCountWeather = 0
     private val maxRetriesWeather = 3
+
+    // API에 있는 지역 리스트와 좌표 정의
+    data class Area(val name: String, val code: Int, val latitude: Double, val longitude: Double)
+
+    val areas = listOf(
+        Area("서울", 1, 37.5665, 126.9780),
+        Area("인천", 2, 37.4563, 126.7052),
+        Area("대전", 3, 36.3504, 127.3845),
+        Area("대구", 4, 35.8722, 128.6018),
+        Area("광주", 5, 35.1595, 126.8526),
+        Area("부산", 6, 35.1796, 129.0756),
+        Area("울산", 7, 35.5384, 129.3114),
+        Area("세종특별자치시", 8, 36.4801, 127.2892),
+        Area("경기도", 31, 37.4138, 127.5183),
+        Area("강원도", 32, 37.8228, 128.1555)
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,18 +132,22 @@ class MenuFragment : Fragment() {
                 position: Int,
                 id: Long
             ) {
-                currentAreaCode = when (position) {
-                    0 -> 1
-                    1 -> 2
-                    2 -> 3
-                    3 -> 4
-                    4 -> 5
-                    5 -> 6
-                    6 -> 7
-                    7 -> 8
-                    8 -> 31
-                    9 -> 32
-                    else -> 1
+                if (position == 0) {
+                    fetchLocation()
+                } else {
+                    currentAreaCode = when (position) {
+                        1 -> 1
+                        2 -> 2
+                        3 -> 3
+                        4 -> 4
+                        5 -> 5
+                        6 -> 6
+                        7 -> 7
+                        8 -> 8
+                        9 -> 31
+                        10 -> 32
+                        else -> 1
+                    }
                 }
                 retryCount = 0 // 스피너가 선택될 때마다 재시도 카운트 초기화
                 fetchTotalPages(currentAreaCode, currentContentTypeId) // 스피너 변경 시에도 랜덤 페이지로 가져오기
@@ -158,8 +182,8 @@ class MenuFragment : Fragment() {
             fetchTotalPages(currentAreaCode, currentContentTypeId) // 새로고침 시에도 랜덤 페이지로 가져오기
         }
 
-        // 드롭다운 메뉴의 기본값을 서울로 설정하고 초기 데이터 로드
-        binding.citySpinner.setSelection(0) // 서울이 0번째 인덱스에 있다고 가정
+        // 드롭다운 메뉴의 기본값을 현 위치로 설정하고 초기 데이터 로드
+        binding.citySpinner.setSelection(0) // 현 위치를 선택된 상태로 설정
         selectButton(binding.btnTourist) // 관광지 버튼을 선택된 상태로 설정
         fetchTotalPages(1, 12) // 서울의 지역 코드는 1, 관광지는 12, 앱 처음 실행 시 랜덤 페이지로 가져오기
 
@@ -370,6 +394,7 @@ class MenuFragment : Fragment() {
                     detail.parkingfood = removeHtmlTags(detail.parkingfood)
                     detail.restdatefood = removeHtmlTags(detail.restdatefood)
                     detail.opentimefood = removeHtmlTags(detail.opentimefood)
+                    detail.checkouttime = removeHtmlTags(detail.checkouttime)
 
                     showTouristDetailDialog(detail)
                 } else {
@@ -642,8 +667,35 @@ class MenuFragment : Fragment() {
             activity?.runOnUiThread {
                 //val tvLocation = binding.root.findViewById<TextView>(R.id.tvLocation)
                 //tvLocation.text = "위도: $latitude, 경도: $longitude"
+                val nearestArea = findNearestArea(latitude, longitude)
+                if (nearestArea != null) {
+                    currentAreaCode = nearestArea.code
+                    fetchTotalPages(currentAreaCode, currentContentTypeId)
+                } else {
+                    Log.d("LOCATION", "Nearest area not found")
+                }
             }
         }
+    }
+
+    private fun findNearestArea(latitude: Double, longitude: Double): Area? {
+        return areas.minByOrNull { distanceBetween(latitude, longitude, it.latitude, it.longitude) }
+    }
+
+    private fun distanceBetween(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val R = 6371e3; // metres
+        val φ1 = lat1 * Math.PI / 180;
+        val φ2 = lat2 * Math.PI / 180;
+        val Δφ = (lat2 - lat1) * Math.PI / 180;
+        val Δλ = (lon2 - lon1) * Math.PI / 180;
+
+        val a = sin(Δφ / 2) * sin(Δφ / 2) +
+                cos(φ1) * cos(φ2) *
+                sin(Δλ / 2) * sin(Δλ / 2);
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+        val d = R * c;
+        return d;
     }
 
     private fun fetchWeather(nx: Int, ny: Int, city: String) {

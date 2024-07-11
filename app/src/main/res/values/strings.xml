@@ -5,6 +5,7 @@
 
     <!-- 여행지 문자열 배열 -->
     <string-array name="locations_array">
+        <item>현 위치</item>
         <item>서울</item>
         <item>인천</item>
         <item>대전</item>
