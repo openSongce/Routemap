@@ -683,8 +683,10 @@ class MenuFragment : Fragment() {
                 //tvLocation.text = "위도: $latitude, 경도: $longitude"
                 val nearestArea = findNearestArea(latitude, longitude)
                 if (nearestArea != null) {
-                    binding.locationButtonText.text = "현재 위치 : ${nearestArea.name}"
-                    onLocationFetched(nearestArea.code)
+                    currentAreaCode = nearestArea.code
+                    fetchTotalPages(currentAreaCode, currentContentTypeId)
+                    val displayName = if (nearestArea.name == "세종특별자치시") "세종시" else nearestArea.name
+                    binding.locationButtonText.text = "현재 위치 : $displayName"
                 } else {
                     Log.d("LOCATION", "Nearest area not found")
                     binding.locationButtonText.text = "현재 위치의 관광지를 추천할 수 없습니다."
