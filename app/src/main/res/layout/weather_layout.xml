@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="@drawable/weather_round"
         android:layout_margin="10dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
@@ -16,7 +16,6 @@
                 android:id="@+id/imageView"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:background="@drawable/weather_04"
                 android:layout_margin="10dp"
                 />
 
@@ -31,8 +30,9 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/tvNowCelsius"
                 android:layout_margin="10dp"
+                android:textColor="#ffffff"
                 android:text="29.4°"
-                android:textSize="50dp"/>
+                android:textSize="40dp"/>
     </LinearLayout>
 
     <LinearLayout
@@ -50,21 +50,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/tvLocation"
+                    android:textColor="#ffffff"
                     android:text="위치: "/>
             <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/tvSkyCondition"
+                    android:textColor="#ffffff"
                     android:text="하늘: 흐림"/>
             <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/tvRainProbability"
+                    android:textColor="#ffffff"
                     android:text="강수 확률: __%"/>
             <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/tvHumidity"
+                    android:textColor="#ffffff"
                     android:text="습도: 80%"/>
 
         </LinearLayout>

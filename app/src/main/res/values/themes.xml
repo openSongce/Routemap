@@ -8,6 +8,7 @@
         <item name="colorPrimaryVariant">@color/custum_color</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="android:fontFamily">@font/pretendard_medium</item>
+
         <!--
                 <item name="android:textViewStyle">@style/customTextViewFontStyle</item>
                 <item name="android:buttonStyle">@style/customButtonFontStyle</item>

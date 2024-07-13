@@ -114,7 +114,7 @@ class MenuFragment : Fragment() {
         val cityList = resources.getStringArray(R.array.locations_array)
 
         // ArrayAdapter를 생성하여 Spinner에 연결
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, cityList)
+        val adapter = ArrayAdapter(requireContext(), R.layout.spinner_color, cityList)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.citySpinner.adapter = adapter
 
