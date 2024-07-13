@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.myapplication.Friend
 import com.example.rootmap.databinding.DialogLayoutBinding
 import com.example.rootmap.databinding.FragmentMenu3Binding
 import com.example.rootmap.databinding.RecyclerviewDialogBinding
@@ -36,6 +37,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
 import com.kakao.vectormap.KakaoMap
@@ -110,6 +112,7 @@ class MenuFragment3 : Fragment() {
     lateinit var routelistAdapter: MyDocumentAdapter
     lateinit var myRouteListAdapter: ListLocationAdapter
     lateinit var swipeHelperCallbackRoute: SwapeManageAdapter
+    lateinit var myDb: DocumentReference
 
     val db = Firebase.firestore
     private lateinit var currentId: String
@@ -211,6 +214,7 @@ class MenuFragment3 : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        myDb = Firebase.firestore.collection("user").document(currentId.toString())
         //여기부터 코드 작성
         locationPermission= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {result->
             if (result.any { permission -> !permission.value }) {
@@ -428,6 +432,24 @@ class MenuFragment3 : Fragment() {
                     Toast.makeText(this@MenuFragment3.context, "경로 생성자만이 삭제할 수 있습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
+
+            override fun shareDoc(v: View, position: Int) {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val data = loadFriendData()
+                    val docId = routelistAdapter.list[position].docId
+                    val docName = routelistAdapter.list[position].docName
+
+                    // 경로 생성자 확인
+                    if (routelistAdapter.list[position].owner == currentId) {
+                        showFriendDialog(data, docId, docName)
+                    } else {
+                        swipeHelperCallbackRoute.removeClamp(routeDialog.listView)
+                        Toast.makeText(this@MenuFragment3.context, "경로 생성자만이 공유할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+
         })
 
         binding.listCloseButton.setOnClickListener{//지도에서경로보기 끄는버튼 // 경로지우기 추가
@@ -689,6 +711,7 @@ class MenuFragment3 : Fragment() {
         return dialog
     }
 
+
     private fun showDeleteDialog(position: Int){
         val dBinding = DialogLayoutBinding.inflate(layoutInflater)
         dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
@@ -708,6 +731,59 @@ class MenuFragment3 : Fragment() {
             //회색 버튼의 기능 구현 ↓
             swipeHelperCallbackRoute.removeClamp(routeDialog.listView)
             dialog.dismiss()
+        }
+    }
+
+    private fun showFriendDialog(friendList:MutableList<Friend>, docId:String, docName:String):AlertDialog{ //다이어로그로 팝업창 구현
+        myDb = Firebase.firestore.collection("user").document(currentId.toString())
+        val dBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
+        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        dialogBuild.setTitle("공유할 친구 목록")
+        var myFriendAdapter=FriendAdapter()
+        myFriendAdapter.run {
+            mode="RouteShare"
+            myid=currentId
+            list=friendList
+        }
+        dBinding.run {
+            listView.adapter = myFriendAdapter
+            listView.layoutManager = LinearLayoutManager(context)
+            addTripRouteText.text="공유하기"
+        }
+        val dialog = dialogBuild.show()
+        dBinding.addTripRouteText.setOnClickListener{
+            //체크된 친구와 여행경로 공유
+            var checkFriends=myFriendAdapter.mChecked.toList()
+            //체크된 친구를 shared에 저장(자신의 DB데이터에)
+            myDb.collection("route").document(docId).update("shared",checkFriends).addOnSuccessListener {
+                Toast.makeText(context, "공유", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+            //체크된 친구의 sharedList에 추가
+            checkFriends.forEach {
+                Firebase.firestore.collection("user").document(it).collection("sharedList").document(docId).set(
+                    hashMapOf("created" to currentId,"docId" to docId,"docName" to docName)
+                )
+            }
+        }
+        return dialog
+    }
+
+    suspend fun loadFriendData(): MutableList<Friend> {
+        var friendList= mutableListOf<Friend>()
+        return try {
+            val fr_add = myDb.collection("friend").whereEqualTo("state", "2").get().await()
+            for (fr in fr_add.documents) {
+                var id = fr.data?.get("id").toString() //친구 id
+                val fr_data = Firebase.firestore.collection("user").document(id).get().await()
+                var load = Friend(fr_data.data?.get("nickname").toString(), id)
+                friendList.add(load)
+            }
+            Log.d("list_test", "try")
+            friendList
+        } catch (e: FirebaseException) {
+            Log.d("list_test", "error")
+            friendList
         }
     }
 

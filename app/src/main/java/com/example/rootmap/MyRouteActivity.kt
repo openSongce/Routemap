@@ -201,6 +201,22 @@ class MyRouteActivity : AppCompatActivity() {
                     Toast.makeText(this@MyRouteActivity, "경로 생성자만이 삭제할 수 있습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
+            override fun shareDoc(v: View, position: Int) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    val data = loadFriendData()
+                    val docId = routelistAdapter.list[position].docId
+                    val docName = routelistAdapter.list[position].docName
+
+                    // 경로 생성자 확인
+                    if (routelistAdapter.list[position].owner == currentId) {
+                        showFriendDialog(data, docId, docName)
+                    } else {
+                        swipeHelperCallback.removeClamp(binding.recyclerList)
+                        Toast.makeText(this@MyRouteActivity, "경로 생성자만이 공유할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
 
         })
     }

@@ -73,6 +73,9 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
             binding.tvRemove.setOnClickListener {
                 itemClickListener.deleteDoc(it, position)
             }
+            binding.tvShare.setOnClickListener {
+                itemClickListener.shareDoc(it, position)
+            }
         }
 
     }
@@ -80,6 +83,7 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
         fun onClick(v: View, position: Int)
         fun onListClick(v: View, position: Int)
         fun deleteDoc(v: View, position: Int)
+        fun shareDoc(v: View, position: Int) //수정 버튼 클릭 이벤트
     }
     fun setItemClickListener(onItemClickListener: OnItemClickListener) {
         this.itemClickListener = onItemClickListener
