@@ -1,15 +1,20 @@
 package com.example.rootmap
 
 import android.graphics.Canvas
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.LEFT
 import androidx.recyclerview.widget.ItemTouchHelper.RIGHT
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rootmap.databinding.FriendLayoutBinding
 import kotlin.math.min
+
 
 class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
     var list = mutableListOf<MyRouteDocument>()
@@ -36,13 +41,26 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
         fun setData(myRouteDocument: MyRouteDocument) {
             // binding.friendName.text=myRouteDocument.docName
             binding.apply {
-                friendName.text=myRouteDocument.docName
-                picture.visibility=View.GONE
-                if(myRouteDocument.owner!=userId)
-                    //friendId.text="공유받은 경로"
-                    friendId.text="${myRouteDocument.owner}\n님에게 공유받은 경로"
-                else{
-                    friendId.text=""
+                friendName.text = myRouteDocument.docName
+                picture.visibility = View.GONE
+
+                if (myRouteDocument.owner != userId) {
+                    val ownerText = myRouteDocument.owner
+                    val sharedText = "\n님에게 공유받은 경로"
+                    val fullText = "$ownerText$sharedText"
+
+                    val spannableString = SpannableString(fullText)
+                    val colorBlue = ContextCompat.getColor(binding.root.context, R.color.custum_color)
+
+                    spannableString.setSpan(
+                        ForegroundColorSpan(colorBlue),
+                        0,
+                        ownerText.length,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    friendId.text = spannableString
+                } else {
+                    friendId.text = ""
                 }
             }
             if(mode=="View"){
