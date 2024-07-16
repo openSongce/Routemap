@@ -1,7 +1,6 @@
 package com.example.rootmap
 
 import android.graphics.Canvas
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +9,6 @@ import androidx.recyclerview.widget.ItemTouchHelper.LEFT
 import androidx.recyclerview.widget.ItemTouchHelper.RIGHT
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rootmap.databinding.FriendLayoutBinding
-import com.example.rootmap.databinding.RoutelistLayoutBinding
 import kotlin.math.min
 
 class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
@@ -36,12 +34,13 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
     ) :
         RecyclerView.ViewHolder(binding.root) {
         fun setData(myRouteDocument: MyRouteDocument) {
-           // binding.friendName.text=myRouteDocument.docName
+            // binding.friendName.text=myRouteDocument.docName
             binding.apply {
                 friendName.text=myRouteDocument.docName
                 picture.visibility=View.GONE
                 if(myRouteDocument.owner!=userId)
-                    friendId.text="공유받은 경로"
+                    //friendId.text="공유받은 경로"
+                    friendId.text="${myRouteDocument.owner}\n님에게 공유받은 경로"
                 else{
                     friendId.text=""
                 }
@@ -238,4 +237,3 @@ class SwapeManageAdapter(private var recyclerViewAdapter2 : MyDocumentAdapter) :
 
 
 }
-
