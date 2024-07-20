@@ -29,7 +29,7 @@
             android:scaleType="fitCenter"
             android:padding="5dp"
             android:background="#00ff0000"
-            app:tint="#FFFFFF"
+            app:tint="#000000"
             android:layout_marginTop="10dp"
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginStart="0dp"
@@ -46,7 +46,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/locationButton"
             android:textSize="20dp"
-            android:textColor="@color/white" />
+            android:textColor="@color/black" />
 
     <!-- 날씨 레이아웃 -->
     <include
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:background="#00ff0000"
-                android:textSize="28dp"
+                android:textSize="24dp"
                 android:text="관광지"
                 android:textColor="@color/default_button_text" />
 
@@ -92,7 +92,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:background="#00ff0000"
-                android:textSize="28dp"
+                android:textSize="24dp"
                 android:text="문화시설"
                 android:textColor="@color/default_button_text" />
 
@@ -102,7 +102,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:background="#00ff0000"
-                android:textSize="28dp"
+                android:textSize="24dp"
                 android:text="축제공연행사"
                 android:textColor="@color/default_button_text" />
 
@@ -112,7 +112,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:background="#00ff0000"
-                android:textSize="28dp"
+                android:textSize="24dp"
                 android:text="여행코스"
                 android:textColor="@color/default_button_text" />
 
@@ -122,7 +122,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:background="#00ff0000"
-                android:textSize="28dp"
+                android:textSize="24dp"
                 android:text="레포츠"
                 android:textColor="@color/default_button_text" />
 
@@ -132,7 +132,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:background="#00ff0000"
-                android:textSize="28dp"
+                android:textSize="24dp"
                 android:text="숙박"
                 android:textColor="@color/default_button_text" />
 
@@ -142,7 +142,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:background="#00ff0000"
-                android:textSize="28dp"
+                android:textSize="24dp"
                 android:text="쇼핑"
                 android:textColor="@color/default_button_text" />
 
@@ -152,7 +152,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:background="#00ff0000"
-                android:textSize="28dp"
+                android:textSize="24dp"
                 android:text="음식점"
                 android:textColor="@color/default_button_text" />
         </LinearLayout>
