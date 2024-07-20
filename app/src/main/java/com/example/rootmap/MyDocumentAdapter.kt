@@ -1,5 +1,5 @@
 package com.example.rootmap
-
+//MyDocumentAdapter.kt
 import android.graphics.Canvas
 import android.text.SpannableString
 import android.text.Spanned

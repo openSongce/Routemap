@@ -734,40 +734,47 @@ class MenuFragment3 : Fragment() {
         }
     }
 
-    private fun showFriendDialog(friendList:MutableList<Friend>, docId:String, docName:String):AlertDialog{ //다이어로그로 팝업창 구현
+    private fun showFriendDialog(friendList: MutableList<Friend>, docId: String, docName: String): AlertDialog {
         myDb = Firebase.firestore.collection("user").document(currentId.toString())
         val dBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
         dialogBuild.setTitle("공유할 친구 목록")
-        var myFriendAdapter=FriendAdapter()
+        var myFriendAdapter = FriendAdapter()
         myFriendAdapter.run {
-            mode="RouteShare"
-            myid=currentId
-            list=friendList
+            mode = "RouteShare"
+            myid = currentId
+            list = friendList
         }
         dBinding.run {
             listView.adapter = myFriendAdapter
             listView.layoutManager = LinearLayoutManager(context)
-            addTripRouteText.text="공유하기"
+            addTripRouteText.text = "공유하기"
         }
         val dialog = dialogBuild.show()
-        dBinding.addTripRouteText.setOnClickListener{
-            //체크된 친구와 여행경로 공유
-            var checkFriends=myFriendAdapter.mChecked.toList()
-            //체크된 친구를 shared에 저장(자신의 DB데이터에)
-            myDb.collection("route").document(docId).update("shared",checkFriends).addOnSuccessListener {
-                Toast.makeText(context, "공유", Toast.LENGTH_SHORT).show()
-                dialog.dismiss()
-            }
-            //체크된 친구의 sharedList에 추가
-            checkFriends.forEach {
-                Firebase.firestore.collection("user").document(it).collection("sharedList").document(docId).set(
-                    hashMapOf("created" to currentId,"docId" to docId,"docName" to docName)
-                )
+        dBinding.addTripRouteText.setOnClickListener {
+            // 체크된 친구와 여행경로 공유
+            val checkFriends = myFriendAdapter.mChecked.toList()
+
+            if (checkFriends.isEmpty()) {
+                // 체크된 친구가 없을 때
+                Toast.makeText(context, "공유할 친구를 선택하세요", Toast.LENGTH_SHORT).show()
+            } else {
+                // 체크된 친구를 shared에 저장(자신의 DB데이터에)
+                myDb.collection("route").document(docId).update("shared", checkFriends).addOnSuccessListener {
+                    Toast.makeText(context, "공유 완료: ${checkFriends.joinToString(", ")}", Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
+                }
+                // 체크된 친구의 sharedList에 추가
+                checkFriends.forEach {
+                    Firebase.firestore.collection("user").document(it).collection("sharedList").document(docId).set(
+                        hashMapOf("created" to currentId, "docId" to docId, "docName" to docName)
+                    )
+                }
             }
         }
         return dialog
     }
+
 
     suspend fun loadFriendData(): MutableList<Friend> {
         var friendList= mutableListOf<Friend>()

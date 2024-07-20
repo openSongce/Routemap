@@ -157,6 +157,8 @@ class MenuFragment2 : Fragment() {
             }
             override fun deleteDoc(v: View, position: Int) {
             }
+            override fun shareDoc(v: View, position: Int) {
+            }
         })
         postlistAdapter.setItemClickListener(object: RouteListAdapter.OnItemClickListener{
             @RequiresApi(Build.VERSION_CODES.O)

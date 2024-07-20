@@ -1,33 +1,28 @@
 package com.example.rootmap
-
+//MyRouteActivity.kt
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.forEach
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
 import com.example.rootmap.databinding.ActivityMyRouteBinding
 import com.example.rootmap.databinding.DialogLayoutBinding
-import com.example.rootmap.databinding.FragmentFriendListBinding
 import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -174,8 +169,8 @@ class MyRouteActivity : AppCompatActivity() {
                         }
                         else -> { //게시글로 만들기 클릭
                             if(routelistAdapter.list[position].owner==currentId){
-                            // Toast.makeText(this@MyRouteActivity, "게시글", Toast.LENGTH_SHORT).show()
-                               // MenuFragment2.getInstance()!!.showFilterPopup()
+                                // Toast.makeText(this@MyRouteActivity, "게시글", Toast.LENGTH_SHORT).show()
+                                // MenuFragment2.getInstance()!!.showFilterPopup()
                             }
                             else{
                                 swipeHelperCallback.removeClamp(binding.recyclerList)
@@ -282,7 +277,7 @@ class MyRouteActivity : AppCompatActivity() {
                 }
             }
         }
-       this.hideKeyboard(binding.root)
+        this.hideKeyboard(binding.root)
     }
 
     private fun Context.hideKeyboard(view: View) {
@@ -326,7 +321,7 @@ class MyRouteActivity : AppCompatActivity() {
         }
     }
 
-     private fun showFriendDialog(friendList:MutableList<Friend>,docId:String,docName:String):AlertDialog{ //다이어로그로 팝업창 구현
+    private fun showFriendDialog(friendList:MutableList<Friend>,docId:String,docName:String):AlertDialog{ //다이어로그로 팝업창 구현
         val dBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(this).setView(dBinding.root)
         dialogBuild.setTitle("공유할 친구 목록")
@@ -345,10 +340,14 @@ class MyRouteActivity : AppCompatActivity() {
         dBinding.addTripRouteText.setOnClickListener{
             //체크된 친구와 여행경로 공유
             var checkFriends=myFriendAdapter.mChecked.toList()
-            //체크된 친구를 shared에 저장(자신의 DB데이터에)
-            myDb.collection("route").document(docId).update("shared",checkFriends).addOnSuccessListener {
-                Toast.makeText(this@MyRouteActivity, "공유", Toast.LENGTH_SHORT).show()
-                dialog.dismiss()
+
+            if (checkFriends.isEmpty()) { //체크된 친구가 없을 때
+                Toast.makeText(this@MyRouteActivity, "공유할 친구를 선택하세요.", Toast.LENGTH_SHORT).show()
+            } else { //체크된 친구를 shared에 저장(자신의 DB데이터에)
+                myDb.collection("route").document(docId).update("shared",checkFriends).addOnSuccessListener {
+                    Toast.makeText(this@MyRouteActivity, "공유가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
+                }
             }
             //체크된 친구의 sharedList에 추가
             checkFriends.forEach {
