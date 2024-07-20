@@ -345,7 +345,7 @@ class MyRouteActivity : AppCompatActivity() {
                 Toast.makeText(this@MyRouteActivity, "공유할 친구를 선택하세요.", Toast.LENGTH_SHORT).show()
             } else { //체크된 친구를 shared에 저장(자신의 DB데이터에)
                 myDb.collection("route").document(docId).update("shared",checkFriends).addOnSuccessListener {
-                    Toast.makeText(this@MyRouteActivity, "공유가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MyRouteActivity, "${checkFriends.joinToString(", ")}님에게 경로 공유 완료", Toast.LENGTH_SHORT).show()
                     dialog.dismiss()
                 }
             }

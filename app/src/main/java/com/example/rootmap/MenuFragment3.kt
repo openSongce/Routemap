@@ -761,7 +761,7 @@ class MenuFragment3 : Fragment() {
             } else {
                 // 체크된 친구를 shared에 저장(자신의 DB데이터에)
                 myDb.collection("route").document(docId).update("shared", checkFriends).addOnSuccessListener {
-                    Toast.makeText(context, "공유 완료: ${checkFriends.joinToString(", ")}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "${checkFriends.joinToString(", ")}님에게 경로 공유 완료", Toast.LENGTH_SHORT).show()
                     dialog.dismiss()
                 }
                 // 체크된 친구의 sharedList에 추가
