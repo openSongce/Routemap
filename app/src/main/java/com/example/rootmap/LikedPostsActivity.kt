@@ -3,8 +3,8 @@ package com.example.rootmap
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -19,7 +19,6 @@ import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.ktx.firestore
@@ -109,13 +108,13 @@ class LikedPostsActivity : AppCompatActivity() {
                 }
                 lifecycleScope.launch {
                     loadLikedPosts(likedPostIds)
-                    showLoading(false)  // 로드가 완료되면 ProgressBar를 숨깁니다.
+                    showLoading(false)  // 로드가 완료되면 ProgressBar를 숨김
                 }
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
                 Log.e("LikedPostsActivity", "Error fetching liked post IDs", databaseError.toException())
-                showLoading(false)  // 오류가 발생해도 ProgressBar를 숨깁니다.
+                showLoading(false) // 오류가 발생해도 ProgressBar를 숨김
             }
         })
     }
@@ -144,15 +143,14 @@ class LikedPostsActivity : AppCompatActivity() {
                         user,
                         loadUserName(user),
                         document.data["option"] as List<String>,
-                        timestamp = document.getLong("timestamp") ?: 0L // Load the timestamp field
+                        timestamp = document.getLong("timestamp") ?: 0L // timestamp 설정
                     )
                     loadLikeStatus(data)
                     likedPosts.add(data)
                     likedPostsCopy.add(data)
                 }
             }
-            // Sort the list based on the current sorting order
-            sortPostList()
+            sortPostList() // 현재 정렬 순서를 기준으로 목록 정렬
             likedPostsAdapter.notifyDataSetChanged()
             return true
         } catch (e: FirebaseException) {
@@ -251,6 +249,7 @@ class LikedPostsActivity : AppCompatActivity() {
             routeData = loadPostData(docId, ownerId)
             routeListDataAdapter.list = routeData
             dialogBinding.listView.adapter = routeListDataAdapter
+            updateHeartButton(dialogBinding.heartClickButton2, dialogBinding.likeNum, docId)
         }
         lifecycleScope.launch(Dispatchers.IO) {
             commentdataLoading(docId)
@@ -267,7 +266,7 @@ class LikedPostsActivity : AppCompatActivity() {
                 commentDialog(docId, ownerId)
             }
             downloadButton.setOnClickListener {
-                //  Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
+                // Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
                 showDownloadDialog(routeName, routeData)
             }
         }
@@ -276,8 +275,8 @@ class LikedPostsActivity : AppCompatActivity() {
     }
 
     private suspend fun loadPostData(docId: String, ownerId: String): MutableList<MyLocation> {
-        var dataList = mutableListOf<Map<String, *>>()
-        var postDatas = mutableListOf<MyLocation>()
+        val dataList = mutableListOf<Map<String, *>>()
+        val postDatas = mutableListOf<MyLocation>()
         return try {
             var data: MutableMap<*, *>
             Firebase.firestore.collection("user").document(ownerId).collection("route").document(docId).get().addOnSuccessListener { documents ->
@@ -369,5 +368,75 @@ class LikedPostsActivity : AppCompatActivity() {
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun updateHeartButton(heartButton: View, likeNumView: TextView, docId: String) {
+        val userId = auth.currentUser?.uid ?: return
+        val postRef = database.child("postLikes").child(docId)
+        val userLikeRef = database.child("userPostLikes").child(userId).child(docId)
+
+        postRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val likeCount = dataSnapshot.getValue(Int::class.java) ?: 0
+                likeNumView.text = likeCount.toString()
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("LikedPostsActivity", "loadLikeStatus:onCancelled", databaseError.toException())
+            }
+        })
+
+        userLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
+                val heartDrawable = if (isLiked) R.drawable.heart_filled else R.drawable.heart_empty
+                heartButton.setBackgroundResource(heartDrawable)
+
+                heartButton.setOnClickListener {
+                    handleHeartClickForDialog(docId, heartButton, likeNumView)
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("LikedPostsActivity", "loadLikeStatus:onCancelled", databaseError.toException())
+            }
+        })
+    }
+
+    private fun handleHeartClickForDialog(docId: String, heartButton: View, likeNumView: TextView) {
+        val userId = auth.currentUser?.uid ?: return
+        val postRef = database.child("postLikes").child(docId)
+        val userLikeRef = database.child("userPostLikes").child(userId).child(docId)
+
+        userLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
+                val newIsLiked = !isLiked
+
+                userLikeRef.setValue(newIsLiked)
+                postRef.runTransaction(object : Transaction.Handler {
+                    override fun doTransaction(currentData: MutableData): Transaction.Result {
+                        val currentLikes = currentData.getValue(Int::class.java) ?: 0
+                        currentData.value = if (newIsLiked) currentLikes + 1 else currentLikes - 1
+                        return Transaction.success(currentData)
+                    }
+
+                    override fun onComplete(
+                        databaseError: DatabaseError?,
+                        committed: Boolean,
+                        currentData: DataSnapshot?
+                    ) {
+                        val newLikeCount = currentData?.getValue(Int::class.java) ?: 0
+                        likeNumView.text = newLikeCount.toString()
+                        val heartDrawable = if (newIsLiked) R.drawable.heart_filled else R.drawable.heart_empty
+                        heartButton.setBackgroundResource(heartDrawable)
+                    }
+                })
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("LikedPostsActivity", "handleHeartClick:onCancelled", databaseError.toException())
+            }
+        })
     }
 }
