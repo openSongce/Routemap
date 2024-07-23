@@ -20,6 +20,3 @@ data class RoutePost(
     var isLiked: Boolean = false,
     var timestamp: Long = 0L
 )
-
-
-

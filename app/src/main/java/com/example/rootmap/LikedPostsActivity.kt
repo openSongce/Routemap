@@ -4,12 +4,20 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.ActivityLikedPostsBinding
+import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class LikedPostsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLikedPostsBinding
@@ -17,13 +25,12 @@ class LikedPostsActivity : AppCompatActivity() {
     private lateinit var database: DatabaseReference
     private lateinit var likedPostsAdapter: RouteListAdapter
     private val likedPosts: MutableList<RoutePost> = mutableListOf()
+    private val likedPostsCopy: MutableList<RoutePost> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLikedPostsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        Log.d("LikedPostsActivity", "onCreate called")
 
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().reference
@@ -33,9 +40,10 @@ class LikedPostsActivity : AppCompatActivity() {
             postList = likedPosts
         }
 
-        binding.likedPostsRecyclerView.apply {
+        binding.postListView.apply {
             layoutManager = LinearLayoutManager(this@LikedPostsActivity)
             adapter = likedPostsAdapter
+            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
 
         likedPostsAdapter.setItemClickListener(object : RouteListAdapter.OnItemClickListener {
@@ -53,24 +61,26 @@ class LikedPostsActivity : AppCompatActivity() {
             }
         })
 
-        loadLikedPosts()
+        lifecycleScope.launch {
+            loadLikedPostIdsAndFetchPosts()
+        }
     }
 
-    private fun loadLikedPosts() {
-        Log.d("LikedPostsActivity", "loadLikedPosts called")
+    private suspend fun loadLikedPostIdsAndFetchPosts() {
         val userId = auth.currentUser?.uid ?: return
-        val userLikesRef = database.child("userPostLikes").child(userId)
+        val likedPostIds = mutableListOf<String>()
 
+        val userLikesRef = database.child("userPostLikes").child(userId)
         userLikesRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val likedPostIds = mutableListOf<String>()
                 for (postSnapshot in dataSnapshot.children) {
                     if (postSnapshot.getValue(Boolean::class.java) == true) {
                         likedPostIds.add(postSnapshot.key.toString())
                     }
                 }
-                Log.d("LikedPostsActivity", "Liked post IDs: $likedPostIds")
-                fetchLikedPosts(likedPostIds)
+                lifecycleScope.launch {
+                    loadLikedPosts(likedPostIds)
+                }
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
@@ -79,62 +89,87 @@ class LikedPostsActivity : AppCompatActivity() {
         })
     }
 
-    private fun fetchLikedPosts(likedPostIds: List<String>) {
-        if (likedPostIds.isEmpty()) {
-            Log.d("LikedPostsActivity", "No liked posts found")
-            return
-        }
-        Log.d("LikedPostsActivity", "Fetching liked posts from Firestore")
-        FirebaseFirestore.getInstance().collection("route")
-            .whereIn(FieldPath.documentId(), likedPostIds)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                likedPosts.clear()
-                for (document in snapshot.documents) {
-                    val post = document.toObject(RoutePost::class.java)
-                    if (post != null) {
-                        post.docId = document.id
-                        likedPosts.add(post)
-                    } else {
-                        Log.e("LikedPostsActivity", "Error parsing document: ${document.id}")
-                    }
+    private suspend fun loadLikedPosts(likedPostIds: List<String>): Boolean {
+        likedPosts.clear()
+        likedPostsCopy.clear()
+        return try {
+            if (likedPostIds.isEmpty()) {
+                likedPostsAdapter.notifyDataSetChanged()
+                return true
+            }
+
+            val postListData = Firebase.firestore.collection("route")
+                .whereIn(FieldPath.documentId(), likedPostIds)
+                .get()
+                .await()
+
+            if (!postListData.isEmpty) {
+                postListData.forEach { document ->
+                    val user = document.data["owner"].toString()
+                    val data = RoutePost(
+                        document.data["tripname"].toString(),
+                        0,
+                        document.id,
+                        user,
+                        loadUserName(user),
+                        document.data["option"] as List<String>,
+                        timestamp = document.getLong("timestamp") ?: 0L // Load the timestamp field
+                    )
+                    loadLikeStatus(data)
+                    likedPosts.add(data)
+                    likedPostsCopy.add(data)
                 }
-                Log.d("LikedPostsActivity", "Fetched liked posts: $likedPosts")
-                fetchLikeCounts(likedPosts)
             }
-            .addOnFailureListener { exception ->
-                Log.e("LikedPostsActivity", "Error fetching liked posts", exception)
-            }
+            // Sort the list based on the current sorting order
+            sortPostList()
+            likedPostsAdapter.notifyDataSetChanged()
+            true
+        } catch (e: FirebaseException) {
+            Log.d("list_test", "error")
+            false
+        }
     }
 
-    private fun fetchLikeCounts(posts: List<RoutePost>) {
-        Log.d("LikedPostsActivity", "Fetching like counts for posts")
-        for (post in posts) {
-            val postRef = database.child("postLikes").child(post.docId)
-            postRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    post.like = dataSnapshot.getValue(Int::class.java) ?: 0
-                    likedPostsAdapter.notifyDataSetChanged()
-                }
-
-                override fun onCancelled(databaseError: DatabaseError) {
-                    Log.e("LikedPostsActivity", "Error fetching like count", databaseError.toException())
-                }
-            })
-
-            val userId = auth.currentUser?.uid ?: continue
-            val userLikeRef = database.child("userPostLikes").child(userId).child(post.docId)
-            userLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    post.isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
-                    likedPostsAdapter.notifyDataSetChanged()
-                }
-
-                override fun onCancelled(databaseError: DatabaseError) {
-                    Log.e("LikedPostsActivity", "Error fetching user like status", databaseError.toException())
-                }
-            })
+    private suspend fun loadUserName(id: String): String {
+        return try {
+            val nickname = Firebase.firestore.collection("user").document(id).get().await().get("nickname").toString()
+            nickname
+        } catch (e: FirebaseException) {
+            Log.d("list_test", "error")
+            "error"
         }
+    }
+
+    private fun loadLikeStatus(post: RoutePost) {
+        val userId = auth.currentUser?.uid ?: return
+        val postRef = database.child("postLikes").child(post.docId)
+        postRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                post.like = dataSnapshot.getValue(Int::class.java) ?: 0
+                likedPostsAdapter.notifyItemChanged(likedPosts.indexOf(post))
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("LikedPostsActivity", "loadLikeStatus:onCancelled", databaseError.toException())
+            }
+        })
+
+        val userLikeRef = database.child("userPostLikes").child(userId).child(post.docId)
+        userLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                post.isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
+                likedPostsAdapter.notifyItemChanged(likedPosts.indexOf(post))
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("LikedPostsActivity", "loadLikeStatus:onCancelled", databaseError.toException())
+            }
+        })
+    }
+
+    private fun sortPostList() {
+        likedPosts.sortByDescending { it.like }
+        likedPostsAdapter.notifyDataSetChanged()
     }
 
     private fun handleHeartClick(post: RoutePost) {
