@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MenuFragment">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MenuFragment">
 
     <!-- 도시 선택 -->
 
@@ -61,100 +61,100 @@
 
     <!-- 관광 타입 선택 -->
     <HorizontalScrollView
-        android:id="@+id/horizontalScrollView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="none"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/weatherLayout">
+            android:id="@+id/horizontalScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/weatherLayout">
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="0dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnTourist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:background="#00ff0000"
-                android:textSize="24dp"
-                android:text="관광지"
-                android:textColor="@color/default_button_text" />
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:orientation="horizontal">
 
             <Button
-                android:id="@+id/btnCulture"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:background="#00ff0000"
-                android:textSize="24dp"
-                android:text="문화시설"
-                android:textColor="@color/default_button_text" />
+                    android:id="@+id/btnTourist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:background="#00ff0000"
+                    android:textSize="20dp"
+                    android:text="관광지"
+                    android:textColor="@color/default_button_text" />
 
             <Button
-                android:id="@+id/btnFestival"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:background="#00ff0000"
-                android:textSize="24dp"
-                android:text="축제공연행사"
-                android:textColor="@color/default_button_text" />
+                    android:id="@+id/btnCulture"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:background="#00ff0000"
+                    android:textSize="20dp"
+                    android:text="문화시설"
+                    android:textColor="@color/default_button_text" />
 
             <Button
-                android:id="@+id/btnCourse"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:background="#00ff0000"
-                android:textSize="24dp"
-                android:text="여행코스"
-                android:textColor="@color/default_button_text" />
+                    android:id="@+id/btnFestival"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:background="#00ff0000"
+                    android:textSize="20dp"
+                    android:text="축제공연행사"
+                    android:textColor="@color/default_button_text" />
 
             <Button
-                android:id="@+id/btnLeisure"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:background="#00ff0000"
-                android:textSize="24dp"
-                android:text="레포츠"
-                android:textColor="@color/default_button_text" />
+                    android:id="@+id/btnCourse"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:background="#00ff0000"
+                    android:textSize="20dp"
+                    android:text="여행코스"
+                    android:textColor="@color/default_button_text" />
 
             <Button
-                android:id="@+id/btnLodging"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:background="#00ff0000"
-                android:textSize="24dp"
-                android:text="숙박"
-                android:textColor="@color/default_button_text" />
+                    android:id="@+id/btnLeisure"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:background="#00ff0000"
+                    android:textSize="20dp"
+                    android:text="레포츠"
+                    android:textColor="@color/default_button_text" />
 
             <Button
-                android:id="@+id/btnShopping"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:background="#00ff0000"
-                android:textSize="24dp"
-                android:text="쇼핑"
-                android:textColor="@color/default_button_text" />
+                    android:id="@+id/btnLodging"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:background="#00ff0000"
+                    android:textSize="20dp"
+                    android:text="숙박"
+                    android:textColor="@color/default_button_text" />
 
             <Button
-                android:id="@+id/btnRestaurant"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:background="#00ff0000"
-                android:textSize="24dp"
-                android:text="음식점"
-                android:textColor="@color/default_button_text" />
+                    android:id="@+id/btnShopping"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:background="#00ff0000"
+                    android:textSize="20dp"
+                    android:text="쇼핑"
+                    android:textColor="@color/default_button_text" />
+
+            <Button
+                    android:id="@+id/btnRestaurant"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:background="#00ff0000"
+                    android:textSize="20dp"
+                    android:text="음식점"
+                    android:textColor="@color/default_button_text" />
         </LinearLayout>
     </HorizontalScrollView>
 
