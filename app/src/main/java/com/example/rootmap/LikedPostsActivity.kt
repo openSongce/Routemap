@@ -1,23 +1,33 @@
 package com.example.rootmap
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.ActivityLikedPostsBinding
+import com.example.rootmap.databinding.CommentLayoutBinding
+import com.example.rootmap.databinding.DialogLayoutBinding
+import com.example.rootmap.databinding.RecyclerviewDialogBinding
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.time.LocalDate
 
 class LikedPostsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLikedPostsBinding
@@ -26,6 +36,12 @@ class LikedPostsActivity : AppCompatActivity() {
     private lateinit var likedPostsAdapter: RouteListAdapter
     private val likedPosts: MutableList<RoutePost> = mutableListOf()
     private val likedPostsCopy: MutableList<RoutePost> = mutableListOf()
+
+    private lateinit var commentList: MutableList<String>
+    private lateinit var commentListAdapter: CommentListAdapter
+    private lateinit var commentBinding: CommentLayoutBinding
+    private lateinit var routeListDataAdapter: ListLocationAdapter
+    private lateinit var user: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,7 +64,8 @@ class LikedPostsActivity : AppCompatActivity() {
 
         likedPostsAdapter.setItemClickListener(object : RouteListAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int) {
-                // Item click handling
+                val clickItem = likedPostsAdapter.postList[position]
+                viewRoute(clickItem.routeName, clickItem.docId, clickItem.ownerId)
             }
 
             override fun onButtonClick(v: View, position: Int) {
@@ -62,7 +79,19 @@ class LikedPostsActivity : AppCompatActivity() {
         })
 
         lifecycleScope.launch {
+            showLoading(true)
             loadLikedPostIdsAndFetchPosts()
+            showLoading(false)
+        }
+
+        Firebase.firestore.collection("user").document(auth.currentUser?.uid ?: return).get().addOnSuccessListener {
+            user = it.getString("nickname").toString()
+        }
+
+        commentList = mutableListOf()
+        commentListAdapter = CommentListAdapter()
+        routeListDataAdapter = ListLocationAdapter().apply {
+            postView = true
         }
     }
 
@@ -80,11 +109,13 @@ class LikedPostsActivity : AppCompatActivity() {
                 }
                 lifecycleScope.launch {
                     loadLikedPosts(likedPostIds)
+                    showLoading(false)  // 로드가 완료되면 ProgressBar를 숨깁니다.
                 }
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
                 Log.e("LikedPostsActivity", "Error fetching liked post IDs", databaseError.toException())
+                showLoading(false)  // 오류가 발생해도 ProgressBar를 숨깁니다.
             }
         })
     }
@@ -123,10 +154,10 @@ class LikedPostsActivity : AppCompatActivity() {
             // Sort the list based on the current sorting order
             sortPostList()
             likedPostsAdapter.notifyDataSetChanged()
-            true
+            return true
         } catch (e: FirebaseException) {
             Log.d("list_test", "error")
-            false
+            return false
         }
     }
 
@@ -204,5 +235,139 @@ class LikedPostsActivity : AppCompatActivity() {
                 }
             })
         }
+    }
+
+    private fun showLoading(show: Boolean) {
+        binding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
+        binding.postListView.visibility = if (show) View.GONE else View.VISIBLE
+    }
+
+    private fun viewRoute(routeName: String, docId: String, ownerId: String): AlertDialog { // 다이어로그로 팝업창 구현
+        val dialogBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
+        val dialogBuild = AlertDialog.Builder(this).setView(dialogBinding.root)
+        var routeData = mutableListOf<MyLocation>()
+        dialogBuild.setTitle(routeName)
+        lifecycleScope.launch {
+            routeData = loadPostData(docId, ownerId)
+            routeListDataAdapter.list = routeData
+            dialogBinding.listView.adapter = routeListDataAdapter
+        }
+        lifecycleScope.launch(Dispatchers.IO) {
+            commentdataLoading(docId)
+        }
+        dialogBinding.run {
+            listView.layoutManager = LinearLayoutManager(this@LikedPostsActivity)
+            addTripRouteText.visibility = View.INVISIBLE
+            listView.addItemDecoration(DividerItemDecoration(this@LikedPostsActivity, DividerItemDecoration.VERTICAL))
+            commentButton2.visibility = View.VISIBLE
+            downloadButton.visibility = View.VISIBLE
+            heartClickButton2.visibility = View.VISIBLE
+            likeNum.visibility = View.VISIBLE
+            commentButton2.setOnClickListener {
+                commentDialog(docId, ownerId)
+            }
+            downloadButton.setOnClickListener {
+                //  Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
+                showDownloadDialog(routeName, routeData)
+            }
+        }
+        val dialog = dialogBuild.show()
+        return dialog
+    }
+
+    private suspend fun loadPostData(docId: String, ownerId: String): MutableList<MyLocation> {
+        var dataList = mutableListOf<Map<String, *>>()
+        var postDatas = mutableListOf<MyLocation>()
+        return try {
+            var data: MutableMap<*, *>
+            Firebase.firestore.collection("user").document(ownerId).collection("route").document(docId).get().addOnSuccessListener { documents ->
+                data = documents.data as MutableMap<*, *>
+                dataList.addAll(data["routeList"] as List<Map<String, *>>)
+                dataList.forEach {
+                    postDatas.add(MyLocation(it["name"].toString(), it["position"] as GeoPoint, it["memo"] as String, it["spending"] as String))
+                }
+            }.await()
+            postDatas
+        } catch (e: FirebaseException) {
+            Log.d("list_test", "error")
+            postDatas
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun commentDialog(docId: String, ownerName: String): AlertDialog {
+        commentBinding = CommentLayoutBinding.inflate(layoutInflater)
+        val dialogBuild = AlertDialog.Builder(this).setView(commentBinding.root)
+        // dialogBuild.setTitle("댓글")
+        commentListAdapter.list = commentList
+        commentBinding.commentRecyclerView.adapter = commentListAdapter
+        if (commentList.isNullOrEmpty()) {
+            commentBinding.noComment.visibility = View.VISIBLE
+        }
+        commentBinding.run {
+            commentRecyclerView.layoutManager = LinearLayoutManager(this@LikedPostsActivity)
+            commentRecyclerView.addItemDecoration(DividerItemDecoration(this@LikedPostsActivity, DividerItemDecoration.VERTICAL))
+            commentSendButton.setOnClickListener {
+                sendComment(docId)
+            }
+            commentWriteText.setOnEditorActionListener { _, _, _ ->
+                sendComment(docId)
+                true
+            }
+        }
+        val dialog = dialogBuild.show()
+        return dialog
+    }
+
+    private suspend fun commentdataLoading(docId: String) {
+        commentList.clear()
+        try {
+            val commentListDB = Firebase.firestore.collection("route").document(docId).get().await().get("comment") as List<String>
+            if (!commentListDB.isNullOrEmpty()) {
+                commentListDB.forEach {
+                    commentList.add(it)
+                }
+            }
+        } catch (e: FirebaseException) {
+            Log.d("list_test", "error")
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun sendComment(docId: String) {
+        val text = commentBinding.commentWriteText.text.toString()
+        commentList.add("$user@comment@:$text@date@:${LocalDate.now()}")
+        commentListAdapter.notifyItemInserted(commentList.size)
+        // val commentData=currentId+text+LocalDate.now().toString()
+        Firebase.firestore.collection("route").document(docId).update("comment", commentList)
+        commentBinding.noComment.visibility = View.GONE
+    }
+
+    private fun showDownloadDialog(tripname: String, list: List<MyLocation>) {
+        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
+        dBinding.wButton.text = "아니요" // 다이어로그의 텍스트 변경
+        dBinding.bButton.text = "네"
+        dBinding.content.text = "해당 경로를 다운로드하겠습니까?"
+
+        val dialogBuild = AlertDialog.Builder(this).setView(dBinding.root)
+        val dialog = dialogBuild.show() // 다이어로그 창 띄우기
+        dBinding.bButton.setOnClickListener {// 다이어로그 기능 설정
+            downloadRoute(tripname, list)
+            dialog.dismiss()
+        }
+        dBinding.wButton.setOnClickListener {// 취소버튼
+            // 회색 버튼의 기능 구현 ↓
+            dialog.dismiss()
+        }
+    }
+
+    private fun downloadRoute(tripname: String, list: List<MyLocation>) {
+        Firebase.firestore.collection("user").document(auth.currentUser?.uid ?: return).collection("route").document().set(hashMapOf("tripname" to tripname, "routeList" to list, "created" to auth.currentUser?.uid, "shared" to listOf<String>())).addOnSuccessListener {
+            showToast("성공적으로 저장하였습니다.")
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
