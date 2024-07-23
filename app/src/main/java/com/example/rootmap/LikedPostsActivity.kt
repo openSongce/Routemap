@@ -335,12 +335,17 @@ class LikedPostsActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun sendComment(docId: String) {
         val text = commentBinding.commentWriteText.text.toString()
-        commentList.add("$user@comment@:$text@date@:${LocalDate.now()}")
-        commentListAdapter.notifyItemInserted(commentList.size)
-        // val commentData=currentId+text+LocalDate.now().toString()
-        Firebase.firestore.collection("route").document(docId).update("comment", commentList)
-        commentBinding.noComment.visibility = View.GONE
+        if (text.isNotBlank()) { // 빈 댓글인지 확인
+            commentList.add("$user@comment@:$text@date@:${LocalDate.now()}")
+            commentListAdapter.notifyItemInserted(commentList.size)
+            Firebase.firestore.collection("route").document(docId).update("comment", commentList)
+            commentBinding.noComment.visibility = View.GONE
+            commentBinding.commentWriteText.text.clear()  // 입력 창 비우기
+        } else {
+            Toast.makeText(this, "댓글을 입력하세요.", Toast.LENGTH_SHORT).show()
+        }
     }
+
 
     private fun showDownloadDialog(tripname: String, list: List<MyLocation>) {
         val dBinding = DialogLayoutBinding.inflate(layoutInflater)

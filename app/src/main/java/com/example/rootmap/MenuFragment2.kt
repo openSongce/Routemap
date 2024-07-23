@@ -610,11 +610,15 @@ class MenuFragment2 : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun sendComment(docId: String) {
         val text = commentBinding.commentWriteText.text.toString()
-        commentList.add("$user@comment@:$text@date@:${LocalDate.now()}")
-        commentListAdapter.notifyItemInserted(commentList.size)
-        // val commentData=currentId+text+LocalDate.now().toString()
-        Firebase.firestore.collection("route").document(docId).update("comment", commentList)
-        commentBinding.noComment.visibility = View.GONE
+        if (text.isNotBlank()) {
+            commentList.add("$user@comment@:$text@date@:${LocalDate.now()}")
+            commentListAdapter.notifyItemInserted(commentList.size)
+            commentBinding.commentWriteText.text.clear()  // 입력 창 비우기
+            Firebase.firestore.collection("route").document(docId).update("comment", commentList)
+            commentBinding.noComment.visibility = View.GONE
+        } else {
+            Toast.makeText(context, "댓글을 입력하세요.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun searchPost() {
