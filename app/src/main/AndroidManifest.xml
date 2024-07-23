@@ -58,7 +58,7 @@
         <activity android:name=".SignupActivity" />
         <activity android:name=".MyRouteActivity" />
         <activity android:name=".FavoriteTouristSpotsActivity" />
-
+        <activity android:name=".LikedPostsActivity" />
     </application>
 
 </manifest>

@@ -244,6 +244,16 @@
                     android:gravity="left|center_vertical" />
 
             <Button
+                    android:id="@+id/favoritePostsButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#00ff0000"
+                    android:gravity="left|center_vertical"
+                    android:text="▶ 좋아요 표시한 게시판"
+                    android:textColor="@color/favorite_color"
+                    android:textStyle="bold" />
+
+            <Button
                     android:id="@+id/passwordButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

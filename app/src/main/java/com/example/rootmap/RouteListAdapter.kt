@@ -15,8 +15,7 @@ class RouteListAdapter : RecyclerView.Adapter<RouteListAdapter.Holder>() {
     var postMode = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        val binding =
-            RoutelistLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = RoutelistLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return Holder(binding)
     }
 
@@ -40,11 +39,11 @@ class RouteListAdapter : RecyclerView.Adapter<RouteListAdapter.Holder>() {
 
         fun setData(searchLocation: SearchLocation) {
             binding.locationName.text = searchLocation.name
-            binding.locationAdress.text = searchLocation.adress
+            binding.locationAddress.text = searchLocation.adress
             binding.root.setOnClickListener {
                 itemClickListener.onClick(it, adapterPosition)
             }
-            binding.addLcationBt.setOnClickListener {
+            binding.addLocationBt.setOnClickListener {
                 itemClickListener.onButtonClick(it, adapterPosition)
             }
         }
@@ -52,12 +51,12 @@ class RouteListAdapter : RecyclerView.Adapter<RouteListAdapter.Holder>() {
         fun postSetData(routePost: RoutePost) {
             binding.run {
                 locationName.text = routePost.routeName
-                locationAdress.text = routePost.ownerName
+                locationAddress.text = routePost.ownerName
                 heartCount.text = routePost.like.toString()
-                addLcationBt.visibility = View.GONE
+                addLocationBt.visibility = View.GONE
                 heartClickButton.visibility = View.VISIBLE
                 heartCount.visibility = View.VISIBLE
-                timestamp.visibility=View.VISIBLE
+                timestamp.visibility = View.VISIBLE
                 updateHeartButton(routePost.isLiked)
 
                 // Format the timestamp and set it to the TextView
