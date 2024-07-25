@@ -3,7 +3,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
             android:id="@+id/menu_tourist"
-            android:icon="@android:drawable/ic_menu_gallery"
+            android:icon="@drawable/visit"
             android:title="관광지 추천"
              />
     <item
@@ -16,7 +16,7 @@
             android:enabled="false"/>
     <item
             android:id="@+id/menu_map"
-            android:icon="@android:drawable/ic_menu_mapmode"
+            android:icon="@drawable/map_menu"
             android:title="지도"
              />
     <item

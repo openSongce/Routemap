@@ -109,6 +109,11 @@ class MenuFragment4 : Fragment() {
             val intent = Intent(requireContext(), FavoriteTouristSpotsActivity::class.java)
             startActivity(intent)
         }
+        binding.favoritePostsButton.setOnClickListener {
+            val intent = Intent(requireContext(), LikedPostsActivity::class.java)
+            startActivity(intent)
+        }
+
         binding.logoutButton.setOnClickListener {
             showDialog("logout")
         }

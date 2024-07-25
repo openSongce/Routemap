@@ -4,7 +4,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/mainbackground"
+        android:background="#ffffff"
         tools:context=".ui.MainActivity">
     <TextView
             android:text="TextView"
@@ -43,8 +43,7 @@
                 android:background="@color/white"
                 app:itemIconSize="24dp"
                 app:menu="@menu/bottom_menu_nav"
-                app:labelVisibilityMode="labeled"
-                />
+                app:itemTextColor="#000000" />
 
     </com.google.android.material.bottomappbar.BottomAppBar>
 
@@ -52,10 +51,14 @@
             android:id="@+id/main_floating_add_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_menu_add"
+            android:src="@drawable/center_plus"
+            android:backgroundTint="#00FFFFFF"
+            app:borderWidth="0dp"
             android:clickable="true"
-            android:backgroundTint="@color/custum_color"
             android:focusable="true"
+            app:tint="@null"
+            app:maxImageSize="60dp"
+            app:fabCustomSize="60dp"
             app:layout_anchor="@id/main_bottom_appBar" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

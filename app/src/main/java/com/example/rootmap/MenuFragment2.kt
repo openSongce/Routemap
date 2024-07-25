@@ -1,6 +1,5 @@
 package com.example.rootmap
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -10,40 +9,21 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.Toast
 import android.app.AlertDialog
-import android.content.Intent
-import android.graphics.Typeface
 import android.os.Build
 import android.widget.Button
+import android.widget.TextView
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.rootmap.databinding.CommentLayoutBinding
-import com.example.rootmap.databinding.DialogLayoutBinding
-import com.example.rootmap.databinding.FragmentMenu2Binding
-import com.example.rootmap.databinding.PopupFilterBinding
-import com.example.rootmap.databinding.RecyclerviewDialogBinding
-import com.example.rootmap.databinding.RouteaddLayoutBinding
-import com.google.firebase.Firebase
+import com.example.rootmap.databinding.*
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.MutableData
-import com.google.firebase.database.Transaction
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.firestore.GeoPoint
-import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.storage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.*
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 
@@ -63,23 +43,23 @@ class MenuFragment2 : Fragment() {
     lateinit var routeDialog: AlertDialog
     lateinit var routelistAdapter: MyDocumentAdapter
     lateinit var routeList: MutableList<MyRouteDocument>
-    lateinit var currentId:String
-    lateinit var docId:String
-    lateinit var docName:String
-    lateinit var docOwner:String
+    lateinit var currentId: String
+    lateinit var docId: String
+    lateinit var docName: String
+    lateinit var docOwner: String
 
     lateinit var postlistAdapter: RouteListAdapter
     lateinit var postLists: MutableList<RoutePost>
     lateinit var postListCopy: MutableList<RoutePost>
 
-    lateinit var routeListDataAdapter:ListLocationAdapter
+    lateinit var routeListDataAdapter: ListLocationAdapter
 
-    lateinit var commentList:MutableList<String>
+    lateinit var commentList: MutableList<String>
     lateinit var commentListAdapter: CommentListAdapter
     lateinit var commentBinding: CommentLayoutBinding
 
-    lateinit var selectedOptions:List<String>
-    lateinit var user:String
+    lateinit var selectedOptions: List<String>
+    lateinit var user: String
 
     lateinit var database: DatabaseReference
     lateinit var auth: FirebaseAuth
@@ -94,22 +74,22 @@ class MenuFragment2 : Fragment() {
             param2 = it.getString(ARG_PARAM2)
         }
         routeList = mutableListOf<MyRouteDocument>()
-        routelistAdapter= MyDocumentAdapter()
-        routelistAdapter.mode="makePost"
-        routelistAdapter.userId=currentId
+        routelistAdapter = MyDocumentAdapter()
+        routelistAdapter.mode = "makePost"
+        routelistAdapter.userId = currentId
 
-        postLists= mutableListOf()
-        postListCopy= mutableListOf()
-        postlistAdapter=RouteListAdapter()
-        postlistAdapter.postMode=true
+        postLists = mutableListOf()
+        postListCopy = mutableListOf()
+        postlistAdapter = RouteListAdapter()
+        postlistAdapter.postMode = true
 
-        selectedOptions= listOf()
+        selectedOptions = listOf()
 
-        routeListDataAdapter=ListLocationAdapter()
-        routeListDataAdapter.postView=true
+        routeListDataAdapter = ListLocationAdapter()
+        routeListDataAdapter.postView = true
 
-        commentList= mutableListOf()
-        commentListAdapter= CommentListAdapter()
+        commentList = mutableListOf()
+        commentListAdapter = CommentListAdapter()
 
         database = FirebaseDatabase.getInstance().reference
         auth = FirebaseAuth.getInstance()
@@ -134,17 +114,17 @@ class MenuFragment2 : Fragment() {
         binding.postMyRouteButton.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
                 loadMyList()
-                routeDialog=makeMyPost()
+                routeDialog = makeMyPost()
             }
         }
         binding.postListView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         CoroutineScope(Dispatchers.Main).launch {
-            postlistAdapter.postList=postLists
-            binding.postListView.adapter=postlistAdapter
-            binding.postListView.layoutManager=LinearLayoutManager(this@MenuFragment2.context)
+            postlistAdapter.postList = postLists
+            binding.postListView.adapter = postlistAdapter
+            binding.postListView.layoutManager = LinearLayoutManager(this@MenuFragment2.context)
         }
 
-        routelistAdapter.setItemClickListener(object: MyDocumentAdapter.OnItemClickListener{
+        routelistAdapter.setItemClickListener(object : MyDocumentAdapter.OnItemClickListener {
             //리스트의 버튼 클릭시 동작
             override fun onClick(v: View, position: Int) {
                 //버튼 눌렀을때의 코드
@@ -153,33 +133,35 @@ class MenuFragment2 : Fragment() {
                 docOwner = routelistAdapter.list[position].owner
                 showFilterPopup("post")
             }
-            override fun onListClick(v: View, position: Int) {
-            }
-            override fun deleteDoc(v: View, position: Int) {
-            }
+
+            override fun onListClick(v: View, position: Int) {}
+            override fun deleteDoc(v: View, position: Int) {}
+            override fun shareDoc(v: View, position: Int) {}
         })
-        postlistAdapter.setItemClickListener(object: RouteListAdapter.OnItemClickListener{
+
+        postlistAdapter.setItemClickListener(object : RouteListAdapter.OnItemClickListener {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onClick(v: View, position: Int) {
                 //해당 경로 내의 여행지 리스트 보기
-                var clickItem=postlistAdapter.postList[position]
-                viewRoute(clickItem.routeName,clickItem.docId,clickItem.ownerId)
+                val clickItem = postlistAdapter.postList[position]
+                viewRoute(clickItem.routeName, clickItem.docId, clickItem.ownerId)
             }
-            override fun onButtonClick(v: View, position: Int) {
-            }
+
+            override fun onButtonClick(v: View, position: Int) {}
             override fun heartClick(v: View, position: Int) {
                 val post = postlistAdapter.postList[position]
                 handleHeartClick(post)
             }
         })
+
         if (container != null) {
-            routeListDataAdapter.parent=container
+            routeListDataAdapter.parent = container
         }
         Firebase.firestore.collection("user").document(currentId).get().addOnSuccessListener {
-            user=it.get("nickname").toString()
+            user = it.get("nickname").toString()
         }
         binding.run {
-            searchPostText.setOnEditorActionListener{ _,_,_ ->
+            searchPostText.setOnEditorActionListener { _, _, _ ->
                 searchPost()
                 true
             }
@@ -207,58 +189,62 @@ class MenuFragment2 : Fragment() {
 
     override fun onStart() {
         CoroutineScope(Dispatchers.Main).launch {
+            binding.postProgressBar.visibility = View.VISIBLE
             loadPostList()
-            if(!selectedOptions.isEmpty()){
+            if (selectedOptions.isNotEmpty()) {
                 filter()
             }
             postlistAdapter.notifyDataSetChanged()
-            binding.postProgressBar.visibility=View.GONE
+            binding.postProgressBar.visibility = View.GONE
         }
         super.onStart()
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun viewRoute(routeName:String, docId:String, ownerId:String):AlertDialog { //다이어로그로 팝업창 구현
+    private fun viewRoute(routeName: String, docId: String, ownerId: String): AlertDialog { //다이어로그로 팝업창 구현
         val dialogBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
-        val dialogBuild =AlertDialog.Builder(context).setView(dialogBinding.root)
-        var routeData= mutableListOf<MyLocation>()
+        val dialogBuild = AlertDialog.Builder(context).setView(dialogBinding.root)
+        var routeData = mutableListOf<MyLocation>()
         dialogBuild.setTitle(routeName)
         CoroutineScope(Dispatchers.Main).launch {
-            routeData=loadPostData(docId,ownerId)
-            routeListDataAdapter.list=routeData
+            routeData = loadPostData(docId, ownerId)
+            routeListDataAdapter.list = routeData
             dialogBinding.listView.adapter = routeListDataAdapter
+            updateHeartButton(dialogBinding.heartClickButton2, dialogBinding.likeNum, docId)
         }
         CoroutineScope(Dispatchers.IO).launch {
             commentdataLoading(docId)
         }
-        dialogBinding.run{
+        dialogBinding.run {
             listView.layoutManager = LinearLayoutManager(context)
-            addTripRouteText.visibility=View.INVISIBLE
+            addTripRouteText.visibility = View.INVISIBLE
             listView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
-            commentButton2.visibility=View.VISIBLE
-            downloadButton.visibility=View.VISIBLE
-            heartClickButton2.visibility=View.VISIBLE
-            likeNum.visibility=View.VISIBLE
+            commentButton2.visibility = View.VISIBLE
+            downloadButton.visibility = View.VISIBLE
+            heartClickButton2.visibility = View.VISIBLE
+            likeNum.visibility = View.VISIBLE
             commentButton2.setOnClickListener {
-                commentDialog(docId,currentId)
+                commentDialog(docId, currentId)
             }
             downloadButton.setOnClickListener {
                 //  Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
-                showDownloadDialog(routeName,routeData)
+                showDownloadDialog(routeName, routeData)
             }
         }
         val dialog = dialogBuild.show()
         return dialog
     }
-    private suspend fun loadPostData(docId:String,ownerId:String):MutableList<MyLocation>{
-        var dataList= mutableListOf<Map<String,*>>()
-        var postDatas= mutableListOf<MyLocation>()
+
+    private suspend fun loadPostData(docId: String, ownerId: String): MutableList<MyLocation> {
+        val dataList = mutableListOf<Map<String, *>>()
+        val postDatas = mutableListOf<MyLocation>()
         return try {
             var data: MutableMap<*, *>
-            Firebase.firestore.collection("user").document(ownerId).collection("route").document(docId).get().addOnSuccessListener { documents->
-                data=documents.data as MutableMap<*,*>
-                dataList.addAll(data["routeList"] as List<Map<String,*>>)
-                dataList.forEach{
-                    postDatas.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String,it["spending"] as String))
+            Firebase.firestore.collection("user").document(ownerId).collection("route").document(docId).get().addOnSuccessListener { documents ->
+                data = documents.data as MutableMap<*, *>
+                dataList.addAll(data["routeList"] as List<Map<String, *>>)
+                dataList.forEach {
+                    postDatas.add(MyLocation(it["name"].toString(), it["position"] as GeoPoint, it["memo"] as String, it["spending"] as String))
                 }
             }.await()
             postDatas
@@ -268,17 +254,17 @@ class MenuFragment2 : Fragment() {
         }
     }
 
-    private fun showFilterPopup(mode:String) {
+    private fun showFilterPopup(mode: String) {
         val popupBinding = PopupFilterBinding.inflate(LayoutInflater.from(context))
         val locations = mutableListOf<String>()
-        val duration=mutableListOf<String>()
+        val duration = mutableListOf<String>()
         val themes = mutableListOf<String>()
-        if(mode=="filter"){
+        if (mode == "filter") {
             // 여행지, 여행일, 테마 체크박스 동적 생성
             addCheckBoxes(R.array.locations_array, popupBinding.locationsContainer, "locations")
             addCheckBoxes(R.array.durations_array, popupBinding.durationsContainer, "durations")
             addCheckBoxes(R.array.themes_array, popupBinding.themesContainer, "themes")
-        }else{
+        } else {
             //게시글 만들기 ver
             addCheckBoxesPostVer(R.array.locations_array, popupBinding.locationsContainer, "locations")
             addCheckBoxesPostVer(R.array.durations_array, popupBinding.durationsContainer, "durations")
@@ -288,21 +274,20 @@ class MenuFragment2 : Fragment() {
         val dialog = AlertDialog.Builder(requireContext())
             .setView(popupBinding.root)
             .setPositiveButton("확인") { _, _ ->
-                if(mode=="filter"){
+                if (mode == "filter") {
                     //필터버튼 사용시
                     applyFilters(popupBinding)
-                }
-                else{//게시글 만들때
-                    checkForPost(popupBinding.locationsContainer,locations)
-                    checkForPost(popupBinding.durationsContainer,duration)
-                    checkForPost(popupBinding.themesContainer,themes)
-                    postMyRouteDb(locations,duration,themes)
+                } else { // 게시글 만들때
+                    checkForPost(popupBinding.locationsContainer, locations)
+                    checkForPost(popupBinding.durationsContainer, duration)
+                    checkForPost(popupBinding.themesContainer, themes)
+                    postMyRouteDb(locations, duration, themes)
                     routeDialog.dismiss()
                 }
             }
             .setNegativeButton("취소", null)
             .setNeutralButton("초기화") { _, _ ->
-                if(mode=="filter"){
+                if (mode == "filter") {
                     resetFilters(popupBinding)
                     applyFilters(popupBinding)
                 }
@@ -350,7 +335,7 @@ class MenuFragment2 : Fragment() {
         }
     }
 
-    private fun checkForPost(container: ViewGroup, list: MutableList<String>){
+    private fun checkForPost(container: ViewGroup, list: MutableList<String>) {
         for (i in 0 until container.childCount) {
             val checkBox = container.getChildAt(i) as CheckBox
             checkAndAdd(checkBox, list)
@@ -385,25 +370,25 @@ class MenuFragment2 : Fragment() {
         filter()
     }
 
-    private fun filter(){
-        var filterResult= listOf<RoutePost>()
-        selectedOptions=selectedLocations+selectedDurations+selectedThemes
+    private fun filter() {
+        var filterResult = listOf<RoutePost>()
+        selectedOptions = selectedLocations + selectedDurations + selectedThemes
 
-        if(selectedOptions.isEmpty()){
+        if (selectedOptions.isEmpty()) {
             //초기화
             postLists.clear()
             postLists.addAll(postListCopy)
             postlistAdapter.notifyDataSetChanged()
-        }else{
+        } else {
             //필터 적용
             postLists.clear()
-            filterResult=postListCopy.filter {
+            filterResult = postListCopy.filter {
                 it.option.containsAll(selectedOptions)
             }
             postLists.addAll(filterResult)
             postlistAdapter.notifyDataSetChanged()
         }
-        Log.d("filter_test",postListCopy.size.toString())
+        Log.d("filter_test", postListCopy.size.toString())
     }
 
     private fun addCheckBoxes(arrayResId: Int, container: ViewGroup, keyPrefix: String) {
@@ -429,7 +414,6 @@ class MenuFragment2 : Fragment() {
         }
     }
 
-
     private fun saveCheckboxState(key: String, state: Boolean) {
         val sharedPrefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         with(sharedPrefs.edit()) {
@@ -437,30 +421,33 @@ class MenuFragment2 : Fragment() {
             apply()
         }
     }
-    private fun makeMyPost():AlertDialog { //다이어로그로 팝업창 구현
+
+
+    private fun makeMyPost(): AlertDialog { //다이어로그로 팝업창 구현
         val dialogBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
-        val dialogBuild = android.app.AlertDialog.Builder(context).setView(dialogBinding.root)
+        val dialogBuild = AlertDialog.Builder(context).setView(dialogBinding.root)
         dialogBuild.setTitle("내가 만든 여행 리스트")
-        routelistAdapter.list=routeList
+        routelistAdapter.list = routeList
         dialogBinding.listView.adapter = routelistAdapter
         dialogBinding.listView.layoutManager = LinearLayoutManager(context)
-        if(routelistAdapter.list.isNullOrEmpty()){
+        if (routelistAdapter.list.isNullOrEmpty()) {
             dialogBinding.checkText.apply {
-                text="아직 경로가 없습니다. 새로운 경로를 만들어주세요."
-                visibility=View.VISIBLE
+                text = "아직 경로가 없습니다. 새로운 경로를 만들어주세요."
+                visibility = View.VISIBLE
             }
         }
-        dialogBinding.addTripRouteText.visibility=View.GONE
+        dialogBinding.addTripRouteText.visibility = View.GONE
         routeDialog = dialogBuild.show()
         return routeDialog
     }
+
     private suspend fun loadMyList(): Boolean {
         routeList.clear()
         return try {
             val myList = MenuFragment3.getInstance()!!.returnDb(currentId).get().await()
-            if(!myList.isEmpty){
+            if (!myList.isEmpty) {
                 myList.forEach {
-                    routeList.add(MyRouteDocument(it.data?.get("tripname").toString(),it.id,currentId))
+                    routeList.add(MyRouteDocument(it.data?.get("tripname").toString(), it.id, currentId))
                 }
             }
             true
@@ -485,15 +472,14 @@ class MenuFragment2 : Fragment() {
                         user,
                         loadUserName(user),
                         document.data["option"] as List<String>,
-                        timestamp = document.getLong("timestamp") ?: 0L // Load the timestamp field
+                        timestamp = document.getLong("timestamp") ?: 0L // timestamp 설정
                     )
                     loadLikeStatus(data)
                     postLists.add(data)
                     postListCopy.add(data)
                 }
             }
-            // Sort the list based on the current sorting order
-            sortPostList()
+            sortPostList() // 현재 정렬 순서를 기준으로 목록 정렬
             true
         } catch (e: FirebaseException) {
             Log.d("list_test", "error")
@@ -501,14 +487,13 @@ class MenuFragment2 : Fragment() {
         }
     }
 
-
     private fun loadLikeStatus(post: RoutePost) {
         val userId = auth.currentUser?.uid ?: return
         val postRef = database.child("postLikes").child(post.docId)
         postRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 post.like = dataSnapshot.getValue(Int::class.java) ?: 0
-             //   postlistAdapter.notifyItemChanged(postLists.indexOf(post))
+                // postlistAdapter.notifyItemChanged(postLists.indexOf(post))
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
@@ -520,7 +505,7 @@ class MenuFragment2 : Fragment() {
         userLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 post.isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
-              //  postlistAdapter.notifyItemChanged(postLists.indexOf(post))
+                // postlistAdapter.notifyItemChanged(postLists.indexOf(post))
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
@@ -529,17 +514,18 @@ class MenuFragment2 : Fragment() {
         })
     }
 
-    private suspend fun loadUserName(id:String):String{
+    private suspend fun loadUserName(id: String): String {
         return try {
-            val nickname=Firebase.firestore.collection("user").document(id).get().await().get("nickname").toString()
+            val nickname = Firebase.firestore.collection("user").document(id).get().await().get("nickname").toString()
             return nickname
         } catch (e: FirebaseException) {
             Log.d("list_test", "error")
             return "error"
         }
     }
-    private fun loadLike(){
-        //일단 보류
+
+    private fun loadLike() {
+        // 일단 보류
         postLists.forEach { item ->
             item.docId?.let { id ->
                 database.child("postLike").child(id)
@@ -557,39 +543,40 @@ class MenuFragment2 : Fragment() {
             }
         }
     }
-    private fun showDownloadDialog(tripname:String,list:List<MyLocation>){
+
+    private fun showDownloadDialog(tripname: String, list: List<MyLocation>) {
         val dBinding = DialogLayoutBinding.inflate(layoutInflater)
-        dBinding.wButton.text = "아니요" //다이어로그의 텍스트 변경
+        dBinding.wButton.text = "아니요" // 다이어로그의 텍스트 변경
         dBinding.bButton.text = "네"
         dBinding.content.text = "해당 경로를 다운로드하겠습니까?"
 
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
-        val dialog = dialogBuild.show() //다이어로그 창 띄우기
-        dBinding.bButton.setOnClickListener {//다이어로그 기능 설정
-            downloadRoute(tripname,list)
+        val dialog = dialogBuild.show() // 다이어로그 창 띄우기
+        dBinding.bButton.setOnClickListener { // 다이어로그 기능 설정
+            downloadRoute(tripname, list)
             dialog.dismiss()
         }
-        dBinding.wButton.setOnClickListener {//취소버튼
-            //회색 버튼의 기능 구현 ↓
+        dBinding.wButton.setOnClickListener { // 취소버튼
+            // 회색 버튼의 기능 구현 ↓
             dialog.dismiss()
         }
     }
 
-    private fun downloadRoute(tripname:String,list:List<MyLocation>){
-        Firebase.firestore.collection("user").document(currentId).collection("route").document().set(hashMapOf("tripname" to tripname,"routeList" to list,"created" to currentId,"shared" to listOf<String>())).addOnSuccessListener {
-            Toast.makeText(context,"성공적으로 저장하였습니다.",Toast.LENGTH_SHORT).show()
+    private fun downloadRoute(tripname: String, list: List<MyLocation>) {
+        Firebase.firestore.collection("user").document(currentId).collection("route").document().set(hashMapOf("tripname" to tripname, "routeList" to list, "created" to currentId, "shared" to listOf<String>())).addOnSuccessListener {
+            Toast.makeText(context, "성공적으로 저장하였습니다.", Toast.LENGTH_SHORT).show()
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun commentDialog(docId:String, ownerName:String):AlertDialog{
-        commentBinding=CommentLayoutBinding.inflate(layoutInflater)
+    private fun commentDialog(docId: String, ownerName: String): AlertDialog {
+        commentBinding = CommentLayoutBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(commentBinding.root)
         //dialogBuild.setTitle("댓글")
-        commentListAdapter.list=commentList
+        commentListAdapter.list = commentList
         commentBinding.commentRecyclerView.adapter = commentListAdapter
-        if(commentList.isNullOrEmpty()){
-            commentBinding.noComment.visibility=View.VISIBLE
+        if (commentList.isNullOrEmpty()) {
+            commentBinding.noComment.visibility = View.VISIBLE
         }
         commentBinding.run {
             commentRecyclerView.layoutManager = LinearLayoutManager(context)
@@ -597,7 +584,7 @@ class MenuFragment2 : Fragment() {
             commentSendButton.setOnClickListener {
                 sendComment(docId)
             }
-            commentWriteText.setOnEditorActionListener{ _,_,_ ->
+            commentWriteText.setOnEditorActionListener { _, _, _ ->
                 sendComment(docId)
                 true
             }
@@ -606,11 +593,11 @@ class MenuFragment2 : Fragment() {
         return dialog
     }
 
-    private suspend fun commentdataLoading(docId:String){
+    private suspend fun commentdataLoading(docId: String) {
         commentList.clear()
         try {
-            val commentListDB=Firebase.firestore.collection("route").document(docId).get().await().get("comment") as List<String>
-            if(!commentListDB.isNullOrEmpty()){
+            val commentListDB = Firebase.firestore.collection("route").document(docId).get().await().get("comment") as List<String>
+            if (!commentListDB.isNullOrEmpty()) {
                 commentListDB.forEach {
                     commentList.add(it)
                 }
@@ -621,20 +608,24 @@ class MenuFragment2 : Fragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun sendComment(docId: String){
-        var text=commentBinding.commentWriteText.text.toString()
-        commentList.add(user+"@comment@:"+text+"@date@:"+LocalDate.now().toString())
-        commentListAdapter.notifyItemInserted(commentList.size)
-        //  val commentData=currentId+text+LocalDate.now().toString()
-        Firebase.firestore.collection("route").document(docId).update("comment",commentList)
-        commentBinding.noComment.visibility=View.GONE
+    private fun sendComment(docId: String) {
+        val text = commentBinding.commentWriteText.text.toString()
+        if (text.isNotBlank()) {
+            commentList.add("$user@comment@:$text@date@:${LocalDate.now()}")
+            commentListAdapter.notifyItemInserted(commentList.size)
+            commentBinding.commentWriteText.text.clear()  // 입력 창 비우기
+            Firebase.firestore.collection("route").document(docId).update("comment", commentList)
+            commentBinding.noComment.visibility = View.GONE
+        } else {
+            Toast.makeText(context, "댓글을 입력하세요.", Toast.LENGTH_SHORT).show()
+        }
     }
 
-    private fun searchPost(){
+    private fun searchPost() {
         postLists.clear()
-        var searchText=binding.searchPostText.text
+        val searchText = binding.searchPostText.text
         postListCopy.forEach {
-            if(it.routeName.contains(searchText)||it.ownerName.contains(searchText)) postLists.add(it)
+            if (it.routeName.contains(searchText) || it.ownerName.contains(searchText)) postLists.add(it)
         }
         postlistAdapter.notifyDataSetChanged()
     }
@@ -696,6 +687,75 @@ class MenuFragment2 : Fragment() {
         })
     }
 
+    private fun updateHeartButton(heartButton: View, likeNumView: TextView, docId: String) {
+        val userId = auth.currentUser?.uid ?: return
+        val postRef = database.child("postLikes").child(docId)
+        val userLikeRef = database.child("userPostLikes").child(userId).child(docId)
+
+        postRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val likeCount = dataSnapshot.getValue(Int::class.java) ?: 0
+                likeNumView.text = likeCount.toString()
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("MenuFragment2", "loadLikeStatus:onCancelled", databaseError.toException())
+            }
+        })
+
+        userLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
+                val heartDrawable = if (isLiked) R.drawable.heart_filled else R.drawable.heart_empty
+                heartButton.setBackgroundResource(heartDrawable)
+
+                heartButton.setOnClickListener {
+                    handleHeartClickForDialog(docId, heartButton, likeNumView)
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("MenuFragment2", "loadLikeStatus:onCancelled", databaseError.toException())
+            }
+        })
+    }
+
+    private fun handleHeartClickForDialog(docId: String, heartButton: View, likeNumView: TextView) {
+        val userId = auth.currentUser?.uid ?: return
+        val postRef = database.child("postLikes").child(docId)
+        val userLikeRef = database.child("userPostLikes").child(userId).child(docId)
+
+        userLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
+                val newIsLiked = !isLiked
+
+                userLikeRef.setValue(newIsLiked)
+                postRef.runTransaction(object : Transaction.Handler {
+                    override fun doTransaction(currentData: MutableData): Transaction.Result {
+                        val currentLikes = currentData.getValue(Int::class.java) ?: 0
+                        currentData.value = if (newIsLiked) currentLikes + 1 else currentLikes - 1
+                        return Transaction.success(currentData)
+                    }
+
+                    override fun onComplete(
+                        databaseError: DatabaseError?,
+                        committed: Boolean,
+                        currentData: DataSnapshot?
+                    ) {
+                        val newLikeCount = currentData?.getValue(Int::class.java) ?: 0
+                        likeNumView.text = newLikeCount.toString()
+                        val heartDrawable = if (newIsLiked) R.drawable.heart_filled else R.drawable.heart_empty
+                        heartButton.setBackgroundResource(heartDrawable)
+                    }
+                })
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("MenuFragment2", "handleHeartClick:onCancelled", databaseError.toException())
+            }
+        })
+    }
 
     companion object {
         @JvmStatic

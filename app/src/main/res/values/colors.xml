@@ -8,7 +8,7 @@
     <color name="red">#FF980606</color>
 
     <color name="default_button_text">#999999</color>
-    <color name="selected_button_text">#FFFFFF</color>
+    <color name="selected_button_text">#000000</color>
     <color name="weather_background">#242534</color>
     <color name="light_blue_600">#FF039BE5</color>
     <color name="light_blue_900">#FF01579B</color>

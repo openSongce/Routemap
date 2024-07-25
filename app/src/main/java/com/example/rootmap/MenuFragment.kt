@@ -409,6 +409,7 @@ class MenuFragment : Fragment() {
                     detail.restdatefood = removeHtmlTags(detail.restdatefood)
                     detail.opentimefood = removeHtmlTags(detail.opentimefood)
                     detail.checkouttime = removeHtmlTags(detail.checkouttime)
+                    detail.usetimeleports = removeHtmlTags(detail.usetimeleports)
 
                     showTouristDetailDialog(detail)
                 } else {

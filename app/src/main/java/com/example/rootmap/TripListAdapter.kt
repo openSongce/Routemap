@@ -28,8 +28,8 @@ class TripListAdapter : RecyclerView.Adapter<TripListAdapter.TripViewHolder>() {
 
         fun bind(trip: MyRouteDocument) {
             binding.locationName.text = trip.docName
-            binding.locationAdress.visibility = View.GONE
-            binding.addLcationBt.visibility = View.GONE
+            binding.locationAddress.visibility = View.GONE
+            binding.addLocationBt.visibility = View.GONE
         }
     }
 }
