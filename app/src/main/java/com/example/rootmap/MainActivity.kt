@@ -66,7 +66,6 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             pageName.text = "메인"
 
         }
-
         binding.mainFrm.registerOnPageChangeCallback(
             object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
