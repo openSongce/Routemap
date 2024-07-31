@@ -31,6 +31,11 @@ class RouteListAdapter : RecyclerView.Adapter<RouteListAdapter.Holder>() {
             val screen = list[position]
             holder.setData(screen)
         }
+
+        // 첫 번째 아이템 클릭
+        if (position == 0 && !postMode) {
+            holder.itemView.performClick()
+        }
     }
 
     inner class Holder(

@@ -624,11 +624,47 @@ class MenuFragment3 : Fragment() {
                 }
                 listAdapter.list = locationData
                 listAdapter.notifyDataSetChanged()
+
+                // 검색 결과가 있는 경우 recyclerView2를 보이게 설정
+                binding.recyclerView2.visibility = View.VISIBLE
+                binding.bottomButton.visibility = View.VISIBLE
+                binding.disButton.visibility = View.VISIBLE
+                kakaomap!!.setPadding(0, 0, 0, 800)
+
+                // 첫 번째 아이템 클릭
+                if (locationData.isNotEmpty()) {
+                    val firstItem = locationData[0]
+                    val firstLocation = LatLng.from(firstItem.y, firstItem.x)
+                    val styles = kakaomap!!.getLabelManager()?.addLabelStyles(
+                        LabelStyles.from(LabelStyle.from(R.drawable.clicklocation))
+                    )
+                    val options = LabelOptions.from(firstLocation).setStyles(styles)
+                    if (searchMarker == null) {
+                        searchMarker = layer?.addLabel(options)
+                    } else {
+                        layer?.remove(searchMarker)
+                        searchMarker = layer?.addLabel(options)
+                    }
+
+                    // 지도 이동
+                    if (kakaomap != null) {
+                        val cameraUpdate = CameraUpdateFactory.newCenterPosition(firstLocation, zoomlevel)
+                        kakaomap!!.moveCamera(cameraUpdate, CameraAnimation.from(500, true, true))
+                    } else {
+                        Toast.makeText(context, "알 수 없는 오류가 발생했습니다. 재시도 해주세요.", Toast.LENGTH_SHORT).show()
+                    }
+                }
             } else {
                 Toast.makeText(context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
                 locationData.clear()
                 listAdapter.list = locationData
                 listAdapter.notifyDataSetChanged()
+
+                // 검색 결과가 없는 경우 recyclerView2를 숨김
+                binding.recyclerView2.visibility = View.GONE
+                binding.bottomButton.visibility = View.GONE
+                binding.disButton.visibility = View.GONE
+                kakaomap!!.setPadding(0, 0, 0, 0)
             }
         }
     }
