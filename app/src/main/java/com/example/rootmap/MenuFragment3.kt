@@ -564,33 +564,39 @@ class MenuFragment3 : Fragment() {
         }
     }
 
-    fun setAddressAndSearch(address: String) {
-        binding.searchText.setText(address)
-        searchKeyword(address)
+    fun setTitleAndSearch(title: String) {
+        binding.searchText.setText(title)
+        searchKeyword(title) // 검색 키워드로 실제 검색 요청을 실행
     }
 
-    private fun searchKeyword(text:String){
+    private fun searchKeyword(title: String) {
         runBlocking {
             val retrofit = Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
             val api = retrofit.create(KakaoAPI::class.java)
-            val call = api.getSearchKeyword(API_KEY, text, userX, userY)
+            val call = api.getSearchKeyword(API_KEY, title, userX, userY)
             call.enqueue(object : Callback<ResultSearchKeyword> {
                 override fun onResponse(
                     call: Call<ResultSearchKeyword>,
                     response: Response<ResultSearchKeyword>
                 ) {
-                    addItemsAndMarkers(response.body())
+                    if (response.isSuccessful) {
+                        Log.d("searchKeyword", "Response: ${response.body()}")
+                        addItemsAndMarkers(response.body())
+                    } else {
+                        Log.e("searchKeyword", "Response failed with code: ${response.code()}")
+                    }
                 }
 
                 override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
-                    Log.w("LocalSearch", "통신 실패: ${t.message}")
+                    Log.e("searchKeyword", "Request failed: ${t.message}")
                 }
             })
         }
     }
+
 
     private fun searchPoi(text:String, latLng: LatLng){
         val retrofit = Retrofit.Builder() // Retrofit 구성
