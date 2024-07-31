@@ -1,43 +1,15 @@
 package com.example.rootmap
 
-import android.content.Intent
-import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.view.WindowManager
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
-import android.window.OnBackInvokedDispatcher
-import androidx.core.content.ContextCompat
-import androidx.core.view.GravityCompat
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
-import com.bumptech.glide.Glide
-import com.example.myapplication.Friend
 import com.example.rootmap.databinding.ActivityMainBinding
-import com.example.rootmap.databinding.HeaderBinding
-import com.google.android.material.bottomnavigation.BottomNavigationMenuView
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.navigation.NavigationView
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
-import com.google.firebase.Firebase
-import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.FirebaseStorage
 import com.kakao.vectormap.KakaoMapSdk
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.tasks.await
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
     private lateinit var auth: FirebaseAuth
@@ -125,12 +97,12 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     // MainActivity.kt
-    fun navigateToMenuFragment3WithTitle(title: String, addr1: String? = null) {
+    fun navigateToMenuFragment3WithTitle(title: String, addr1: String? = null, addr2: String) {
         binding.mainFrm.currentItem = 2
         val fragment = supportFragmentManager.findFragmentByTag("f2") as? MenuFragment3
         fragment?.let {
-            Log.d("navigateToMenuFragment3WithTitle", "Title: $title, Addr1: $addr1")
-            it.setTitleAndSearch(title, addr1)
+            Log.d("navigateToMenuFragment3WithTitle", "Title: $title, Addr1: $addr1, Addr2: $addr2")
+            it.setTitleAndSearch(title, addr1, addr2)
         }
     }
 }
