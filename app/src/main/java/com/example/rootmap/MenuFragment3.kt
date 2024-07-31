@@ -564,19 +564,22 @@ class MenuFragment3 : Fragment() {
         }
     }
 
-    fun setTitleAndSearch(title: String) {
+    fun setTitleAndSearch(title: String, addr1: String? = null) {
         binding.searchText.setText(title)
-        searchKeyword(title) // 검색 키워드로 실제 검색 요청을 실행
+        Log.d("setTitleAndSearch", "Title: $title, Addr1: $addr1")
+        searchKeyword(title, addr1) // 검색 키워드로 실제 검색 요청을 실행
     }
 
-    private fun searchKeyword(title: String) {
+    // MenuFragment3.kt
+    private fun searchKeyword(query: String, fallbackQuery: String? = null) {
+        Log.d("searchKeyword", "Searching for: $query, with fallback: $fallbackQuery")
         runBlocking {
             val retrofit = Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
             val api = retrofit.create(KakaoAPI::class.java)
-            val call = api.getSearchKeyword(API_KEY, title, userX, userY)
+            val call = api.getSearchKeyword(API_KEY, query, userX, userY)
             call.enqueue(object : Callback<ResultSearchKeyword> {
                 override fun onResponse(
                     call: Call<ResultSearchKeyword>,
@@ -584,7 +587,17 @@ class MenuFragment3 : Fragment() {
                 ) {
                     if (response.isSuccessful) {
                         Log.d("searchKeyword", "Response: ${response.body()}")
-                        addItemsAndMarkers(response.body())
+                        if (response.body()?.documents.isNullOrEmpty()) {
+                            Log.d("searchKeyword", "No results found for: $query")
+                            if (fallbackQuery != null) {
+                                Log.d("searchKeyword", "Retrying with fallback query: $fallbackQuery")
+                                searchKeyword(fallbackQuery)
+                            } else {
+                                Toast.makeText(context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            addItemsAndMarkers(response.body())
+                        }
                     } else {
                         Log.e("searchKeyword", "Response failed with code: ${response.code()}")
                     }
@@ -597,6 +610,28 @@ class MenuFragment3 : Fragment() {
         }
     }
 
+    private fun addItemsAndMarkers(searchResult: ResultSearchKeyword?) {
+        runBlocking {
+            if (!searchResult?.documents.isNullOrEmpty()) {
+                locationData.clear()
+                for (document in searchResult!!.documents) {
+                    val item = SearchLocation(
+                        document.place_name,
+                        document.road_address_name, document.x.toDouble(),
+                        document.y.toDouble()
+                    )
+                    locationData.add(item)
+                }
+                listAdapter.list = locationData
+                listAdapter.notifyDataSetChanged()
+            } else {
+                Toast.makeText(context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
+                locationData.clear()
+                listAdapter.list = locationData
+                listAdapter.notifyDataSetChanged()
+            }
+        }
+    }
 
     private fun searchPoi(text:String, latLng: LatLng){
         val retrofit = Retrofit.Builder() // Retrofit 구성
@@ -632,28 +667,7 @@ class MenuFragment3 : Fragment() {
             }
         })
     }
-    private fun addItemsAndMarkers(searchResult: ResultSearchKeyword?) {
-        runBlocking {
-            if (!searchResult?.documents.isNullOrEmpty()) {
-                locationData.clear()
-                for (document in searchResult!!.documents) {
-                    val item = SearchLocation(
-                        document.place_name,
-                        document.road_address_name, document.x.toDouble(),
-                        document.y.toDouble()
-                    )
-                    locationData.add(item)
-                }
-                listAdapter.list = locationData
-                listAdapter.notifyDataSetChanged()
-            } else {
-                Toast.makeText(context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
-                locationData.clear()
-                listAdapter.list = locationData
-                listAdapter.notifyDataSetChanged()
-            }
-        }
-    }
+
     private suspend fun loadMyList(): MutableList<MyRouteDocument> {
         var list= mutableListOf<MyRouteDocument>()
         return try {

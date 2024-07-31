@@ -124,11 +124,13 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         }
     }
 
-    fun navigateToMenuFragment3WithTitle(title: String) {
+    // MainActivity.kt
+    fun navigateToMenuFragment3WithTitle(title: String, addr1: String? = null) {
         binding.mainFrm.currentItem = 2
         val fragment = supportFragmentManager.findFragmentByTag("f2") as? MenuFragment3
         fragment?.let {
-            it.setTitleAndSearch(title)
+            Log.d("navigateToMenuFragment3WithTitle", "Title: $title, Addr1: $addr1")
+            it.setTitleAndSearch(title, addr1)
         }
     }
 }

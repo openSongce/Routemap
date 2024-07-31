@@ -91,7 +91,7 @@ class TouristAdapter(
 
             binding.addButton.setOnClickListener {
                 val context = binding.root.context as MainActivity
-                context.navigateToMenuFragment3WithTitle(item.title ?: "")
+                context.navigateToMenuFragment3WithTitle(item.title ?: "", item.addr1 ?: "")
             }
 
             binding.root.setOnClickListener {
