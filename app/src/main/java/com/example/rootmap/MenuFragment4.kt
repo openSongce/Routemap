@@ -42,6 +42,9 @@ import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.storage.FirebaseStorage
+import com.navercorp.nid.NaverIdLoginSDK
+import com.navercorp.nid.oauth.NidOAuthLogin
+import com.navercorp.nid.oauth.OAuthLoginCallback
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -120,7 +123,7 @@ class MenuFragment4 : Fragment() {
         binding.secessionButton.setOnClickListener {
             showDialog("secession")
         }
-        binding.passwordButton.setOnClickListener { 
+        binding.passwordButton.setOnClickListener {
             showChangePasswordDialog("changePassword")
         }
         //소셜 로그인이 아닌 이메일 로그인 시에만 비밀번호 변경 버튼 표시
@@ -255,6 +258,7 @@ class MenuFragment4 : Fragment() {
                 val intent = Intent(this.context, LoginActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
+
             }
             dialog.dismiss()
         }
@@ -264,11 +268,10 @@ class MenuFragment4 : Fragment() {
         }
     }
 
-    fun secession(id: String) {
+    private fun secession(id: String) {
         val db = Firebase.firestore.collection("user")
         auth = FirebaseAuth.getInstance()
-        //파이어베이스 구조 상 하위의 문서를 전부 삭제해야함
-        //친구정보 삭제
+
         db.document(id).collection("friend").get().addOnSuccessListener {
             for (user in it) {
                 db.document(user.id).collection("friend").document(id).delete()
@@ -277,20 +280,58 @@ class MenuFragment4 : Fragment() {
         }.addOnFailureListener {
             Log.d("error", "secession error")
         }
-        //해당 유저의 문서 삭제
+
         db.document(id).delete()
             .addOnSuccessListener {
                 Log.d("Delete", "DocumentSnapshot successfully deleted!")
+                val intent = Intent(this.context, LoginActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
             }
             .addOnFailureListener { e ->
                 Log.w("Delete", "Error deleting document", e)
                 Toast.makeText(context, "Error deleting document: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+
         //유저 정보 auth에서 삭제
-        var user = auth.currentUser;
-        if (user != null) {
-            user.delete()
+        val user = auth.currentUser
+        user?.let {
+            // 사용자 계정 삭제
+            user.delete().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    //Toast.makeText(context, "사용자 계정 삭제 성공", Toast.LENGTH_SHORT).show()
+                    Log.d("Delete", "User account deleted.")
+                } else {
+                    Toast.makeText(context, "사용자 계정 삭제 오류", Toast.LENGTH_SHORT).show()
+                    Log.w("Delete", "Error deleting user account", task.exception)
+                }
+            }
+            // 네이버 아이디로 로그인한 경우에만 연동 해제 코드 실행
+            for (profile in it.providerData) {
+                if (profile.providerId == "naver.com") {
+                    NidOAuthLogin().callDeleteTokenApi(object : OAuthLoginCallback {
+                        override fun onSuccess() {
+                            Toast.makeText(context, "네이버 계정 삭제 성공", Toast.LENGTH_SHORT).show()
+                            val intent = Intent(context, LoginActivity::class.java)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
+                        }
+                        override fun onFailure(httpStatus: Int, message: String) {
+                            Toast.makeText(context, "네이버 아이디 삭제 실패", Toast.LENGTH_SHORT).show()
+                        }
+                        override fun onError(errorCode: Int, message: String) {
+                            Toast.makeText(context, "네이버 아이디 삭제 실패", Toast.LENGTH_SHORT).show()
+                            onFailure(errorCode, message)
+                        }
+                    })
+                    break
+                }
+            }
         }
+        /*if (user != null) {
+            user.delete()
+        }*/
+
     }
 
     fun showChangePasswordDialog(mode: String) {

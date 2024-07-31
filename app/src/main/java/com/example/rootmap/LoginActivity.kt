@@ -1,5 +1,3 @@
-
-//로그인 코드
 package com.example.rootmap
 
 import android.content.Context
@@ -32,8 +30,6 @@ import com.navercorp.nid.oauth.OAuthLoginCallback
 import com.navercorp.nid.profile.NidProfileCallback
 import com.navercorp.nid.profile.data.NidProfileResponse
 import java.security.MessageDigest
-
-
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var emailEt: EditText

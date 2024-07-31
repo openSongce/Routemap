@@ -101,27 +101,33 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         when (item.itemId) {
             R.id.menu_tourist -> {
                 binding.mainFrm.currentItem = 0
+                binding.pageName.text = "메인"
                 return true
             }
-
             R.id.menu_post -> {
                 binding.mainFrm.currentItem = 1
+                binding.pageName.text = "게시판"
                 return true
             }
-
             R.id.menu_map -> {
                 binding.mainFrm.currentItem = 2
+                binding.pageName.text = "지도"
                 return true
             }
-
             R.id.menu_myPage -> {
                 binding.mainFrm.currentItem = 3
+                binding.pageName.text = "마이페이지"
                 return true
             }
-            else-> return false
+            else -> return false
         }
     }
 
-
-
+    fun navigateToMenuFragment3WithTitle(title: String) {
+        binding.mainFrm.currentItem = 2
+        val fragment = supportFragmentManager.findFragmentByTag("f2") as? MenuFragment3
+        fragment?.let {
+            it.setTitleAndSearch(title)
+        }
+    }
 }

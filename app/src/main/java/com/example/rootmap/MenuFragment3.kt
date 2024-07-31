@@ -496,6 +496,15 @@ class MenuFragment3 : Fragment() {
                 uivisivle = 1
             }
         }
+        val selectedAddress = activity?.intent?.getStringExtra("selected_address")
+        selectedAddress?.let {
+            binding.searchText.setText(it)
+            searchKeyword(it)
+        }
+        arguments?.getString("selected_address")?.let { address ->
+            binding.searchText.setText(address)
+            searchKeyword(address)
+        }
 
         return binding.root
     }
@@ -555,31 +564,40 @@ class MenuFragment3 : Fragment() {
         }
     }
 
-    private fun searchKeyword(text:String){
+    fun setTitleAndSearch(title: String) {
+        binding.searchText.setText(title)
+        searchKeyword(title) // 검색 키워드로 실제 검색 요청을 실행
+    }
+
+    private fun searchKeyword(title: String) {
         runBlocking {
-            val retrofit = Retrofit.Builder() // Retrofit 구성
+            val retrofit = Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
-            val api = retrofit.create(KakaoAPI::class.java) // 통신 인터페이스를 객체로 생성
-            val call = api.getSearchKeyword(API_KEY, text, userX, userY) // 검색 조건 입력
-            // API 서버에 요청
+            val api = retrofit.create(KakaoAPI::class.java)
+            val call = api.getSearchKeyword(API_KEY, title, userX, userY)
             call.enqueue(object : Callback<ResultSearchKeyword> {
                 override fun onResponse(
                     call: Call<ResultSearchKeyword>,
                     response: Response<ResultSearchKeyword>
                 ) {
-// 통신 성공
-                    addItemsAndMarkers(response.body())
+                    if (response.isSuccessful) {
+                        Log.d("searchKeyword", "Response: ${response.body()}")
+                        addItemsAndMarkers(response.body())
+                    } else {
+                        Log.e("searchKeyword", "Response failed with code: ${response.code()}")
+                    }
                 }
 
                 override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
-// 통신 실패
-                    Log.w("LocalSearch", "통신 실패: ${t.message}")
+                    Log.e("searchKeyword", "Request failed: ${t.message}")
                 }
             })
         }
     }
+
+
     private fun searchPoi(text:String, latLng: LatLng){
         val retrofit = Retrofit.Builder() // Retrofit 구성
             .baseUrl(BASE_URL)
@@ -617,11 +635,8 @@ class MenuFragment3 : Fragment() {
     private fun addItemsAndMarkers(searchResult: ResultSearchKeyword?) {
         runBlocking {
             if (!searchResult?.documents.isNullOrEmpty()) {
-// 검색 결과 있음
-                locationData.clear() // 리스트 초기화
-                //layers
+                locationData.clear()
                 for (document in searchResult!!.documents) {
-                    // 결과를 리사이클러 뷰에 추가
                     val item = SearchLocation(
                         document.place_name,
                         document.road_address_name, document.x.toDouble(),
@@ -630,10 +645,8 @@ class MenuFragment3 : Fragment() {
                     locationData.add(item)
                 }
                 listAdapter.list = locationData
-                Log.d("Map3searchlist", listAdapter.list.toString())
                 listAdapter.notifyDataSetChanged()
             } else {
-// 검색 결과 없음
                 Toast.makeText(context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
                 locationData.clear()
                 listAdapter.list = locationData

@@ -1,5 +1,6 @@
 package com.example.rootmap
 
+import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,7 +19,7 @@ class TouristAdapter(
     val items: List<TouristItem>,
     private val database: DatabaseReference,
     private val auth: FirebaseAuth,
-    private val menuFragment: MenuFragment? = null, // MenuFragment 인스턴스를 전달받음
+    private val menuFragment: MenuFragment? = null,
     private val onItemClick: (TouristItem) -> Unit
 ) : RecyclerView.Adapter<TouristAdapter.TouristViewHolder>() {
 
@@ -36,11 +37,10 @@ class TouristAdapter(
 
             if (!imageUrl.isNullOrEmpty()) {
                 val requestOptions = RequestOptions()
-                    .placeholder(R.drawable.map)  // 로딩 중일 때 보여줄 이미지
-                    .error(R.drawable.map)        // 로딩 실패 시 보여줄 이미지
-                    .fallback(R.drawable.map)     // 이미지 URL이 null인 경우 보여줄 이미지
+                    .placeholder(R.drawable.map)
+                    .error(R.drawable.map)
+                    .fallback(R.drawable.map)
 
-                Log.d("TouristAdapter", "Loading image URL: $imageUrl")
                 Glide.with(binding.root.context)
                     .setDefaultRequestOptions(requestOptions)
                     .load(imageUrl)
@@ -51,7 +51,6 @@ class TouristAdapter(
                             target: Target<Drawable>?,
                             isFirstResource: Boolean
                         ): Boolean {
-                            Log.e("TouristAdapter", "Image load failed: $imageUrl", e)
                             return false
                         }
 
@@ -62,15 +61,12 @@ class TouristAdapter(
                             dataSource: com.bumptech.glide.load.DataSource?,
                             isFirstResource: Boolean
                         ): Boolean {
-                            Log.d("TouristAdapter", "Image loaded successfully: $imageUrl")
                             return false
                         }
                     })
                     .into(binding.image)
             } else {
-                // 이미지가 없는 경우 기본 이미지를 설정
                 binding.image.setImageResource(R.drawable.map)
-                Log.d("TouristAdapter", "Image URL is null or empty")
             }
 
             binding.likeButton.setOnClickListener {
@@ -86,12 +82,16 @@ class TouristAdapter(
                 }
                 binding.likeCount.text = item.likeCount.toString()
 
-                // Firebase에 추천 수 저장
                 item.title?.let { title ->
                     val sanitizedTitle = title.replace("[.\\#\\$\\[\\]]".toRegex(), "")
                     database.child("likes").child(sanitizedTitle).setValue(item.likeCount)
                     database.child("userLikes").child(userId).child(sanitizedTitle).setValue(item.isLiked)
                 }
+            }
+
+            binding.addButton.setOnClickListener {
+                val context = binding.root.context as MainActivity
+                context.navigateToMenuFragment3WithTitle(item.title ?: "")
             }
 
             binding.root.setOnClickListener {
