@@ -108,6 +108,8 @@
             app:layout_constraintEnd_toEndOf="@+id/postListView"
             app:layout_constraintStart_toStartOf="@+id/postListView"
             app:layout_constraintTop_toTopOf="@+id/postListView"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:secondaryProgressTintMode="multiply"
+            android:indeterminateTint="@color/color_pink" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

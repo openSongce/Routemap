@@ -22,13 +22,11 @@ class FriendActivity : AppCompatActivity() {
         adapter.fragmentList = friendContextList
         binding.viewPager.adapter = adapter
 
-
         var bundle = Bundle()
         bundle.putString("id", intent.getStringExtra("id"))
         for (i in 0..2) {
             friendContextList[i].arguments = bundle
         }
-        // Toast.makeText(this,"친구 ${intent.getStringExtra("id")}", Toast.LENGTH_SHORT).show()//intent 확인용 , 후에 삭제
         //하단에 탭 바 구성, 클릭 시 해당 프레그먼트로 이동
         val tabTitle = listOf<String>("친구 목록", "받은 요청", "친구 추가")
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->

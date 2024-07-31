@@ -15,6 +15,4 @@ class HomeFragmentAdapter(fragmentActivity: FragmentActivity): FragmentStateAdap
         return fragmentList[position]
     }
 
-
-
 }

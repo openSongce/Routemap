@@ -89,8 +89,7 @@ class FriendAdapter() : RecyclerView.Adapter<FriendAdapter.FriendHolder>() {
                         FriendRequest.getInstance()?.showAccept(binding.friendId.text.toString())
                     }
                 }
-
-                "Add" -> { //완
+                "Add" -> {
                     binding.friendButton2.text = "취소"
                     binding.friendButton2.setOnClickListener {//취소 버튼 기능
                         FriendAdd.getInstance()?.showCancle(binding.friendId.text.toString())

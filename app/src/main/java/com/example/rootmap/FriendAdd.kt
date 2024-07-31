@@ -57,7 +57,6 @@ class FriendAdd : Fragment() {
             currentId = it.getString("id")
             param2 = it.getString(ARG_PARAM2)
         }
-
     }
 
     override fun onCreateView(
@@ -65,51 +64,30 @@ class FriendAdd : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        //binding 지정
-        // binding = FragmentFriendAddBinding.inflate(inflater, container, false)
-        //여기부터 코드 작성
         myDb = db.collection("user").document(currentId.toString()).collection("friend")
         binding.searchFriendText.addTextChangedListener {
             //텍스트창의 입력 바뀔때
+
         }
         binding.sendButton.setOnClickListener {//보내기 버튼 클릭 시
-            text = binding.searchFriendText.text.toString()
-            //데이터베이터에서 해당 ID의 유저 검색
-            when (text) {
-                "" -> Toast.makeText(context, "빈칸입니다.", Toast.LENGTH_SHORT).show()
-                currentId -> Toast.makeText(context, "본인에게 친구신청은 불가능합니다.", Toast.LENGTH_SHORT)
-                    .show()
-
-                else -> searchUser(text)
-            }
+            sendFriendRequest()
         }
         binding.searchFriendText.setOnEditorActionListener { v, actionId, event //키보드 엔터 사용시
             ->
-            text = binding.searchFriendText.text.toString()
-            when (text) {
-                "" -> Toast.makeText(context, "빈칸입니다.", Toast.LENGTH_SHORT).show()
-                currentId -> Toast.makeText(context, "본인에게 친구신청은 불가능합니다.", Toast.LENGTH_SHORT)
-                    .show()
-
-                else -> searchUser(text)
-            }
+            sendFriendRequest()
             true
         }
         addAdapter = FriendAdapter()
-        //수락 대기 중인 리스트
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
         viewLifecycleOwner.lifecycleScope.async {
             refresh()
             addAdapter.myid = currentId.toString()
             addAdapter.mode = "Add"
-
             binding.recyclerList.adapter = addAdapter
             binding.recyclerList.layoutManager = LinearLayoutManager(context)
-
 
         }
         super.onViewCreated(view, savedInstanceState)
@@ -139,7 +117,6 @@ class FriendAdd : Fragment() {
         var id = currentId.toString()
         dBinding.bButton.setOnClickListener {
             //검정 버튼의 기능 구현 ↓
-
             db.collection("user").document(id).collection("friend").document(frid)
                 .delete()
             db.collection("user").document(frid).collection("friend").document(id)
@@ -158,6 +135,17 @@ class FriendAdd : Fragment() {
             getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
+     fun sendFriendRequest(){
+         text = binding.searchFriendText.text.toString()
+         //데이터베이터에서 해당 ID의 유저 검색
+         when (text) {
+             "" -> Toast.makeText(context, "빈칸입니다.", Toast.LENGTH_SHORT).show()
+             currentId -> Toast.makeText(context, "본인에게 친구신청은 불가능합니다.", Toast.LENGTH_SHORT)
+                 .show()
+             else -> searchUser(text)
+         }
+     }
+
 
     fun showDialog(
         text: String,
