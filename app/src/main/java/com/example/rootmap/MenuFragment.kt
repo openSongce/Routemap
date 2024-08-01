@@ -14,6 +14,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -109,6 +110,9 @@ class MenuFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentMenuBinding.inflate(inflater, container, false)
+
+        // 시간에 따라 배경 설정
+        setWeatherBackground()
 
         // 도시 목록을 정의
         val cityList = resources.getStringArray(R.array.locations_array)
@@ -912,6 +916,30 @@ class MenuFragment : Fragment() {
         } else {
             tvRainProbability.text = "강수 확률: __%"
         }
+    }
+
+    private fun setWeatherBackground() {
+        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        val weatherLayout = binding.root.findViewById<LinearLayout>(R.id.weatherLayout) // 적절한 레이아웃 ID 사용
+        val textColor: Int
+
+        if (currentHour in 6..18) {
+            weatherLayout.setBackgroundResource(R.drawable.weather_background_day)
+            textColor = ContextCompat.getColor(requireContext(), android.R.color.black)
+        } else {
+            weatherLayout.setBackgroundResource(R.drawable.weather_background_night)
+            textColor = ContextCompat.getColor(requireContext(), android.R.color.white)
+        }
+
+        updateTextColor(textColor)
+    }
+
+    private fun updateTextColor(color: Int) {
+        binding.root.findViewById<TextView>(R.id.tvNowCelsius).setTextColor(color)
+        binding.root.findViewById<TextView>(R.id.tvLocation).setTextColor(color)
+        binding.root.findViewById<TextView>(R.id.tvSkyCondition).setTextColor(color)
+        binding.root.findViewById<TextView>(R.id.tvRainProbability).setTextColor(color)
+        binding.root.findViewById<TextView>(R.id.tvHumidity).setTextColor(color)
     }
 
 
