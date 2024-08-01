@@ -24,6 +24,7 @@ import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
+import com.google.firebase.firestore.DocumentSnapshot
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -170,7 +171,7 @@ class FriendAdd : Fragment() {
                             hashMapOf("id" to text, "state" to "1")
                         )//내 데이터에 추가
                         refresh()
-                        Toast.makeText(this.context, "신청보냄", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this.context, "친구 신청을 보냈습니다.", Toast.LENGTH_SHORT).show()
                     } else {//이미 데이터가 있는 경우
                         // val d_id=document.documents[0].id //문서 아이디 저장
                         dialog.dismiss()
@@ -237,7 +238,56 @@ class FriendAdd : Fragment() {
         }
     }
 
-   private fun searchUser(text: String) {
+    private fun searchUser(text: String) {
+        // 데이터베이스에서 해당 ID 또는 닉네임의 유저 검색
+        val userDataById = db.collection("user").whereEqualTo("id", text)
+        val userDataByNickname = db.collection("user").whereEqualTo("nickname", text)
+
+        // 두 쿼리 모두 수행
+        runBlocking {
+            try {
+                val resultsById = userDataById.get().await()
+                val resultsByNickname = userDataByNickname.get().await()
+
+                val combinedResults = mutableSetOf<DocumentSnapshot>().apply {
+                    addAll(resultsById.documents)
+                    addAll(resultsByNickname.documents)
+                }
+
+                if (combinedResults.isNotEmpty()) {
+                    if (resultsByNickname.documents.size>1) {
+                        showUserSelectionDialog(resultsByNickname.documents)
+                    } else {
+                        val firstResult = combinedResults.first()
+                        val friendQuery = db.collection("user").document(firstResult.id).collection("friend")
+                        showDialog(text, friendQuery)
+                    }
+
+                } else {
+                    Toast.makeText(context, "해당 유저는 존재하지 않아 신청을 보낼 수 없습니다.", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: FirebaseException) {
+                loadFail()
+            }
+        }
+    }
+
+    private fun showUserSelectionDialog(users: List<DocumentSnapshot>) {
+        val userNames = users.map { "${it.getString("nickname")} (${it.getString("id")})" }.toTypedArray()
+        val userIds = users.map { it.id }
+
+        AlertDialog.Builder(context)
+            .setTitle("사용자를 선택하세요")
+            .setItems(userNames) { _, which ->
+                val selectedUserId = userIds[which]
+                val friendQuery = db.collection("user").document(selectedUserId).collection("friend")
+                showDialog(userIds[which], friendQuery)
+            }
+            .setNegativeButton("취소", null)
+            .show()
+    }
+
+    /*private fun searchUser(text: String) {
         //데이터베이터에서 해당 ID의 유저 검색
         val userData =
             db.collection("user").whereEqualTo("id", text) //필드의 id값이 text인 유저(문서)를 data에 저장
@@ -254,7 +304,7 @@ class FriendAdd : Fragment() {
         }.addOnFailureListener { exception -> //DB접근에 실패했을때
             loadFail()
         }
-    }
+    }*/
 
     private fun loadFail() {
         Toast.makeText(context, "데이터 로드에 실패했습니다.", Toast.LENGTH_SHORT).show()
