@@ -1,6 +1,7 @@
 package com.example.rootmap
 
 import android.Manifest
+import android.app.ProgressDialog
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
@@ -14,6 +15,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -35,6 +37,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.CompletableFuture
 import kotlin.random.Random
 
 private const val ARG_PARAM1 = "param1"
@@ -109,6 +112,9 @@ class MenuFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentMenuBinding.inflate(inflater, container, false)
+
+        // 시간에 따라 배경 설정
+        setWeatherBackground()
 
         // 도시 목록을 정의
         val cityList = resources.getStringArray(R.array.locations_array)
@@ -204,6 +210,9 @@ class MenuFragment : Fragment() {
             }
         }
 
+        showLoadingDialog()
+        fetchTotalPages(currentAreaCode, currentContentTypeId)
+
         return binding.root
     }
 
@@ -220,6 +229,7 @@ class MenuFragment : Fragment() {
     private fun setupButton(button: Button, contentTypeId: Int) {
         button.setOnClickListener {
             selectButton(button)
+            showLoadingDialog()
             fetchTotalPages(currentAreaCode, contentTypeId) // 버튼 클릭 시에도 랜덤 페이지로 가져오기
         }
     }
@@ -268,10 +278,11 @@ class MenuFragment : Fragment() {
         })
     }
 
-    private fun fetchTouristInfo(areaCode: Int, contentTypeId: Int, randomPage: Boolean = false) { // 여행지 정보 가져오기
+    private fun fetchTouristInfo(areaCode: Int, contentTypeId: Int, randomPage: Boolean = false) {
         currentContentTypeId = contentTypeId
         if (retryCount >= maxRetries) {
             binding.swipeRefreshLayout.isRefreshing = false
+            hideLoadingDialog()
             return
         }
 
@@ -293,56 +304,63 @@ class MenuFragment : Fragment() {
                     val items = response.body()?.body?.items?.item ?: emptyList()
                     Log.d("API_SUCCESS", "Fetched ${items.size} items")
 
-                    // 각 아이템의 추천 수를 Firebase에서 가져옴
-                    items.forEach { item ->
+                    val tasks = items.map { item ->
+                        val completableFuture = CompletableFuture<Void>()
                         item.title?.let { title ->
-                            // Firebase 경로에서 사용할 수 없는 문자를 대체
+                            // Firebase path sanitization
                             val sanitizedTitle = title.replace("[.\\#\\$\\[\\]]".toRegex(), "")
-                            database.child("likes").child(sanitizedTitle)
-                                .addListenerForSingleValueEvent(object : ValueEventListener {
+                            database.child("likes").child(sanitizedTitle).addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                    item.likeCount = dataSnapshot.getValue(Int::class.java) ?: 0
+                                    completableFuture.complete(null)
+                                }
+
+                                override fun onCancelled(databaseError: DatabaseError) {
+                                    Log.w("MenuFragment", "loadLikeCount:onCancelled", databaseError.toException())
+                                    completableFuture.completeExceptionally(databaseError.toException())
+                                }
+                            })
+
+                            auth.currentUser?.uid?.let { userId ->
+                                database.child("userLikes").child(userId).child(sanitizedTitle).addListenerForSingleValueEvent(object : ValueEventListener {
                                     override fun onDataChange(dataSnapshot: DataSnapshot) {
-                                        val likeCount = dataSnapshot.getValue(Int::class.java) ?: 0
-                                        item.likeCount = likeCount
-                                        binding.recyclerView.adapter?.notifyDataSetChanged()
+                                        item.isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
+                                        completableFuture.complete(null)
                                     }
 
                                     override fun onCancelled(databaseError: DatabaseError) {
-                                        Log.w("MenuFragment", "loadLikeCount:onCancelled", databaseError.toException())
+                                        Log.w("MenuFragment", "loadUserLikeStatus:onCancelled", databaseError.toException())
+                                        completableFuture.completeExceptionally(databaseError.toException())
                                     }
                                 })
-
-                            // 사용자 하트 상태 가져오기
-                            auth.currentUser?.uid?.let { userId ->
-                                database.child("userLikes").child(userId).child(sanitizedTitle)
-                                    .addListenerForSingleValueEvent(object : ValueEventListener {
-                                        override fun onDataChange(dataSnapshot: DataSnapshot) {
-                                            val isLiked = dataSnapshot.getValue(Boolean::class.java) ?: false
-                                            item.isLiked = isLiked
-                                            binding.recyclerView.adapter?.notifyDataSetChanged()
-                                        }
-
-                                        override fun onCancelled(databaseError: DatabaseError) {
-                                            Log.w("MenuFragment", "loadUserLikeStatus:onCancelled", databaseError.toException())
-                                        }
-                                    })
                             }
                         }
+                        completableFuture
                     }
 
-                    if (items.isNotEmpty()) {
-                        val adapter = TouristAdapter(items, database, auth, this@MenuFragment) { item ->
-                            item.contentid?.let { fetchTouristDetailIntro(it, currentContentTypeId) }
+                    CompletableFuture.allOf(*tasks.toTypedArray()).thenRun {
+                        if (items.isNotEmpty()) {
+                            val adapter = TouristAdapter(items, database, auth, this@MenuFragment) { item ->
+                                item.contentid?.let { fetchTouristDetailIntro(it, currentContentTypeId) }
+                            }
+                            binding.recyclerView.adapter = adapter
+                        } else {
+                            Log.d("API_SUCCESS", "No items found")
+                            retryFetchTouristInfo(areaCode, contentTypeId) // 데이터가 없으면 재시도
                         }
-                        binding.recyclerView.adapter = adapter
-                    } else {
-                        Log.d("API_SUCCESS", "No items found")
-                        retryFetchTouristInfo(areaCode, contentTypeId) // 데이터가 없으면 재시도
+                        binding.swipeRefreshLayout.isRefreshing = false
+                        hideLoadingDialog()
+                    }.exceptionally {
+                        binding.swipeRefreshLayout.isRefreshing = false
+                        hideLoadingDialog()
+                        null
                     }
                 } else {
                     Log.e("API_ERROR", "Response code: ${response.code()}")
                     retryFetchTouristInfo(areaCode, contentTypeId) // 에러 발생 시 재시도
+                    binding.swipeRefreshLayout.isRefreshing = false
+                    hideLoadingDialog()
                 }
-                binding.swipeRefreshLayout.isRefreshing = false
             }
 
             override fun onFailure(call: Call<TouristResponse>, t: Throwable) {
@@ -350,8 +368,23 @@ class MenuFragment : Fragment() {
                 Log.e("API_FAILURE", "Failed to fetch data", t)
                 retryFetchTouristInfo(areaCode, contentTypeId) // 실패 시 재시도
                 binding.swipeRefreshLayout.isRefreshing = false
+                hideLoadingDialog()
             }
         })
+    }
+
+    private lateinit var loadingDialog: ProgressDialog
+    private fun showLoadingDialog() {
+        loadingDialog = ProgressDialog(requireContext()).apply {
+            setMessage("Loading...")
+            setCancelable(false)
+            show()
+        }
+    }
+    private fun hideLoadingDialog() {
+        if (::loadingDialog.isInitialized && loadingDialog.isShowing) {
+            loadingDialog.dismiss()
+        }
     }
 
     fun removeHtmlTags(input: String?): String {
@@ -359,6 +392,7 @@ class MenuFragment : Fragment() {
     }
 
     fun fetchTouristDetailIntro(contentId: String, contentTypeId: Int) {
+        showLoadingDialog()  // 로딩 다이얼로그 표시
         apiService.getTouristDetail(
             contentId = contentId.toInt(),
             contentTypeId = contentTypeId,
@@ -370,6 +404,7 @@ class MenuFragment : Fragment() {
                 call: Call<TouristDetailResponse>,
                 response: Response<TouristDetailResponse>
             ) {
+                hideLoadingDialog()  // 로딩 다이얼로그 숨김
                 if (response.isSuccessful) {
                     val detail = response.body()?.body?.items?.item ?: return
 
@@ -410,6 +445,7 @@ class MenuFragment : Fragment() {
                     detail.opentimefood = removeHtmlTags(detail.opentimefood)
                     detail.checkouttime = removeHtmlTags(detail.checkouttime)
                     detail.usetimeleports = removeHtmlTags(detail.usetimeleports)
+                    detail.placeinfo = removeHtmlTags(detail.placeinfo)
 
                     showTouristDetailDialog(detail)
                 } else {
@@ -418,6 +454,7 @@ class MenuFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<TouristDetailResponse>, t: Throwable) {
+                hideLoadingDialog()  // 로딩 다이얼로그 숨김
                 Log.e("API_FAILURE", "Failed to fetch detail data", t)
             }
         })
@@ -912,6 +949,30 @@ class MenuFragment : Fragment() {
         } else {
             tvRainProbability.text = "강수 확률: __%"
         }
+    }
+
+    private fun setWeatherBackground() {
+        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        val weatherLayout = binding.root.findViewById<LinearLayout>(R.id.weatherLayout) // 적절한 레이아웃 ID 사용
+        val textColor: Int
+
+        if (currentHour in 6..18) {
+            weatherLayout.setBackgroundResource(R.drawable.weather_background_day)
+            textColor = ContextCompat.getColor(requireContext(), android.R.color.black)
+        } else {
+            weatherLayout.setBackgroundResource(R.drawable.weather_background_night)
+            textColor = ContextCompat.getColor(requireContext(), android.R.color.white)
+        }
+
+        updateTextColor(textColor)
+    }
+
+    private fun updateTextColor(color: Int) {
+        binding.root.findViewById<TextView>(R.id.tvNowCelsius).setTextColor(color)
+        binding.root.findViewById<TextView>(R.id.tvLocation).setTextColor(color)
+        binding.root.findViewById<TextView>(R.id.tvSkyCondition).setTextColor(color)
+        binding.root.findViewById<TextView>(R.id.tvRainProbability).setTextColor(color)
+        binding.root.findViewById<TextView>(R.id.tvHumidity).setTextColor(color)
     }
 
 

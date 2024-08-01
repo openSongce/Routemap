@@ -1,8 +1,6 @@
 package com.example.rootmap
 
-import android.content.Intent
 import android.graphics.drawable.Drawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -91,7 +89,7 @@ class TouristAdapter(
 
             binding.addButton.setOnClickListener {
                 val context = binding.root.context as MainActivity
-                context.navigateToMenuFragment3WithTitle(item.title ?: "")
+                context.navigateToMenuFragment3WithTitle(item.title ?: "", item.addr1 ?: "", item.addr2 ?: "")
             }
 
             binding.root.setOnClickListener {

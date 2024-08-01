@@ -564,19 +564,21 @@ class MenuFragment3 : Fragment() {
         }
     }
 
-    fun setTitleAndSearch(title: String) {
+    fun setTitleAndSearch(title: String, addr1: String? = null, addr2: String? = null) {
         binding.searchText.setText(title)
-        searchKeyword(title) // 검색 키워드로 실제 검색 요청을 실행
+        Log.d("setTitleAndSearch", "Title: $title, Addr1: $addr1, Addr2: $addr2")
+        searchKeyword(title, addr1, addr2) // 검색 키워드로 실제 검색 요청을 실행
     }
 
-    private fun searchKeyword(title: String) {
+    private fun searchKeyword(query: String, fallbackQuery1: String? = null, fallbackQuery2: String? = null) {
+        Log.d("searchKeyword", "Searching for: $query, with fallback1: $fallbackQuery1, fallback2: $fallbackQuery2")
         runBlocking {
             val retrofit = Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
             val api = retrofit.create(KakaoAPI::class.java)
-            val call = api.getSearchKeyword(API_KEY, title, userX, userY)
+            val call = api.getSearchKeyword(API_KEY, query, userX, userY)
             call.enqueue(object : Callback<ResultSearchKeyword> {
                 override fun onResponse(
                     call: Call<ResultSearchKeyword>,
@@ -584,19 +586,92 @@ class MenuFragment3 : Fragment() {
                 ) {
                     if (response.isSuccessful) {
                         Log.d("searchKeyword", "Response: ${response.body()}")
-                        addItemsAndMarkers(response.body())
+                        if (response.body()?.documents.isNullOrEmpty()) {
+                            Log.d("searchKeyword", "No results found for: $query")
+                            if (fallbackQuery1 != null) {
+                                Log.d("searchKeyword", "Retrying with fallback query1: $fallbackQuery1")
+                                searchKeyword(fallbackQuery1, fallbackQuery2)
+                            } else if (fallbackQuery2 != null) {
+                                Log.d("searchKeyword", "Retrying with fallback query2: $fallbackQuery2")
+                                searchKeyword(fallbackQuery2)
+                            } else {
+                                Toast.makeText(context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            addItemsAndMarkers(response.body())
+                        }
                     } else {
                         Log.e("searchKeyword", "Response failed with code: ${response.code()}")
+                        Toast.makeText(context, "검색 요청이 실패했습니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
                     Log.e("searchKeyword", "Request failed: ${t.message}")
+                    Toast.makeText(context, "검색 요청이 실패했습니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                 }
             })
         }
     }
 
+    private fun addItemsAndMarkers(searchResult: ResultSearchKeyword?) {
+        runBlocking {
+            if (!searchResult?.documents.isNullOrEmpty()) {
+                locationData.clear()
+                for (document in searchResult!!.documents) {
+                    val item = SearchLocation(
+                        document.place_name,
+                        document.road_address_name, document.x.toDouble(),
+                        document.y.toDouble()
+                    )
+                    locationData.add(item)
+                }
+                listAdapter.list = locationData
+                listAdapter.notifyDataSetChanged()
+
+                // 검색 결과가 있는 경우 recyclerView2를 보이게 설정
+                binding.recyclerView2.visibility = View.VISIBLE
+                binding.bottomButton.visibility = View.VISIBLE
+                binding.disButton.visibility = View.VISIBLE
+                kakaomap!!.setPadding(0, 0, 0, 800)
+
+                // 첫 번째 아이템 클릭
+                if (locationData.isNotEmpty()) {
+                    val firstItem = locationData[0]
+                    val firstLocation = LatLng.from(firstItem.y, firstItem.x)
+                    val styles = kakaomap!!.getLabelManager()?.addLabelStyles(
+                        LabelStyles.from(LabelStyle.from(R.drawable.clicklocation))
+                    )
+                    val options = LabelOptions.from(firstLocation).setStyles(styles)
+                    if (searchMarker == null) {
+                        searchMarker = layer?.addLabel(options)
+                    } else {
+                        layer?.remove(searchMarker)
+                        searchMarker = layer?.addLabel(options)
+                    }
+
+                    // 지도 이동
+                    if (kakaomap != null) {
+                        val cameraUpdate = CameraUpdateFactory.newCenterPosition(firstLocation, zoomlevel)
+                        kakaomap!!.moveCamera(cameraUpdate, CameraAnimation.from(500, true, true))
+                    } else {
+                        Toast.makeText(context, "알 수 없는 오류가 발생했습니다. 재시도 해주세요.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                Toast.makeText(context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
+                locationData.clear()
+                listAdapter.list = locationData
+                listAdapter.notifyDataSetChanged()
+
+                // 검색 결과가 없는 경우 recyclerView2를 숨김
+                binding.recyclerView2.visibility = View.GONE
+                binding.bottomButton.visibility = View.GONE
+                binding.disButton.visibility = View.GONE
+                kakaomap!!.setPadding(0, 0, 0, 0)
+            }
+        }
+    }
 
     private fun searchPoi(text:String, latLng: LatLng){
         val retrofit = Retrofit.Builder() // Retrofit 구성
@@ -632,28 +707,7 @@ class MenuFragment3 : Fragment() {
             }
         })
     }
-    private fun addItemsAndMarkers(searchResult: ResultSearchKeyword?) {
-        runBlocking {
-            if (!searchResult?.documents.isNullOrEmpty()) {
-                locationData.clear()
-                for (document in searchResult!!.documents) {
-                    val item = SearchLocation(
-                        document.place_name,
-                        document.road_address_name, document.x.toDouble(),
-                        document.y.toDouble()
-                    )
-                    locationData.add(item)
-                }
-                listAdapter.list = locationData
-                listAdapter.notifyDataSetChanged()
-            } else {
-                Toast.makeText(context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
-                locationData.clear()
-                listAdapter.list = locationData
-                listAdapter.notifyDataSetChanged()
-            }
-        }
-    }
+
     private suspend fun loadMyList(): MutableList<MyRouteDocument> {
         var list= mutableListOf<MyRouteDocument>()
         return try {
