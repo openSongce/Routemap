@@ -567,11 +567,11 @@ class MenuFragment3 : Fragment() {
     fun setTitleAndSearch(title: String, addr1: String? = null, addr2: String? = null) {
         binding.searchText.setText(title)
         Log.d("setTitleAndSearch", "Title: $title, Addr1: $addr1, Addr2: $addr2")
-        searchKeyword(title, fallbackQuery = addr1, secondFallbackQuery = addr2) // 검색 키워드로 실제 검색 요청을 실행
+        searchKeyword(title, addr1, addr2) // 검색 키워드로 실제 검색 요청을 실행
     }
 
-    private fun searchKeyword(query: String, fallbackQuery: String? = null, secondFallbackQuery: String? = null) {
-        Log.d("searchKeyword", "Searching for: $query, with fallback: $fallbackQuery, second fallback: $secondFallbackQuery")
+    private fun searchKeyword(query: String, fallbackQuery1: String? = null, fallbackQuery2: String? = null) {
+        Log.d("searchKeyword", "Searching for: $query, with fallback1: $fallbackQuery1, fallback2: $fallbackQuery2")
         runBlocking {
             val retrofit = Retrofit.Builder()
                 .baseUrl(BASE_URL)
@@ -586,27 +586,22 @@ class MenuFragment3 : Fragment() {
                 ) {
                     if (response.isSuccessful) {
                         Log.d("searchKeyword", "Response: ${response.body()}")
-                        val documents = response.body()?.documents
-                        if (documents.isNullOrEmpty()) {
+                        if (response.body()?.documents.isNullOrEmpty()) {
                             Log.d("searchKeyword", "No results found for: $query")
-                            if (fallbackQuery != null) {
-                                Log.d("searchKeyword", "Retrying with fallback query: $fallbackQuery")
-                                searchKeyword(fallbackQuery, secondFallbackQuery = secondFallbackQuery)
-                            } else if (secondFallbackQuery != null) {
-                                Log.d("searchKeyword", "Retrying with second fallback query: $secondFallbackQuery")
-                                searchKeyword(secondFallbackQuery)
+                            if (fallbackQuery1 != null) {
+                                Log.d("searchKeyword", "Retrying with fallback query1: $fallbackQuery1")
+                                searchKeyword(fallbackQuery1, fallbackQuery2)
+                            } else if (fallbackQuery2 != null) {
+                                Log.d("searchKeyword", "Retrying with fallback query2: $fallbackQuery2")
+                                searchKeyword(fallbackQuery2)
                             } else {
                                 Toast.makeText(context, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
                             }
                         } else {
                             addItemsAndMarkers(response.body())
-                            // 첫 번째 검색 결과 클릭 상태로 설정
-                            if (documents.isNotEmpty()) {
-                                clickFirstSearchResult(documents[0])
-                            }
                         }
                     } else {
-                        Log.e("searchKeyword", "Response failed with code: ${response.code()}, message: ${response.message()}")
+                        Log.e("searchKeyword", "Response failed with code: ${response.code()}")
                         Toast.makeText(context, "검색 요청이 실패했습니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -616,29 +611,6 @@ class MenuFragment3 : Fragment() {
                     Toast.makeText(context, "검색 요청이 실패했습니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                 }
             })
-        }
-    }
-
-    private fun clickFirstSearchResult(document: Place) {
-        // 첫 번째 검색 결과 클릭 상태로 설정
-        Log.d("searchKeyword", "First search result: ${document.place_name}")
-        val loc = LatLng.from(document.y.toDouble(), document.x.toDouble())
-        val styles = kakaomap!!.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
-            R.drawable.clicklocation
-        )))
-        val options1 = LabelOptions.from(loc).setStyles(styles)
-        if (searchMarker == null) { // 이미 찍힌 마크가 없을 때
-            searchMarker = layer?.addLabel(options1)
-        } else {
-            layer?.remove(searchMarker)
-            searchMarker = layer?.addLabel(options1) // 마크 삭제 후 새로 추가
-        }
-        // 지도 이동
-        if (kakaomap != null) {
-            val cameraUpdate = CameraUpdateFactory.newCenterPosition(loc, zoomlevel)
-            kakaomap!!.moveCamera(cameraUpdate, CameraAnimation.from(500, true, true))
-        } else {
-            Toast.makeText(context, "알 수 없는 오류가 발생했습니다. 재시도 해주세요.", Toast.LENGTH_SHORT).show()
         }
     }
 
