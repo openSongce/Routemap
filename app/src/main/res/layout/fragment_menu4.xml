@@ -16,8 +16,8 @@
             android:id="@+id/userCard"
             app:cardCornerRadius="20dp"
             app:strokeWidth="2dp"
-            app:strokeColor="@color/custum_color"
-            android:backgroundTint="@color/custum_color"
+            app:strokeColor="@color/favorite_color"
+
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="50dp"
             android:layout_marginStart="20dp"
@@ -25,7 +25,8 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:background="@drawable/profile_gradient_back">
 
             <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/icon"
@@ -164,10 +165,10 @@
             android:layout_marginEnd="10dp"
             android:background="@android:color/transparent"
             android:scaleType="centerCrop"
-
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/edit" />
+            app:srcCompat="@drawable/edit"
+            />
 
     <Button
             android:id="@+id/saveButton"
@@ -189,7 +190,7 @@
             android:id="@+id/menuView"
             app:cardCornerRadius="20dp"
             app:strokeWidth="2dp"
-            app:strokeColor="@color/custum_color"
+            app:strokeColor="@color/favorite_color"
             android:backgroundTint="#FFFFFF"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
@@ -270,14 +271,14 @@
             android:id="@+id/menuView2"
             app:cardCornerRadius="20dp"
             app:strokeWidth="2dp"
-            app:strokeColor="@color/custum_color"
+            app:strokeColor="@color/favorite_color"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginEnd="20dp"
             android:layout_marginStart="20dp"
-            android:layout_marginBottom="10dp">
+            android:layout_marginBottom="40dp">
 
         <LinearLayout
                 android:orientation="vertical"
