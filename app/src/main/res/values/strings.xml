@@ -79,4 +79,12 @@
     <string name="naver_client_id">MBV7Tgt0JlnwEy147nfL</string>
     <string name="naver_client_secret">VXPNBY0VBb</string>
     <string name="naver_client_name">네이버 로그인</string>
+
+    <string-array name="expense_categories">
+        <item>식비</item>
+        <item>교통비</item>
+        <item>숙박</item>
+        <item>여가</item>
+        <item>기타</item>
+    </string-array>
 </resources>

@@ -1,5 +1,6 @@
 package com.example.rootmap
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -57,6 +58,12 @@ class ExpenditureDetailActivity : AppCompatActivity() {
         if (tripname != null && createdBy != null) {
             loadExpenses(createdBy, tripname)
         }
+
+        val btnSettlementGame: Button = findViewById(R.id.btnSettlementGame)
+        btnSettlementGame.setOnClickListener {
+            val intent = Intent(this, SettlementGameActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun loadExpenses(createdBy: String, tripname: String) {
@@ -74,6 +81,7 @@ class ExpenditureDetailActivity : AppCompatActivity() {
                         for (item in routeList) {
                             val name = item["name"] as? String ?: ""
                             val spending = item["spending"] as? String ?: "0"
+
                             expensesList.add(Expense(name, spending))
                             totalExpenditure += spending.replace(",", "").toIntOrNull() ?: 0
                         }

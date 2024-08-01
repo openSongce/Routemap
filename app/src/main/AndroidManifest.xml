@@ -60,6 +60,10 @@
         <activity android:name=".FavoriteTouristSpotsActivity" />
         <activity android:name=".LikedPostsActivity" />
 
+        <activity android:name=".LadderGameActivity" />
+        <activity android:name=".RouletteGameActivity" />
+        <activity android:name=".SettlementGameActivity" />
+
     </application>
 
 </manifest>
