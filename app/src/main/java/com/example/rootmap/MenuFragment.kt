@@ -210,6 +210,9 @@ class MenuFragment : Fragment() {
             }
         }
 
+        showLoadingDialog()
+        fetchTotalPages(currentAreaCode, currentContentTypeId)
+
         return binding.root
     }
 
