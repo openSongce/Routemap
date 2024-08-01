@@ -47,8 +47,15 @@
             android:text="0원 지출"
             android:textStyle="bold"
             android:padding="8dp"
-
             android:textSize="30sp"/>
+
+    <Button
+            android:id="@+id/btnSettlementGame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="정산 게임"
+            android:layout_gravity="center"/>
 
     <TextView
             android:id="@+id/sharedInfo"
