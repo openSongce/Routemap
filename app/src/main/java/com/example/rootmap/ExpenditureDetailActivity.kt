@@ -22,6 +22,7 @@ class ExpenditureDetailActivity : AppCompatActivity() {
     private lateinit var firestore: FirebaseFirestore
     private lateinit var totalExpenditureTextView: TextView
     private lateinit var sharedInfoTextView: TextView
+    private var totalExpenditure: Int = 0 // 총 지출 금액 변수 추가
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +63,7 @@ class ExpenditureDetailActivity : AppCompatActivity() {
         val btnSettlementGame: Button = findViewById(R.id.btnSettlementGame)
         btnSettlementGame.setOnClickListener {
             val intent = Intent(this, SettlementGameActivity::class.java)
+            intent.putExtra("totalExpenditure", totalExpenditure) // 총 지출 금액 전달
             startActivity(intent)
         }
     }
@@ -76,7 +78,7 @@ class ExpenditureDetailActivity : AppCompatActivity() {
                     val document = documentSnapshot.documents[0]
                     val routeList = document.get("routeList") as? List<Map<String, Any>>
                     val sharedList = document.get("shared") as? List<String> ?: emptyList()
-                    var totalExpenditure = 0
+                    totalExpenditure = 0 // 초기화
                     if (routeList != null) {
                         for (item in routeList) {
                             val name = item["name"] as? String ?: ""
@@ -95,16 +97,8 @@ class ExpenditureDetailActivity : AppCompatActivity() {
                     val totalExpenditureFormatted = NumberFormat.getNumberInstance(Locale.US).format(totalExpenditure)
                     totalExpenditureTextView.text = "${totalExpenditureFormatted}원 지출"
 
-                    // 공유된 사람 수와 더치페이 금액 계산
-                    if (sharedList.isNotEmpty()) {
-                        val totalPeople = sharedList.size + 1
-                        val dutchPayAmount = totalExpenditure / totalPeople
-                        val dutchPayAmountFormatted = NumberFormat.getNumberInstance(Locale.US).format(dutchPayAmount)
-                        sharedInfoTextView.text = "공유: ${totalPeople}명\n더치페이 금액: ${dutchPayAmountFormatted}원"
-                        sharedInfoTextView.visibility = TextView.VISIBLE
-                    } else {
-                        sharedInfoTextView.visibility = TextView.GONE
-                    }
+                    // 더치페이 정보는 이제 표시하지 않음
+                    sharedInfoTextView.visibility = TextView.GONE
                 } else {
                     Log.d("ExpenditureDetailActivity", "No documents found for tripname: $tripname")
                 }
@@ -118,13 +112,5 @@ class ExpenditureDetailActivity : AppCompatActivity() {
         val totalExpenditureFormatted = NumberFormat.getNumberInstance(Locale.US).format(totalExpenditure)
         totalExpenditureTextView.text = "${totalExpenditureFormatted}원 지출"
         // 필요 시, 업데이트된 총 지출에 따라 더치페이 금액도 업데이트
-        // 단, sharedInfoTextView가 이미 표시되고 있는 경우에만 업데이트
-        if (sharedInfoTextView.visibility == TextView.VISIBLE) {
-            val totalPeopleText = sharedInfoTextView.text.toString().split("명")[0].split(":")[1].trim()
-            val totalPeople = totalPeopleText.toInt()
-            val dutchPayAmount = totalExpenditure / totalPeople
-            val dutchPayAmountFormatted = NumberFormat.getNumberInstance(Locale.US).format(dutchPayAmount)
-            sharedInfoTextView.text = "공유: ${totalPeople}명\n더치페이 금액: ${dutchPayAmountFormatted}원"
-        }
     }
 }
