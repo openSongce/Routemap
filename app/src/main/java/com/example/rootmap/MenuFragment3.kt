@@ -5,8 +5,12 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Context.LOCATION_SERVICE
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.location.LocationRequest
 import android.os.Bundle
 import android.util.Log
@@ -18,6 +22,11 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.contentValuesOf
+import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -33,6 +42,7 @@ import com.example.rootmap.databinding.RouteaddLayoutBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
@@ -100,6 +110,7 @@ class MenuFragment3 : Fragment() {
     private var requestingLocationUpdates = false
     private var locationRequest: LocationRequest? = null
     private val locationCallback: LocationCallback?=null
+    lateinit var locationManager: LocationManager
     private lateinit var makerList:MutableList<LatLng>
     var label = arrayOf<LodLabel>()
     var layerR: RouteLineLayer? = null
@@ -127,7 +138,6 @@ class MenuFragment3 : Fragment() {
     lateinit var routeDialog:RecyclerviewDialogBinding
     lateinit var owner:String
     private var uivisivle:Int = 1
-
 
     var routeName:String?=null
     private val readyCallback = object: KakaoMapReadyCallback(){
@@ -181,20 +191,54 @@ class MenuFragment3 : Fragment() {
         }
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        locationManager = requireActivity().getSystemService(LOCATION_SERVICE) as LocationManager
+    }
+
+    val locationListener: LocationListener = object : LocationListener{
+        override fun onLocationChanged(location: Location) {
+            Log.d("Map3locationUpdate", "${location.latitude}, ${location.longitude}")
+            val updateLocation: LatLng = LatLng.from(location.latitude, location.longitude)
+            val style = kakaomap!!.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
+                R.drawable.userlocation
+            )))
+            val options = LabelOptions.from(updateLocation).setStyles(style)
+            layer?.remove(currendtMarker)
+            currendtMarker = layer?.addLabel(options)
+        }
+    }
+
     private val lifecycleCallback = object: MapLifeCycleCallback(){
         override fun onMapDestroy() {
-
+            locationManager.removeUpdates(locationListener)
+            Log.d("Map3locationUpdate", "DelUpdates")
         }
         override fun onMapResumed() {
             super.onMapResumed()
+            if (requestingLocationUpdates){
+                if(ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    locationManager.requestLocationUpdates(
+                        LocationManager.GPS_PROVIDER,
+                        1000L,
+                        10.0f,
+                        locationListener
+                    )
+                    Log.d("Map3locationUpdate", "ResumedUpdate")
+                }
+            }
         }
 
         override fun onMapPaused() {
             super.onMapPaused()
+            locationManager.removeUpdates(locationListener)
+            Log.d("Map3locationUpdate", "PausedUpdates")
         }
 
         override fun onMapError(p0: Exception?) {
             Toast.makeText(context,"map error!", Toast.LENGTH_SHORT).show()
+            locationManager.removeUpdates(locationListener)
+            Log.d("Map3locationUpdate", "ErrUpdates")
         }
     }
     init{
@@ -208,6 +252,18 @@ class MenuFragment3 : Fragment() {
         fusedLocationProviderClient =
             LocationServices.getFusedLocationProviderClient(this.context)
         requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+        requestFineLocationPermission(locationListener)
+        requestingLocationUpdates = true
+
+        if(ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                1000L,
+                10.0f,
+                locationListener
+            )
+            Log.d("Map3locationUpdate", "onCreateUpdate")
+        }
     }
     @SuppressLint("MissingPermission")
     override fun onCreateView(
@@ -244,6 +300,12 @@ class MenuFragment3 : Fragment() {
                             var cameraUpdate= CameraUpdateFactory.newCenterPosition(curPosition, zoomlevel)
                             Log.d("Map3curLatLng", curPosition.toString())
                             kakaomap!!.moveCamera(cameraUpdate, CameraAnimation.from(500, true, true))
+                            val style = kakaomap!!.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
+                                R.drawable.userlocation
+                            )))
+                            val options = LabelOptions.from(curPosition).setStyles(style)
+                            layer?.remove(currendtMarker)
+                            currendtMarker = layer?.addLabel(options)
                             Log.d("Map3cameraUpdate", cameraUpdate.position.toString())
                         }
                     }
@@ -943,6 +1005,42 @@ class MenuFragment3 : Fragment() {
 
             }
     }
+
+    private fun requestFineLocationPermission(listener: LocationListener){
+        if (ContextCompat.checkSelfPermission(
+                requireActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // 권한이 없을 경우, 사용자에게 요청
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                PERMISSION_FINE_LOCATION
+            )
+        } else {
+            // 권한이 이미 있을 경우, 위치 정보를 사용할 수 있음
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            PERMISSION_FINE_LOCATION -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    // 권한이 부여되면 위치 정보를 사용할 수 있음
+                } else {
+                    // 권한이 거부되면, 기능 사용 불가
+                    Toast.makeText(context, "위치서비스 권한이 거부되어 지도를 사용하실수 없습니다.", Toast.LENGTH_SHORT).show()
+                }
+                return
+            }
+        }
+    }
+
     companion object {
         /**
          * Use this factory method to create a new instance of
@@ -963,6 +1061,7 @@ class MenuFragment3 : Fragment() {
             }
         const val BASE_URL = "https://dapi.kakao.com/"
         const val API_KEY = "KakaoAK 95ce0663a74fa2702f06bed9a3025342"
+        private const val PERMISSION_FINE_LOCATION = 100
         private var instance: MenuFragment3? = null
         fun getInstance():MenuFragment3?{
             return instance

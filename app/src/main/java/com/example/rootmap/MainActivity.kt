@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         for (fragment in contextList) {
             fragment.arguments = bundle
         }
+
     }
 
     override fun onBackPressed() {
