@@ -27,11 +27,6 @@
             android:padding="10dp"
             app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-                android:id="@+id/searchImg"
-                android:layout_width="30dp"
-                android:layout_height="wrap_content"
-                android:src="@drawable/search" />
 
         <EditText
                 android:id="@+id/searchPostText"
@@ -41,11 +36,16 @@
                 android:ems="10"
                 android:inputType="textEmailAddress"
                 android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp" />
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/edittext_rounded"
+                android:textCursorDrawable="@null"
+                android:textColor="@color/black"
+                android:drawableStart="@drawable/left_search_image"
+                android:drawablePadding="10dp"/>
 
         <ImageView
                 android:id="@+id/postSearchButton"
-                android:layout_width="40dp"
+                android:layout_width="30dp"
                 android:layout_height="wrap_content"
                 android:scaleType="fitCenter"
                 android:src="@drawable/send" />
@@ -53,13 +53,14 @@
 
     <ImageButton
             android:src="@drawable/filter"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:id="@+id/filterButton"
             android:scaleType="fitCenter"
             android:background="@android:color/transparent"
-            android:tint="@color/black"
+            app:tint="@null"
             app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="12dp"
             android:layout_marginEnd="20dp"
             app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
@@ -80,6 +81,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="2dp"
+            app:layoutManager="GridLayoutManager"
+            app:spanCount="2"
             app:layout_constraintTop_toBottomOf="@+id/sortButton"
             android:layout_marginEnd="20dp"
             android:layout_marginStart="20dp"
@@ -88,7 +91,7 @@
             android:id="@+id/postListView" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:src="@android:drawable/ic_menu_add"
+            android:src="@drawable/routemake"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"
@@ -97,7 +100,9 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginBottom="20dp"
             android:layout_marginEnd="20dp"
-            app:backgroundTint="@color/gray"
+            app:backgroundTint="#00FFFFFF"
+            app:maxImageSize="55dp"
+            app:tint="@null"
             android:scaleType="center" />
 
     <ProgressBar

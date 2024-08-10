@@ -5,23 +5,26 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rootmap.databinding.ActivitySettlementGameBinding
+import java.text.NumberFormat
+import java.util.Locale
 
 class SettlementGameActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettlementGameBinding
     private var participantCount: Int = 0
-    private lateinit var participantNames: ArrayList<String>
-    private lateinit var settlementAmounts: ArrayList<String>
-    private lateinit var nameEditTexts: ArrayList<EditText>
-    private lateinit var amountEditTexts: ArrayList<EditText>
     private var selectedGame: String = ""
+    private var totalExpenditure: Int = 0 // 총 지출 금액
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettlementGameBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // ExpenditureDetailActivity에서 전달된 totalExpenditure 값을 가져옴
+        totalExpenditure = intent.getIntExtra("totalExpenditure", 0)
 
         binding.buttonLadderGame.setOnClickListener {
             selectedGame = "LADDER"
@@ -33,11 +36,20 @@ class SettlementGameActivity : AppCompatActivity() {
             showParticipantCountInput()
         }
 
+        binding.buttonDutchPay.setOnClickListener {
+            selectedGame = "DUTCH_PAY"
+            showParticipantCountInput()
+        }
+
         binding.buttonNext.setOnClickListener {
             val countText = binding.editTextParticipantCount.text.toString()
             if (countText.isNotEmpty()) {
                 participantCount = countText.toInt()
-                showNameInputFields()
+                if (selectedGame == "DUTCH_PAY") {
+                    calculateDutchPay()  // 더치페이 계산
+                } else {
+                    showNameInputFields()
+                }
             }
         }
     }
@@ -45,6 +57,7 @@ class SettlementGameActivity : AppCompatActivity() {
     private fun showParticipantCountInput() {
         binding.buttonLadderGame.visibility = View.GONE
         binding.buttonRouletteGame.visibility = View.GONE
+        binding.buttonDutchPay.visibility = View.GONE
         binding.participantInputLayout.visibility = View.VISIBLE
     }
 
@@ -52,71 +65,71 @@ class SettlementGameActivity : AppCompatActivity() {
         binding.buttonNext.visibility = View.GONE
         binding.editTextParticipantCount.visibility = View.GONE
 
-        nameEditTexts = ArrayList()
-        for (i in 1..participantCount) {
-            val editText = EditText(this)
-            editText.hint = "참여자 이름 $i"
-            binding.namesInputLayout.addView(editText)
-            nameEditTexts.add(editText)
-        }
-
-        val buttonNextStep = Button(this).apply {
-            text = if (selectedGame == "LADDER") "다음 단계" else "게임 시작"
-            setOnClickListener {
-                if (selectedGame == "LADDER") showAmountInputFields()
-                else startSelectedGame()
+        // 참여자 이름 입력 필드는 Ladder와 Roulette 게임에서만 필요합니다.
+        if (selectedGame != "DUTCH_PAY") {
+            for (i in 1..participantCount) {
+                val editText = EditText(this)
+                editText.hint = "참여자 이름 $i"
+                binding.namesInputLayout.addView(editText)
             }
-        }
-        binding.namesInputLayout.addView(buttonNextStep)
 
-        binding.namesInputLayout.visibility = View.VISIBLE
+            val buttonNextStep = Button(this).apply {
+                text = "게임 시작"
+                setOnClickListener {
+                    startSelectedGame()
+                }
+            }
+            binding.namesInputLayout.addView(buttonNextStep)
+
+            binding.namesInputLayout.visibility = View.VISIBLE
+        }
     }
 
-    private fun showAmountInputFields() {
-        binding.namesInputLayout.visibility = View.GONE
+    private fun calculateDutchPay() {
+        // 더치페이 금액 계산
+        val dutchPayAmount = totalExpenditure / participantCount
 
-        amountEditTexts = ArrayList()
-        for (i in 1..participantCount) {
-            val editText = EditText(this)
-            editText.hint = "정산 금액 $i"
-            binding.amountsInputLayout.addView(editText)
-            amountEditTexts.add(editText)
-        }
+        // 숫자를 포맷팅하여 3자리마다 쉼표를 추가
+        val dutchPayAmountFormatted = NumberFormat.getNumberInstance(Locale.US).format(dutchPayAmount)
+        val totalExpenditureFormatted = NumberFormat.getNumberInstance(Locale.US).format(totalExpenditure)
 
-        val buttonStartGame = Button(this).apply {
-            text = "게임 시작"
-            setOnClickListener { startSelectedGame() }
-        }
-        binding.amountsInputLayout.addView(buttonStartGame)
+        // 다이얼로그로 결과 표시
+        val dutchPayMessage = """
+            총 지출: ${totalExpenditureFormatted}원
+            참여 인원: ${participantCount}명
+            1인당 더치페이 금액: ${dutchPayAmountFormatted}원
+        """.trimIndent()
 
-        binding.amountsInputLayout.visibility = View.VISIBLE
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("더치페이 결과")
+            .setMessage(dutchPayMessage)
+            .setPositiveButton("확인") { dialog, _ ->
+                dialog.dismiss()
+                finish() // SettlementGameActivity를 종료하고 ExpenditureDetailActivity로 돌아감
+            }
+            .show()
     }
 
     private fun startSelectedGame() {
-        participantNames = ArrayList()
-        for (editText in nameEditTexts) {
+        val participantNames = ArrayList<String>()
+        for (i in 0 until participantCount) {
+            val editText = binding.namesInputLayout.getChildAt(i) as EditText
             participantNames.add(editText.text.toString())
         }
 
-        if (selectedGame == "LADDER") {
-            settlementAmounts = ArrayList()
-            for (editText in amountEditTexts) {
-                settlementAmounts.add(editText.text.toString())
-            }
-            startLadderGame()
-        } else if (selectedGame == "ROULETTE") {
-            startRouletteGame()
+        when (selectedGame) {
+            "LADDER" -> startLadderGame(participantNames)
+            "ROULETTE" -> startRouletteGame(participantNames)
         }
     }
 
-    private fun startLadderGame() {
+    private fun startLadderGame(participantNames: ArrayList<String>) {
         val intent = Intent(this, LadderGameActivity::class.java)
         intent.putStringArrayListExtra("participantNames", participantNames)
-        intent.putStringArrayListExtra("settlementAmounts", settlementAmounts)
         startActivity(intent)
     }
 
-    private fun startRouletteGame() {
+    private fun startRouletteGame(participantNames: ArrayList<String>) {
         val intent = Intent(this, RouletteGameActivity::class.java)
         intent.putStringArrayListExtra("participantNames", participantNames)
         startActivity(intent)

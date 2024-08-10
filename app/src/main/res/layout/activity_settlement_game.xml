@@ -23,6 +23,14 @@
             android:layout_marginTop="16dp"
             android:layout_gravity="center" />
 
+    <Button
+            android:id="@+id/buttonDutchPay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="더치페이"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center" />
+
     <LinearLayout
             android:id="@+id/participantInputLayout"
             android:layout_width="match_parent"
