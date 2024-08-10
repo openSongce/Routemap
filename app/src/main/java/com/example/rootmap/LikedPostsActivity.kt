@@ -83,8 +83,9 @@ class LikedPostsActivity : AppCompatActivity() {
             showLoading(false)
         }
 
-        Firebase.firestore.collection("user").document(auth.currentUser?.uid ?: return).get().addOnSuccessListener {
+        Firebase.firestore.collection("user").document(auth.currentUser?.email?: return).get().addOnSuccessListener {
             user = it.getString("nickname").toString()
+            Log.d("user_test",auth.currentUser?.email.toString())
         }
 
         commentList = mutableListOf()
