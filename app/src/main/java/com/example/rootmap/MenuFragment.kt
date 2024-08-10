@@ -3,6 +3,8 @@ package com.example.rootmap
 import android.Manifest
 import android.app.ProgressDialog
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.text.util.Linkify
@@ -21,9 +23,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.rootmap.databinding.FragmentMenuBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import de.hdodenhof.circleimageview.CircleImageView
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -376,9 +380,12 @@ class MenuFragment : Fragment() {
     private lateinit var loadingDialog: ProgressDialog
     private fun showLoadingDialog() {
         loadingDialog = ProgressDialog(requireContext()).apply {
-            setMessage("Loading...")
+            window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             setCancelable(false)
             show()
+            setContentView(R.layout.custom_progress_dialog)
+            val gifImageView : ImageView = findViewById(R.id.frame_loading)
+            Glide.with(requireContext()).load(R.raw.loading).circleCrop().into(gifImageView)
         }
     }
     private fun hideLoadingDialog() {
