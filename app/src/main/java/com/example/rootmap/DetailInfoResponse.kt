@@ -26,6 +26,9 @@ data class ItemsDetailInfo(
 
 @Root(name = "item", strict = false)
 data class DetailInfoItem(
+    @field:Element(name = "subnum", required = false)
+    var subnum: Int? = 0,
+
     @field:Element(name = "subname", required = false)
     var subname: String? = null,
 

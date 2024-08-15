@@ -1,6 +1,7 @@
 package com.example.rootmap
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.ActivityDetailInfoBinding
@@ -28,11 +29,16 @@ class DetailInfoActivity : AppCompatActivity() {
         detailInfoAdapter = DetailInfoAdapter(emptyList())
         binding.recyclerView.adapter = detailInfoAdapter
 
+        binding.progressBar.visibility = View.VISIBLE
+
         fetchDetailInfo(contentId, contentTypeId)
     }
 
     private fun fetchDetailInfo(contentId: String?, contentTypeId: Int) {
-        if (contentId == null) return
+        if (contentId == null) {
+            binding.progressBar.visibility = View.GONE
+            return
+        }
 
         apiService.getTouristDetailInfo(
             contentId = contentId.toInt(),
@@ -42,6 +48,8 @@ class DetailInfoActivity : AppCompatActivity() {
             serviceKey = "iIzVkyvN4jIuoBR82vVZ0iFXlV65w0gsaiuOlUboGQ45v7PnBXkVOsDoBxoqMul10rfSMk7J+X5YKBxqu2ANRQ=="
         ).enqueue(object : Callback<DetailInfoResponse> {
             override fun onResponse(call: Call<DetailInfoResponse>, response: Response<DetailInfoResponse>) {
+                binding.progressBar.visibility = View.GONE
+
                 if (response.isSuccessful) {
                     response.body()?.body?.items?.item?.let {
                         detailInfoAdapter.updateItems(it)
@@ -50,7 +58,7 @@ class DetailInfoActivity : AppCompatActivity() {
             }
 
             override fun onFailure(call: Call<DetailInfoResponse>, t: Throwable) {
-                // Handle failure
+                binding.progressBar.visibility = View.GONE
             }
         })
     }
