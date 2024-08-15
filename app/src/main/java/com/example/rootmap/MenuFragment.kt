@@ -348,6 +348,11 @@ class MenuFragment : Fragment() {
                             val adapter = TouristAdapter(items, database, auth, this@MenuFragment) { item ->
                                 item.contentid?.let { fetchTouristDetailIntro(it, currentContentTypeId) }
                             }
+
+                            if (currentContentTypeId == 25) {
+                                items.forEach { it.addButtonVisible = false }
+                            }
+
                             binding.recyclerView.adapter = adapter
                         } else {
                             Log.d("API_SUCCESS", "No items found")

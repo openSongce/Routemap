@@ -57,7 +57,8 @@ data class TouristItem(
 
     var likeCount: Int = 0,
 
-    var isLiked: Boolean = false
+    var isLiked: Boolean = false,
+    var addButtonVisible: Boolean = true
 )
 
 @Root(name = "response", strict = false)
