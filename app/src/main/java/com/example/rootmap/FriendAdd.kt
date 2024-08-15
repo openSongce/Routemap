@@ -110,24 +110,24 @@ class FriendAdd : Fragment() {
         }
     }
     fun showCancle(frid: String) {
-            val dBinding = DialogLayoutBinding.inflate(layoutInflater)
-            dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
-            dBinding.bButton.text = "확인"
-            dBinding.content.text = "해당 유저에게 보낸 신청을 취소하겠습니까?"
-            val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
-            val dialog = dialogBuild.show() //다이어로그 창 띄우기
-            var id = currentId.toString()
-            dBinding.bButton.setOnClickListener {
-                db.collection("user").document(id).collection("friend").document(frid)
-                    .delete()
-                db.collection("user").document(frid).collection("friend").document(id)
-                    .delete()
-                refresh()
-                dialog.dismiss()
-            }
-            dBinding.wButton.setOnClickListener {//취소버튼
-                dialog.dismiss()
-            }
+        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
+        dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
+        dBinding.bButton.text = "확인"
+        dBinding.content.text = "해당 유저에게 보낸 신청을 취소하겠습니까?"
+        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        val dialog = dialogBuild.show() //다이어로그 창 띄우기
+        var id = currentId.toString()
+        dBinding.bButton.setOnClickListener {
+            db.collection("user").document(id).collection("friend").document(frid)
+                .delete()
+            db.collection("user").document(frid).collection("friend").document(id)
+                .delete()
+            refresh()
+            dialog.dismiss()
+        }
+        dBinding.wButton.setOnClickListener {//취소버튼
+            dialog.dismiss()
+        }
     }
 
     private fun Context.hideKeyboard(view: View) {
@@ -135,16 +135,16 @@ class FriendAdd : Fragment() {
             getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
-     private fun sendFriendRequest(){
-         text = binding.searchFriendText.text.toString()
-         //데이터베이터에서 해당 ID의 유저 검색
-         when (text) {
-             "" -> Toast.makeText(context, "빈칸입니다.", Toast.LENGTH_SHORT).show()
-             currentId -> Toast.makeText(context, "본인에게 친구신청은 불가능합니다.", Toast.LENGTH_SHORT)
-                 .show()
-             else -> searchUser(text)
-         }
-     }
+    private fun sendFriendRequest(){
+        text = binding.searchFriendText.text.toString()
+        //데이터베이터에서 해당 ID의 유저 검색
+        when (text) {
+            "" -> Toast.makeText(context, "빈칸입니다.", Toast.LENGTH_SHORT).show()
+            currentId -> Toast.makeText(context, "본인에게 친구신청은 불가능합니다.", Toast.LENGTH_SHORT)
+                .show()
+            else -> searchUser(text)
+        }
+    }
 
 
     private fun showDialog(
@@ -152,79 +152,79 @@ class FriendAdd : Fragment() {
         friendDb: CollectionReference
     ) { //다이어로그로 팝업창 구현, 아래의 searchUser()에서 사용
         //여기서 binding은 FriendAdd의 Binding, text는 신청보낼 유저 ID임
-            val dBinding = DialogLayoutBinding.inflate(layoutInflater)
-            dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
-            dBinding.bButton.text = "신청"
-            dBinding.content.text = "${text} 에게 친구 신청을 보내겠습니까?"
-            val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
-            val dialog = dialogBuild.show() //다이어로그 창 띄우기
-            dBinding.bButton.setOnClickListener {//다이어로그 기능 설정
-                //검정 버튼의 기능 구현 ↓
-                context?.hideKeyboard(binding.root) //키보드 내리기 -> 키보드 사용안하는 사람은 사용X
-                var dc_friend = friendDb.whereEqualTo("id", currentId)
-                dc_friend.get().addOnSuccessListener { document ->
-                    if (document.isEmpty) {//신청 보내기
-                        dialog.dismiss() //다이어로그 창 끄기
-                        friendDb.document(currentId.toString())
-                            .set(hashMapOf("id" to currentId, "state" to "0"))//상대의 데이터에 추가
-                        myDb.document(text).set(
-                            hashMapOf("id" to text, "state" to "1")
-                        )//내 데이터에 추가
-                        refresh()
-                        Toast.makeText(this.context, "친구 신청을 보냈습니다.", Toast.LENGTH_SHORT).show()
-                    } else {//이미 데이터가 있는 경우
-                        // val d_id=document.documents[0].id //문서 아이디 저장
-                        dialog.dismiss()
-                        val state =
-                            friendDb.document(currentId.toString()).get()
-                                .addOnSuccessListener { dc ->
-                                    val stateValue = dc.data?.get("state")
-                                    when (stateValue.toString()) {
-                                        "0" -> Toast.makeText(
-                                            this.context,
-                                            "이미 신청을 보낸 상태입니다.",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-
-                                        "1" -> Toast.makeText(
-                                            this.context,
-                                            "이미 요청을 받았습니다. '받은 요청'탭에서 수락하세요.",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-
-                                        "2" -> Toast.makeText(
-                                            this.context,
-                                            "이미 친구입니다.",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                            .show()
-
-                                        else -> Toast.makeText(
-                                            this.context,
-                                            "알 수 없는 값",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                            .show()
-                                    }
-                                }.addOnFailureListener { exception -> //DB접근에 실패했을때
-                                    dialog.dismiss()
-                                    loadFail()
-                                }
-                    }
-                    binding.searchFriendText.text = null
-                }.addOnFailureListener { exception -> //DB접근에 실패했을때
+        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
+        dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
+        dBinding.bButton.text = "신청"
+        dBinding.content.text = "${text} 에게 친구 신청을 보내겠습니까?"
+        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
+        val dialog = dialogBuild.show() //다이어로그 창 띄우기
+        dBinding.bButton.setOnClickListener {//다이어로그 기능 설정
+            //검정 버튼의 기능 구현 ↓
+            context?.hideKeyboard(binding.root) //키보드 내리기 -> 키보드 사용안하는 사람은 사용X
+            var dc_friend = friendDb.whereEqualTo("id", currentId)
+            dc_friend.get().addOnSuccessListener { document ->
+                if (document.isEmpty) {//신청 보내기
+                    dialog.dismiss() //다이어로그 창 끄기
+                    friendDb.document(currentId.toString())
+                        .set(hashMapOf("id" to currentId, "state" to "0"))//상대의 데이터에 추가
+                    myDb.document(text).set(
+                        hashMapOf("id" to text, "state" to "1")
+                    )//내 데이터에 추가
+                    refresh()
+                    Toast.makeText(this.context, "친구 신청을 보냈습니다.", Toast.LENGTH_SHORT).show()
+                } else {//이미 데이터가 있는 경우
+                    // val d_id=document.documents[0].id //문서 아이디 저장
                     dialog.dismiss()
-                    loadFail()
-                }
-            }
-            dBinding.wButton.setOnClickListener {//취소버튼
-                //회색 버튼의 기능 구현 ↓
-                dialog.dismiss()
+                    val state =
+                        friendDb.document(currentId.toString()).get()
+                            .addOnSuccessListener { dc ->
+                                val stateValue = dc.data?.get("state")
+                                when (stateValue.toString()) {
+                                    "0" -> Toast.makeText(
+                                        this.context,
+                                        "이미 신청을 보낸 상태입니다.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
 
+                                    "1" -> Toast.makeText(
+                                        this.context,
+                                        "이미 요청을 받았습니다. '받은 요청'탭에서 수락하세요.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                    "2" -> Toast.makeText(
+                                        this.context,
+                                        "이미 친구입니다.",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+
+                                    else -> Toast.makeText(
+                                        this.context,
+                                        "알 수 없는 값",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+                                }
+                            }.addOnFailureListener { exception -> //DB접근에 실패했을때
+                                dialog.dismiss()
+                                loadFail()
+                            }
+                }
+                binding.searchFriendText.text = null
+            }.addOnFailureListener { exception -> //DB접근에 실패했을때
+                dialog.dismiss()
+                loadFail()
             }
+        }
+        dBinding.wButton.setOnClickListener {//취소버튼
+            //회색 버튼의 기능 구현 ↓
+            dialog.dismiss()
+
+        }
     }
-     private fun refresh(){
-         //수정 필요
+    private fun refresh(){
+        //수정 필요
         data.clear()
         viewLifecycleOwner.lifecycleScope.async {
             loadData()

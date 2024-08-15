@@ -89,4 +89,7 @@
         <item>여가</item>
         <item>기타</item>
     </string-array>
+    <string name="facebook_app_id">1563289437596565</string>
+    <string name="fb_login_protocol_scheme">fb1563289437596565</string>
+    <string name="facebook_client_token">72f8f6a7e23c5f8a0ef684eccbded143</string>
 </resources>

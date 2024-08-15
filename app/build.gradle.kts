@@ -109,4 +109,7 @@ dependencies {
     implementation("com.airbnb.android:lottie:3.1.0")
     implementation("com.github.bumptech.glide:glide:4.13.2")
     annotationProcessor("com.github.bumptech.glide:compiler:4.13.2")
+    implementation("com.facebook.android:facebook-login:latest.release") //페이스북
+    implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
+    implementation("com.google.firebase:firebase-auth-ktx")
 }

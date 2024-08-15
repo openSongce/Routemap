@@ -66,7 +66,7 @@ class MenuFragment4 : Fragment() {
     val binding by lazy { FragmentMenu4Binding.inflate(layoutInflater) }
     lateinit var name: String
     lateinit var nickname: String
-     lateinit var storagePermission:ActivityResultLauncher<String>
+    lateinit var storagePermission:ActivityResultLauncher<String>
     lateinit var galleryLauncher: ActivityResultLauncher<String>
     var fdStrage:FirebaseStorage=FirebaseStorage.getInstance()
     var changePhotoUri:Uri?=null
@@ -200,7 +200,7 @@ class MenuFragment4 : Fragment() {
     }
 
     fun openGallery(){
-            galleryLauncher.launch("image/*")
+        galleryLauncher.launch("image/*")
     }
 
     suspend fun loadMyData(id: String): Boolean {
@@ -222,7 +222,7 @@ class MenuFragment4 : Fragment() {
             true
         } catch (e: FirebaseException) {
             Log.d("img_error", "error")
-          //  photoUri=null
+            //  photoUri=null
             false
         }
     }
