@@ -36,7 +36,6 @@
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -59,10 +58,13 @@
         <activity android:name=".MyRouteActivity" />
         <activity android:name=".FavoriteTouristSpotsActivity" />
         <activity android:name=".LikedPostsActivity" />
-
         <activity android:name=".LadderGameActivity" />
         <activity android:name=".RouletteGameActivity" />
         <activity android:name=".SettlementGameActivity" />
+
+        <activity
+                android:name=".DetailInfoActivity"
+                android:exported="false" />
 
     </application>
 

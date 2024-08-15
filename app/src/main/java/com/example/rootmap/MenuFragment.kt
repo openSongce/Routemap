@@ -2,6 +2,7 @@ package com.example.rootmap
 
 import android.Manifest
 import android.app.ProgressDialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -585,6 +586,14 @@ class MenuFragment : Fragment() {
                 dialogBinding.findViewById<TextView>(R.id.schedule).text = detail.schedule
                 dialogBinding.findViewById<TextView>(R.id.taketime).text = detail.taketime
                 dialogBinding.findViewById<TextView>(R.id.theme).text = detail.theme
+
+                val detailsButton = dialogBinding.findViewById<Button>(R.id.detailsButton)
+                detailsButton.setOnClickListener {
+                    val intent = Intent(requireContext(), DetailInfoActivity::class.java)
+                    intent.putExtra("contentId", detail.contentid)
+                    intent.putExtra("contentTypeId", currentContentTypeId)
+                    startActivity(intent)
+                }
             }
             28 -> { // 레포츠
                 dialogBinding.findViewById<TextView>(R.id.accomcountleports).text = detail.accomcountleports

@@ -26,6 +26,10 @@ data class ItemsDetail(
 
 @Root(name = "item", strict = false)
 data class TouristDetail(
+    // 공통 필드
+    @field:Element(name = "contentid", required = false)
+    var contentid: String? = null,
+
     // Add fields for 관광지 (12)
     @field:Element(name = "accomcount", required = false)
     var accomcount: String? = null,

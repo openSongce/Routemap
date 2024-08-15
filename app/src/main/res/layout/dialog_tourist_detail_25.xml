@@ -118,5 +118,12 @@
                 android:autoLink="phone" />
     </LinearLayout>
 
+        <Button
+                android:id="@+id/detailsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="자세히"
+                android:layout_marginTop="16dp"/>
+
     </LinearLayout>
 </ScrollView>
