@@ -14,19 +14,10 @@ class DetailInfoAdapter(private var items: List<DetailInfoItem>) :
 
         fun bind(item: DetailInfoItem) {
             binding.subname.text = item.subname
-            binding.subdetailoverview.text = item.subdetailoverview
-            binding.subdetailalt.text = item.subdetailalt
 
-            val imageUrl = item.subdetailimg?.replace("http://", "https://")
-            if (!imageUrl.isNullOrEmpty()) {
-                Glide.with(binding.root.context)
-                    .load(imageUrl)
-                    .placeholder(R.drawable.map)
-                    .error(R.drawable.map)
-                    .into(binding.subdetailimg)
-            } else {
-                binding.subdetailimg.setImageResource(R.drawable.map)
-            }
+            // 코스개요에서 <br /> 태그 제거
+            val cleanedOverview = item.subdetailoverview?.replace("<br />", "")
+            binding.subdetailoverview.text = cleanedOverview
         }
     }
 
