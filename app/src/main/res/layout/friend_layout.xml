@@ -2,9 +2,13 @@
 <layout xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:android="http://schemas.android.com/apk/res/android">
+
     <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp">
+
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -15,7 +19,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@color/white"
-                    android:layout_weight="2"/>
+                    android:layout_weight="2" />
 
             <!-- Edit 버튼 -->
             <ImageButton
@@ -50,12 +54,13 @@
                 android:focusable="true"
                 android:background="@color/white"
                 android:visibility="visible">
+
             <LinearLayout
                     android:id="@+id/friendView"
                     android:layout_width="match_parent"
                     android:layout_height="80dp"
                     android:gravity="center_vertical"
-                    android:background="@color/white">
+                    android:background="@drawable/tourist_round">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                         android:id="@+id/picture"

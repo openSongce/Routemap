@@ -86,7 +86,7 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                 }
                 popup.show()
             }
-            binding.tvRemove.setOnClickListener {
+            binding.tvRemove2.setOnClickListener {
                 removeData(this.layoutPosition)
             }
         }

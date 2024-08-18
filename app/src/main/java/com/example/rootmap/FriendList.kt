@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
 import com.example.rootmap.databinding.DialogLayoutBinding
@@ -64,21 +65,19 @@ class FriendList : Fragment() {
         //binding 지정
         myDb = db.collection("user").document(currentId.toString()).collection("friend")
         listAdapter = FriendAdapter()
+        listAdapter.mode="List"
+        listAdapter.myid=currentId.toString()
         return binding.root
-        //여기부터 코드 작성
-        //Toast.makeText(context,currendId, Toast.LENGTH_SHORT).show()
+
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
+        listAdapter.list = data
         viewLifecycleOwner.lifecycleScope.async {
             refresh()
-            listAdapter.mode="List"
-            listAdapter.myid=currentId.toString()
-
             binding.recyclerList.adapter = listAdapter
             binding.recyclerList.layoutManager = LinearLayoutManager(context)
-
         }
+       // binding.recyclerList.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL)) //구분선
         fr=this
         super.onViewCreated(view, savedInstanceState)
     }
@@ -86,7 +85,7 @@ class FriendList : Fragment() {
         data.clear()
         viewLifecycleOwner.lifecycleScope.async {
             loadData()
-            listAdapter.list = data
+         //   listAdapter.list = data
             if (data.isEmpty()) {
                 binding.friendListText.text = "친구가 없습니다."
                 binding.friendListText.visibility = View.VISIBLE

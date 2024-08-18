@@ -109,6 +109,10 @@ class FriendAdapter() : RecyclerView.Adapter<FriendAdapter.FriendHolder>() {
                     }
                 }
             }
+
+            binding.root.setOnClickListener {
+                Log.d("click_test","클릭")
+            }
         }
 
         fun setFriend(friend: Friend) {
