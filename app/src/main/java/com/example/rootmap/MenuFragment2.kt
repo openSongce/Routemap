@@ -15,6 +15,7 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.*
 import com.google.firebase.FirebaseException
@@ -117,11 +118,11 @@ class MenuFragment2 : Fragment() {
                 routeDialog = makeMyPost()
             }
         }
-        binding.postListView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+        //binding.postListView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         CoroutineScope(Dispatchers.Main).launch {
             postlistAdapter.postList = postLists
             binding.postListView.adapter = postlistAdapter
-            binding.postListView.layoutManager = LinearLayoutManager(this@MenuFragment2.context)
+            binding.postListView.layoutManager = GridLayoutManager(this@MenuFragment2.context,2)
         }
 
         routelistAdapter.setItemClickListener(object : MyDocumentAdapter.OnItemClickListener {
@@ -218,7 +219,7 @@ class MenuFragment2 : Fragment() {
         dialogBinding.run {
             listView.layoutManager = LinearLayoutManager(context)
             addTripRouteText.visibility = View.INVISIBLE
-            listView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+            //listView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
             commentButton2.visibility = View.VISIBLE
             downloadButton.visibility = View.VISIBLE
             heartClickButton2.visibility = View.VISIBLE
