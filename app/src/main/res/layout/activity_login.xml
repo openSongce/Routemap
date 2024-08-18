@@ -5,7 +5,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-
     <TextView
             android:id="@+id/textViewTitle"
             android:layout_width="wrap_content"
@@ -25,19 +24,19 @@
     <EditText
             android:id="@+id/email_et"
             android:layout_width="220dp"
-            android:layout_height="50dp"
+            android:layout_height="0dp"
             android:ems="10"
             android:hint="이메일"
             android:textSize="14sp"
             android:paddingStart="8dp"
             android:inputType="textEmailAddress"
             android:background="@drawable/button_rounded"
-            android:layout_marginTop="240dp"
-            android:layout_marginBottom="239dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/btn_googleSignIn"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:layout_marginTop="240dp"
+            android:layout_marginBottom="157dp"
+            app:layout_constraintBottom_toTopOf="@+id/btnGoogleSignIn" />
 
     <EditText
             android:id="@+id/pwd_et"
@@ -49,11 +48,11 @@
             android:paddingStart="8dp"
             android:inputType="textPassword"
             android:background="@drawable/button_rounded"
-            android:layout_marginBottom="184dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/btn_googleSignIn"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/email_et" />
+            app:layout_constraintTop_toBottomOf="@+id/email_et"
+            android:layout_marginTop="4dp"
+            app:layout_constraintHorizontal_bias="0.502" />
 
     <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/loginBtn"
@@ -61,7 +60,6 @@
             android:layout_height="wrap_content"
             android:text="로그인"
             android:background="@drawable/button_rounded"
-
             app:layout_constraintStart_toStartOf="@+id/pwd_et"
             android:layout_marginTop="26dp"
             app:layout_constraintTop_toBottomOf="@+id/pwd_et" />
@@ -72,74 +70,31 @@
             android:layout_height="wrap_content"
             android:text="회원가입"
             android:background="@drawable/button_rounded"
-
             android:layout_marginTop="26dp"
             app:layout_constraintTop_toBottomOf="@+id/pwd_et"
             app:layout_constraintEnd_toEndOf="@+id/pwd_et" />
 
-    <com.google.android.gms.common.SignInButton
-            android:id="@+id/btn_googleSignIn"
-            android:layout_width="245dp"
-            android:layout_height="62dp"
-            android:layout_marginBottom="140dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+    <ImageView
+            android:layout_width="218dp"
+            android:layout_height="0dp"
+            app:srcCompat="@drawable/common_google_signin_btn_text_light_normal"
+            android:id="@+id/btnGoogleSignIn"
+            app:layout_constraintTop_toBottomOf="@+id/email_et"
+            android:layout_marginBottom="23dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/facebookLoginBtn"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+            android:layout_width="104dp"
+            android:layout_height="0dp"
+            app:srcCompat="@drawable/com_facebook_favicon_blue"
+            android:id="@+id/facebookLoginBtn"
+            app:layout_constraintTop_toBottomOf="@+id/btnGoogleSignIn"
+            android:layout_marginBottom="136dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintHorizontal_bias="0.506" />
+            app:layout_constraintBottom_toBottomOf="parent" />
 
-    <ImageButton
-            android:id="@+id/btn_kakaoSignIn"
-            android:layout_width="272dp"
-            android:layout_height="45dp"
-            android:scaleType="fitXY"
-            android:src="@drawable/kakao_login_medium_wide"
-            android:layout_margin="15dp"
-            android:background="@android:color/transparent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="24dp"
-            app:layout_constraintHorizontal_bias="0.496" />
-
-    <com.navercorp.nid.oauth.view.NidOAuthLoginButton
-            android:id="@+id/btn_naverSignIn"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            app:layout_constraintTop_toTopOf="@+id/btn_googleSignIn"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="62dp"
-            app:layout_constraintBottom_toBottomOf="@+id/btn_kakaoSignIn"
-            android:layout_marginBottom="49dp" />
-
-    <Button
-            android:text="네이버 로그아웃"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/tvNaverLogout"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="16dp" />
-
-    <Button
-            android:text="네이버 토큰삭제"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/tvNaverDeleteToken"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="31dp"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-    <TextView
-            android:id="@+id/tv_result"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="id, token: "
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintHorizontal_bias="0.475"
-            android:layout_marginTop="17dp"
-            app:layout_constraintTop_toBottomOf="@+id/tvNaverLogout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

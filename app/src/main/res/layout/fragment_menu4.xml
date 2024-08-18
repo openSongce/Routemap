@@ -211,7 +211,7 @@
                     android:background="#00ff0000"
                     android:gravity="left|center_vertical"
                     android:text="▶ 나의 여행 경로"
-                    android:textColor="@color/custum_color"
+                    android:textColor="@color/black"
                     android:textStyle="bold" />
 
             <Button
@@ -221,7 +221,7 @@
                     android:background="#00ff0000"
                     android:gravity="left|center_vertical"
                     android:text="▶ 가계부"
-                    android:textColor="@color/custum_color"
+                    android:textColor="@color/black"
                     android:textStyle="bold" />
 
             <Button
@@ -231,7 +231,7 @@
                     android:background="#00ff0000"
                     android:gravity="left|center_vertical"
                     android:text="▶ 친구"
-                    android:textColor="@color/custum_color"
+                    android:textColor="@color/black"
                     android:textStyle="bold" />
 
             <Button
@@ -240,7 +240,7 @@
                     android:layout_height="wrap_content"
                     android:background="#00ff0000"
                     android:text="▶ 좋아요 표시한 추천 관광지"
-                    android:textColor="@color/custum_color"
+                    android:textColor="@color/black"
                     android:textStyle="bold"
                     android:gravity="left|center_vertical" />
 
@@ -251,7 +251,7 @@
                     android:background="#00ff0000"
                     android:gravity="left|center_vertical"
                     android:text="▶ 좋아요 표시한 게시판"
-                    android:textColor="@color/custum_color"
+                    android:textColor="@color/black"
                     android:textStyle="bold" />
 
             <Button
@@ -259,8 +259,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="#00ff0000"
-                    android:text="▶비밀번호 변경"
+                    android:text="▶ 비밀번호 변경"
                     android:textColor="@color/black"
+                    android:textStyle="bold"
                     android:gravity="left|center_vertical" />
         </LinearLayout>
 

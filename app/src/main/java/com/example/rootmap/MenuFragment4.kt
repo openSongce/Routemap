@@ -66,7 +66,7 @@ class MenuFragment4 : Fragment() {
     val binding by lazy { FragmentMenu4Binding.inflate(layoutInflater) }
     lateinit var name: String
     lateinit var nickname: String
-     lateinit var storagePermission:ActivityResultLauncher<String>
+    lateinit var storagePermission:ActivityResultLauncher<String>
     lateinit var galleryLauncher: ActivityResultLauncher<String>
     var fdStrage:FirebaseStorage=FirebaseStorage.getInstance()
     var changePhotoUri:Uri?=null
@@ -200,7 +200,7 @@ class MenuFragment4 : Fragment() {
     }
 
     fun openGallery(){
-            galleryLauncher.launch("image/*")
+        galleryLauncher.launch("image/*")
     }
 
     suspend fun loadMyData(id: String): Boolean {
@@ -222,7 +222,7 @@ class MenuFragment4 : Fragment() {
             true
         } catch (e: FirebaseException) {
             Log.d("img_error", "error")
-          //  photoUri=null
+            //  photoUri=null
             false
         }
     }
@@ -255,10 +255,9 @@ class MenuFragment4 : Fragment() {
                 startActivity(intent) // LoginActivity로 화면 전환
             } else {
                 secession(id.toString()) //탈퇴 후 로그인 화면으로 이동
-                val intent = Intent(this.context, LoginActivity::class.java)
+                /*val intent = Intent(this.context, LoginActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-
+                startActivity(intent)*/
             }
             dialog.dismiss()
         }
@@ -287,6 +286,13 @@ class MenuFragment4 : Fragment() {
                 val intent = Intent(this.context, LoginActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
+
+                // 추가 : Save user state to SharedPreferences
+                val sharedPreferences = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+                with(sharedPreferences.edit()) {
+                    putBoolean("is_deleted", true)
+                    apply()
+                }
             }
             .addOnFailureListener { e ->
                 Log.w("Delete", "Error deleting document", e)
@@ -302,36 +308,14 @@ class MenuFragment4 : Fragment() {
                     //Toast.makeText(context, "사용자 계정 삭제 성공", Toast.LENGTH_SHORT).show()
                     Log.d("Delete", "User account deleted.")
                 } else {
-                    Toast.makeText(context, "사용자 계정 삭제 오류", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(context, "사용자 계정 삭제 오류", Toast.LENGTH_SHORT).show()
                     Log.w("Delete", "Error deleting user account", task.exception)
-                }
-            }
-            // 네이버 아이디로 로그인한 경우에만 연동 해제 코드 실행
-            for (profile in it.providerData) {
-                if (profile.providerId == "naver.com") {
-                    NidOAuthLogin().callDeleteTokenApi(object : OAuthLoginCallback {
-                        override fun onSuccess() {
-                            Toast.makeText(context, "네이버 계정 삭제 성공", Toast.LENGTH_SHORT).show()
-                            val intent = Intent(context, LoginActivity::class.java)
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-                            startActivity(intent)
-                        }
-                        override fun onFailure(httpStatus: Int, message: String) {
-                            Toast.makeText(context, "네이버 아이디 삭제 실패", Toast.LENGTH_SHORT).show()
-                        }
-                        override fun onError(errorCode: Int, message: String) {
-                            Toast.makeText(context, "네이버 아이디 삭제 실패", Toast.LENGTH_SHORT).show()
-                            onFailure(errorCode, message)
-                        }
-                    })
-                    break
                 }
             }
         }
         /*if (user != null) {
             user.delete()
         }*/
-
     }
 
     fun showChangePasswordDialog(mode: String) {

@@ -797,13 +797,13 @@ class MenuFragment3 : Fragment() {
         return try {
             var data: MutableMap<*, *>
             db.collection("user").document(owner).collection("route").document(id).get().addOnSuccessListener { documents->
-                    routeName=documents.data?.get("tripname").toString()
-                    data=documents.data as MutableMap<*,*>
-                    dataList.addAll(data["routeList"] as List<Map<String,*>>)
-                    dataList.forEach{
-                        loadListData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String,it["spending"] as String))
-                    }
-                }.await()
+                routeName=documents.data?.get("tripname").toString()
+                data=documents.data as MutableMap<*,*>
+                dataList.addAll(data["routeList"] as List<Map<String,*>>)
+                dataList.forEach{
+                    loadListData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String,it["spending"] as String))
+                }
+            }.await()
             true
         } catch (e: FirebaseException) {
             Log.d("list_test", "error")
