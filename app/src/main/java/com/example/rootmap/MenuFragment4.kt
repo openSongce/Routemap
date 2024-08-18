@@ -66,6 +66,7 @@ class MenuFragment4 : Fragment() {
     val binding by lazy { FragmentMenu4Binding.inflate(layoutInflater) }
     lateinit var name: String
     lateinit var nickname: String
+    lateinit var emailInfo: String
     lateinit var storagePermission:ActivityResultLauncher<String>
     lateinit var galleryLauncher: ActivityResultLauncher<String>
     var fdStrage:FirebaseStorage=FirebaseStorage.getInstance()
@@ -94,6 +95,8 @@ class MenuFragment4 : Fragment() {
             loadMyData(id)
             binding.userName.text = name
             binding.userNickname.text = nickname
+            binding.facebookImage.visibility =
+                if (emailInfo == "페이스북") View.VISIBLE else View.GONE
         }
         binding.MyRouteButton.setOnClickListener {
             val intent = Intent(requireContext(), MyRouteActivity::class.java)
@@ -186,6 +189,7 @@ class MenuFragment4 : Fragment() {
                     loadMyData(id)
                     binding.userName.text = name
                     binding.userNickname.text = nickname
+
                 }
             }
         }
@@ -208,6 +212,7 @@ class MenuFragment4 : Fragment() {
             val mydb = Firebase.firestore.collection("user").document(id).get().await()
             name = mydb.data?.get("name").toString()
             nickname = mydb.data?.get("nickname").toString()
+            emailInfo = mydb.data?.get("emailInfo").toString()
             true
         } catch (e: FirebaseException) {
             Log.d("load_error", "error")
