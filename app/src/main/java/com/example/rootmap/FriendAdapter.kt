@@ -100,7 +100,7 @@ class FriendAdapter() : RecyclerView.Adapter<FriendAdapter.FriendHolder>() {
                         friendButton2.visibility=View.GONE
                         shareCheck.visibility=View.VISIBLE
                         shareCheck.setOnCheckedChangeListener { _, isChecked ->
-                        var friend=friendId.text.toString()
+                            var friend=friendId.text.toString()
                             if(isChecked) mChecked.add(friend)
                             else{
                                 mChecked.remove(friend)
@@ -136,4 +136,3 @@ class FriendAdapter() : RecyclerView.Adapter<FriendAdapter.FriendHolder>() {
 
     }
 }
-
