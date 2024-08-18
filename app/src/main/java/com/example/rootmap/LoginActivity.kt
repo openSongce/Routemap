@@ -25,12 +25,6 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
-import com.kakao.sdk.user.UserApiClient
-import com.navercorp.nid.NaverIdLoginSDK
-import com.navercorp.nid.oauth.NidOAuthLogin
-import com.navercorp.nid.oauth.OAuthLoginCallback
-import com.navercorp.nid.profile.NidProfileCallback
-import com.navercorp.nid.profile.data.NidProfileResponse
 import java.security.MessageDigest
 import com.kakao.sdk.common.model.AuthErrorCause.*
 import android.app.Application
@@ -45,10 +39,6 @@ import com.facebook.login.LoginResult
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.firestore.firestore
-import com.kakao.sdk.common.KakaoSdk
-import com.kakao.sdk.common.model.ClientError
-import com.kakao.sdk.common.model.ClientErrorCause
-import com.kakao.sdk.auth.model.OAuthToken
 
 class LoginActivity : AppCompatActivity() {
     /*private lateinit var emailEt: EditText
@@ -248,7 +238,8 @@ class LoginActivity : AppCompatActivity() {
             val userData = hashMapOf(
                 "id" to currentUser.email,
                 "nickname" to "닉네임",
-                "name" to "이름"
+                "name" to "이름",
+                "emailInfo" to "구글"
             )
 
             db.collection("user").document(currentUser.email.toString())
@@ -291,7 +282,6 @@ class LoginActivity : AppCompatActivity() {
         })
     }
 
-
     private fun firebaseAuthWithFacebook(accessToken: AccessToken?) {
         //AccessToken으로 Facebook 인증
         val credentialFacebook = FacebookAuthProvider.getCredential(accessToken?.token!!)
@@ -300,10 +290,55 @@ class LoginActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 val user = auth.currentUser
                 Toast.makeText(this, "${user?.email}님 반갑습니다!", Toast.LENGTH_SHORT).show()
-                checkGoogleUserInFirestore(user) // 구글 로그인 성공 시 Firestore에서 사용자 존재 여부를 확인
+                checkFacebookUserInFirestore(user) // 구글 로그인 성공 시 Firestore에서 사용자 존재 여부를 확인
             } else {
                 Toast.makeText(this, "Facebook Sign-In failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun checkFacebookUserInFirestore(user: FirebaseUser?) {
+        user?.let { currentUser ->
+            val userDocRef = db.collection("user").document(currentUser.email.toString())
+            userDocRef.get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        // firebase에 등록된 계정일 경우 바로 MainActivity로 이동
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.putExtra("id", currentUser.email)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        // firebase에 등록되지 않은 계정일 경우 saveGoogleUserData() 메소드를 호출하여 사용자 데이터를 Firestore에 저장
+                        saveFacebookUserData(currentUser)
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "오류가 발생했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    private fun saveFacebookUserData(user: FirebaseUser?) { //계정이 등록되지 않은 경우 Firestore에 저장한다.
+        user?.let { currentUser ->
+            val userData = hashMapOf(
+                "id" to currentUser.email,
+                "nickname" to "닉네임",
+                "name" to "이름",
+                "emailInfo" to "페이스북"
+            )
+
+            db.collection("user").document(currentUser.email.toString())
+                .set(userData)
+                .addOnSuccessListener {
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.putExtra("id", currentUser.email)
+                    startActivity(intent)
+                    finish()
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "오류가 발생했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 

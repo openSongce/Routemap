@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.rootmap.databinding.RoutecardviewlistLayoutBinding
 import com.example.rootmap.databinding.RoutelistLayoutBinding
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -15,7 +16,7 @@ class RouteListAdapter : RecyclerView.Adapter<RouteListAdapter.Holder>() {
     var postMode = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        val binding = RoutelistLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = RoutecardviewlistLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return Holder(binding)
     }
 
@@ -39,7 +40,7 @@ class RouteListAdapter : RecyclerView.Adapter<RouteListAdapter.Holder>() {
     }
 
     inner class Holder(
-        val binding: RoutelistLayoutBinding,
+        val binding: RoutecardviewlistLayoutBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun setData(searchLocation: SearchLocation) {
