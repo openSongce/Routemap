@@ -71,6 +71,9 @@ class FriendAdapter() : RecyclerView.Adapter<FriendAdapter.FriendHolder>() {
         var fileUri: Uri? = null
 
         init {
+            binding.swipeView.setOnClickListener {
+                Log.d("click_test","click")
+            }
             when (mode) { //버튼 텍스트와 기능 설정
                 "List" -> {
                     binding.friendButton2.text = "삭제"

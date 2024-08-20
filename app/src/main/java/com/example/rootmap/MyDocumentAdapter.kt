@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.rootmap.databinding.FriendLayoutBinding
 import kotlin.math.min
 
-
+//
 class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
     var list = mutableListOf<MyRouteDocument>()
     lateinit var mode:String
@@ -64,16 +64,19 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
                 }
             }
             if(mode=="View"){
+                //menu3의 루트 보기
                 binding.friendButton2.text="보기"
                 binding.friendButton2.setOnClickListener {
                     itemClickListener.onListClick(it, position)
                 }
             }else if(mode=="Add"){
+                //menu3에서 검색 후 해당 장소를 추가할 루트 선택 시
                 binding.friendButton2.text="추가"
                 binding.friendButton2.setOnClickListener {
                     itemClickListener.onClick(it, position)
                 }
             }else if(mode=="makePost"){
+                //menu2에서 사용
                 binding.friendButton2.text="선택"
                 binding.friendButton2.setOnClickListener {
                     itemClickListener.onClick(it, position)
