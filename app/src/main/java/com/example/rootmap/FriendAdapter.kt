@@ -126,6 +126,7 @@ class FriendAdapter() : RecyclerView.Adapter<FriendAdapter.FriendHolder>() {
                     Glide.with(parent.context).load(fileUri).into(binding.picture)
                 }
             }
+
         }
         suspend fun loadImg(id: String): Boolean {
             return try {
