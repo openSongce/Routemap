@@ -199,13 +199,25 @@ class MenuFragment3 : Fragment() {
     val locationListener: LocationListener = object : LocationListener{
         override fun onLocationChanged(location: Location) {
             Log.d("Map3locationUpdate", "${location.latitude}, ${location.longitude}")
+            Log.d("Map3locationUpdate", "kakaomap: $kakaomap, layer: $layer, currendtMarker: $currendtMarker")
             val updateLocation: LatLng = LatLng.from(location.latitude, location.longitude)
-            val style = kakaomap!!.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
-                R.drawable.userlocation
-            )))
-            val options = LabelOptions.from(updateLocation).setStyles(style)
-            layer?.remove(currendtMarker)
-            currendtMarker = layer?.addLabel(options)
+            if (kakaomap != null) {
+                val style = kakaomap!!.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
+                    R.drawable.userlocation
+                )))
+                val options = LabelOptions.from(updateLocation).setStyles(style)
+
+                if (layer != null) {
+                    if (currendtMarker != null)
+                        layer?.remove(currendtMarker)
+                    currendtMarker = layer?.addLabel(options)
+                } else {
+                    Log.d("Map3locationUpdate", "Layer is null")
+                }
+            }
+            else {
+                Log.d("Map3locationUpdate", "kakaomap is null")
+            }
         }
     }
 
