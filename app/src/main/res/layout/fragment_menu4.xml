@@ -147,7 +147,14 @@
                         android:src="@drawable/com_facebook_favicon_blue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/facebookImage" />
+                        android:id="@+id/facebookImage"
+                        app:srcCompat="@drawable/com_facebook_favicon_blue" />
+
+                <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/googleImage"
+                        app:srcCompat="@drawable/googleg_standard_color_18" />
 
                 <TextView
                         android:id="@+id/userId"
