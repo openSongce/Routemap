@@ -1,19 +1,29 @@
 package com.example.rootmap
-//MyDocumentAdapter.kt
+
 import android.graphics.Canvas
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.text.set
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.LEFT
 import androidx.recyclerview.widget.ItemTouchHelper.RIGHT
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rootmap.databinding.FriendLayoutBinding
 import kotlin.math.min
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.firestore
+
 
 //
 class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
@@ -35,33 +45,74 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
     }
     inner class Holder(
         val binding: FriendLayoutBinding,
-        val mode:String
-    ) :
-        RecyclerView.ViewHolder(binding.root) {
+        val mode: String
+    ) : RecyclerView.ViewHolder(binding.root) {
+
         fun setData(myRouteDocument: MyRouteDocument) {
-            // binding.friendName.text=myRouteDocument.docName
             binding.apply {
                 friendName.text = myRouteDocument.docName
                 picture.visibility = View.GONE
 
-                if (myRouteDocument.owner != userId) {
-                    val ownerText = myRouteDocument.owner
-                    val sharedText = "\n님에게 공유받은 경로"
-                    val fullText = "$ownerText$sharedText"
+                // 현재 로그인한 사용자의 이메일 가져오기
+                val currentUserEmail = FirebaseAuth.getInstance().currentUser?.email
 
-                    val spannableString = SpannableString(fullText)
-                    val colorBlue = ContextCompat.getColor(binding.root.context, R.color.custum_color)
+                if (currentUserEmail != null) {
+                    val db = FirebaseFirestore.getInstance()
+                    val collectionRef = db.collection("user")
+                        .document(currentUserEmail)  // 현재 로그인한 사용자의 이메일로 설정
+                        .collection("route")
 
-                    spannableString.setSpan(
-                        ForegroundColorSpan(colorBlue),
-                        0,
-                        ownerText.length,
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                    friendId.text = spannableString
+                    collectionRef.get()
+                        .addOnSuccessListener { result ->
+                            // 현재 문서의 'shared' 값을 저장할 변수
+                            var currentSharedText = ""
+
+                            for (document in result) {
+                                val sharedField = document.get("shared")
+                                //Log.d("Shared", "$sharedField")
+                                val sharedText: String = when (sharedField) {
+                                    is List<*> -> {
+                                        // List의 각 항목이 String인지 확인하고 문자열로 변환
+                                        sharedField.filterIsInstance<String>().joinToString(",\n")
+                                    }
+                                    else -> "No shared data" // 예상하지 않은 타입일 경우
+                                }
+                                // 현재 문서와 일치하는 경우, 해당 sharedText를 저장
+                                if (document.id == myRouteDocument.docId) {
+                                    currentSharedText = sharedText
+                                    break // 현재 문서의 `shared` 값만을 찾았으므로 반복 종료
+                                }
+                            }
+                            // 'shared' 필드 값이 포함된 문자열을 binding.friendId에 설정
+                            if (myRouteDocument.owner != userId) {
+                                val ownerText = myRouteDocument.owner ?: "Unknown owner"
+                                val sharedText = "\n님에게 공유받은 경로"
+                                val fullText = "$ownerText$sharedText"
+
+                                val spannableString = SpannableString(fullText)
+                                val colorBlue = ContextCompat.getColor(binding.root.context, R.color.custum_color)
+
+                                spannableString.setSpan(
+                                    ForegroundColorSpan(colorBlue),
+                                    0,
+                                    ownerText.length,
+                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                                )
+                                binding.friendId.text = spannableString
+                            } else {
+                                // 현재 문서의 'shared' 값과 "님과 공유 중"을 결합하여 설정
+                                val sharingText = "\n님과 공유 중"
+                                val fullText = "$currentSharedText$sharingText"
+                                binding.friendId.text = fullText
+                            }
+                        }
+                        .addOnFailureListener { exception ->
+                            println("문서 가져오기 실패: $exception")
+                        }
                 } else {
-                    friendId.text = ""
+                    println("로그인된 사용자가 없습니다.")
                 }
+<<<<<<< HEAD
             }
             if(mode=="View"){
                 //menu3의 루트 보기
@@ -82,19 +133,46 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
                 binding.run{
                     optionButton.visibility=View.VISIBLE
                     optionButton.setOnClickListener {
+=======
+
+                if(mode=="View"){
+                    //menu3의 루트 보기
+                    binding.friendButton2.text="보기"
+                    binding.friendButton2.setOnClickListener {
+                        itemClickListener.onListClick(it, position)
+                    }
+                }else if(mode=="Add"){
+                    //menu3에서 검색 후 해당 장소를 추가할 루트 선택 시
+                    binding.friendButton2.text="추가"
+                    binding.friendButton2.setOnClickListener {
+>>>>>>> e15ec5c7599889607f42542a7910b5aa3268e9a7
                         itemClickListener.onClick(it, position)
                     }
+                }else if(mode=="makePost"){
+                    //menu2에서 사용
+                    binding.friendButton2.text="선택"
+                    binding.friendButton2.setOnClickListener {
+                        itemClickListener.onClick(it, position)
+                    }
+                } else{ //내 여행경로 액티비티의 설정(mode==MyRoute)
+                    binding.run{
+                        friendButton2.visibility=View.GONE
+                        optionButton.visibility=View.VISIBLE
+                        optionButton.setOnClickListener {
+                            itemClickListener.onClick(it, position)
+                        }
+                    }
+                }
+                binding.tvRemove.setOnClickListener {
+                    itemClickListener.deleteDoc(it, position)
+                }
+                binding.tvShare.setOnClickListener {
+                    itemClickListener.shareDoc(it, position)
                 }
             }
-            binding.tvRemove.setOnClickListener {
-                itemClickListener.deleteDoc(it, position)
-            }
-            binding.tvShare.setOnClickListener {
-                itemClickListener.shareDoc(it, position)
-            }
         }
-
     }
+
     interface OnItemClickListener {
         fun onClick(v: View, position: Int)
         fun onListClick(v: View, position: Int)

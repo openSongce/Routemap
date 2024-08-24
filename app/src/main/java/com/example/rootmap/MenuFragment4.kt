@@ -97,6 +97,8 @@ class MenuFragment4 : Fragment() {
             binding.userNickname.text = nickname
             binding.facebookImage.visibility =
                 if (emailInfo == "페이스북") View.VISIBLE else View.GONE
+            binding.googleImage.visibility =
+                if (emailInfo == "구글") View.VISIBLE else View.GONE
         }
         binding.MyRouteButton.setOnClickListener {
             val intent = Intent(requireContext(), MyRouteActivity::class.java)
@@ -289,6 +291,7 @@ class MenuFragment4 : Fragment() {
             .addOnSuccessListener {
                 Log.d("Delete", "DocumentSnapshot successfully deleted!")
                 val intent = Intent(this.context, LoginActivity::class.java)
+                //val intent = Intent(requireContext(), LoginActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
 
