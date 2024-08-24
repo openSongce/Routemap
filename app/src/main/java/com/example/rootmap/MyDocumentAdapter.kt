@@ -65,25 +65,21 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
             }
             if(mode=="View"){
                 //menu3의 루트 보기
-                binding.friendButton2.text="보기"
-                binding.friendButton2.setOnClickListener {
+                binding.swipeView.setOnClickListener {
                     itemClickListener.onListClick(it, position)
                 }
             }else if(mode=="Add"){
                 //menu3에서 검색 후 해당 장소를 추가할 루트 선택 시
-                binding.friendButton2.text="추가"
-                binding.friendButton2.setOnClickListener {
+                binding.swipeView.setOnClickListener {
                     itemClickListener.onClick(it, position)
                 }
             }else if(mode=="makePost"){
                 //menu2에서 사용
-                binding.friendButton2.text="선택"
-                binding.friendButton2.setOnClickListener {
+                binding.swipeView.setOnClickListener {
                     itemClickListener.onClick(it, position)
                 }
             } else{ //내 여행경로 액티비티의 설정(mode==MyRoute)
                 binding.run{
-                    friendButton2.visibility=View.GONE
                     optionButton.visibility=View.VISIBLE
                     optionButton.setOnClickListener {
                         itemClickListener.onClick(it, position)

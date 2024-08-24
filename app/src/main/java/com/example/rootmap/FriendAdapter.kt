@@ -76,14 +76,14 @@ class FriendAdapter() : RecyclerView.Adapter<FriendAdapter.FriendHolder>() {
             }
             when (mode) { //버튼 텍스트와 기능 설정
                 "List" -> {
-                    binding.friendButton2.text = "삭제"
-                    binding.friendButton2.setOnClickListener {// 버튼 기능
+                  //  binding.friendButton2.text = "삭제"
+                    binding.swipeView.setOnClickListener {// 버튼 기능
                         FriendList.getInstance()?.showAction(binding.friendId.text.toString())
                     }
                 }
                 "Request" -> {
                     binding.friendButton.text = "거절"
-                    binding.friendButton2.text = "수락"
+                 //   binding.friendButton2.text = "수락"
                     binding.friendButton.visibility = View.VISIBLE
                     binding.friendButton.setOnClickListener {
                         FriendRequest.getInstance()?.showCancle(binding.friendId.text.toString())
@@ -93,7 +93,7 @@ class FriendAdapter() : RecyclerView.Adapter<FriendAdapter.FriendHolder>() {
                     }
                 }
                 "Add" -> {
-                    binding.friendButton2.text = "취소"
+                 //   binding.friendButton2.text = "취소"
                     binding.friendButton2.setOnClickListener {//취소 버튼 기능
                         FriendAdd.getInstance()?.showCancle(binding.friendId.text.toString())
                     }
