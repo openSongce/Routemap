@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.Toast
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Build
 import android.widget.Button
 import android.widget.TextView
@@ -129,9 +130,9 @@ class MenuFragment2 : Fragment() {
             //리스트의 버튼 클릭시 동작
             override fun onClick(v: View, position: Int) {
                 //버튼 눌렀을때의 코드
-                docId = routelistAdapter.list[position].docId
-                docName = routelistAdapter.list[position].docName
-                docOwner = routelistAdapter.list[position].owner
+                    docId = routelistAdapter.list[position].docId
+                    docName = routelistAdapter.list[position].docName
+                    docOwner = routelistAdapter.list[position].owner
                 showFilterPopup("post")
             }
 
@@ -141,11 +142,16 @@ class MenuFragment2 : Fragment() {
         })
 
         postlistAdapter.setItemClickListener(object : RouteListAdapter.OnItemClickListener {
-            @RequiresApi(Build.VERSION_CODES.O)
+            //@RequiresApi(Build.VERSION_CODES.O)
             override fun onClick(v: View, position: Int) {
                 //해당 경로 내의 여행지 리스트 보기
-                val clickItem = postlistAdapter.postList[position]
-                viewRoute(clickItem.routeName, clickItem.docId, clickItem.ownerId)
+                if (binding.postProgressBar.visibility == View.GONE) {
+                    val clickItem = postlistAdapter.postList[position]
+                    viewRoute(clickItem.routeName, clickItem.docId, clickItem.ownerId)
+                }
+                else{
+                    Toast.makeText(context, "로딩중이에요 잠시만 기다려주세요", Toast.LENGTH_SHORT).show()
+                }
             }
 
             override fun onButtonClick(v: View, position: Int) {}
@@ -191,12 +197,14 @@ class MenuFragment2 : Fragment() {
     override fun onStart() {
         CoroutineScope(Dispatchers.Main).launch {
             binding.postProgressBar.visibility = View.VISIBLE
+            binding.postListView.isEnabled = false
             loadPostList()
             if (selectedOptions.isNotEmpty()) {
                 filter()
             }
             postlistAdapter.notifyDataSetChanged()
             binding.postProgressBar.visibility = View.GONE
+            binding.postListView.isEnabled = true
         }
         super.onStart()
     }
@@ -223,6 +231,7 @@ class MenuFragment2 : Fragment() {
             commentButton2.visibility = View.VISIBLE
             downloadButton.visibility = View.VISIBLE
             heartClickButton2.visibility = View.VISIBLE
+            showOnMap.visibility = View.VISIBLE
             likeNum.visibility = View.VISIBLE
             commentButton2.setOnClickListener {
                 commentDialog(docId, currentId)
@@ -230,6 +239,9 @@ class MenuFragment2 : Fragment() {
             downloadButton.setOnClickListener {
                 //  Toast.makeText(this@MenuFragment2.context,"다운",Toast.LENGTH_SHORT).show()
                 showDownloadDialog(routeName, routeData)
+            }
+            showOnMap.setOnClickListener{
+                showRouteOnMap(routeName, docId, ownerId)
             }
         }
         val dialog = dialogBuild.show()
@@ -567,6 +579,15 @@ class MenuFragment2 : Fragment() {
         Firebase.firestore.collection("user").document(currentId).collection("route").document().set(hashMapOf("tripname" to tripname, "routeList" to list, "created" to currentId, "shared" to listOf<String>())).addOnSuccessListener {
             Toast.makeText(context, "성공적으로 저장하였습니다.", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showRouteOnMap(tripname: String, docId:String, ownerId: String){
+        val routeIntent = Intent(context, RouteMapViewActivity::class.java)
+        routeIntent.putExtra("userId", ownerId)
+        routeIntent.putExtra("routeId", docId)
+        routeIntent.putExtra("routeTitle", tripname)
+        Log.d("Intentroute", docId + " " + ownerId + " " + tripname)
+        startActivity(routeIntent)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

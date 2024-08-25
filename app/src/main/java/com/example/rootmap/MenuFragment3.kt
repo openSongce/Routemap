@@ -203,10 +203,8 @@ class MenuFragment3 : Fragment() {
             val updateLocation: LatLng = LatLng.from(location.latitude, location.longitude)
             if (kakaomap != null) {
                 val style = kakaomap!!.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
-                    R.drawable.userlocation
-                )))
+                    R.drawable.userlocation)))
                 val options = LabelOptions.from(updateLocation).setStyles(style)
-
                 if (layer != null) {
                     if (currendtMarker != null)
                         layer?.remove(currendtMarker)
