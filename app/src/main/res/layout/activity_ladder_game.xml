@@ -1,22 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         android:padding="16dp">
 
-    <TextView
+    <EditText
+            android:id="@+id/editTextNumberOfPeople"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="인원 수 입력" />
+
+    <Button
+            android:id="@+id/buttonSubmitNumber"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="사다리게임 구현하기"
-            android:textSize="24sp"
-            android:layout_gravity="center" />
+            android:text="확인" />
+
+    <LinearLayout
+            android:id="@+id/layoutInputFields"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone" />
+
+    <Button
+            android:id="@+id/buttonStartGame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="게임 시작"
+            android:visibility="gone" />
+
+    <com.example.rootmap.LadderView
+            android:id="@+id/ladderView"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:layout_marginTop="20dp"
+            android:background="#EFEFEF" />
 
     <TextView
             android:id="@+id/textViewResult"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="게임 결과"
-            android:textSize="24sp"
-            android:layout_gravity="center" />
-
-</FrameLayout>
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textColor="#000000"
+            android:paddingTop="16dp"/>
+</LinearLayout>

@@ -65,7 +65,7 @@ class RouletteView @JvmOverloads constructor(
 
         if (names.size in 2..8) {
             val sweepAngle = 360f / names.size.toFloat()
-            val colors = listOf("#fe4a49", "#2ab7ca", "#fed766", "#e6e6ea", "#f6abb6", "#005b96", "#7bc043", "#f37735")
+            val colors = listOf("#B39EB5", "#AEC6CF", "#FFB7C5", "#B19CD9", "#ADD8E6", "#FFD1DC", "#C9C0BB", "#AFEEEE")
 
             for (i in names.indices) {
                 fillPaint.color = Color.parseColor(colors[i % colors.size])

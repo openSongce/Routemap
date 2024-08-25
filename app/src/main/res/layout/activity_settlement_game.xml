@@ -7,29 +7,158 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-    <Button
-            android:id="@+id/buttonLadderGame"
+    <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="사다리 게임"
-            android:layout_marginTop="16dp"
-            android:layout_gravity="center" />
+            app:srcCompat="@android:drawable/ic_menu_revert"
+            android:id="@+id/btnGoBack"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="@color/custum_color" />
 
-    <Button
-            android:id="@+id/buttonRouletteGame"
+    <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="룰렛 게임"
-            android:layout_marginTop="16dp"
-            android:layout_gravity="center" />
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:text="정산하기"
+            android:textSize="34sp"
+            android:textStyle="bold"/>
 
-    <Button
-            android:id="@+id/buttonDutchPay"
-            android:layout_width="wrap_content"
+    <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="더치페이"
-            android:layout_marginTop="16dp"
-            android:layout_gravity="center" />
+            android:id="@+id/settlementGameLayout"
+            android:orientation="vertical">
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#D3D3D3"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"/>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center">
+
+            <ImageView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/icon_ladder"/>
+
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="10dp">
+
+                <Button
+                        android:id="@+id/buttonLadderGame"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="사다리 게임"/>
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:text="참여 인원 수와 이름, 정산할 금액을 입력하고, 사다리 타기를 통해 여행 비용을 정산한다."/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#D3D3D3"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"/>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center">
+
+            <ImageView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/icon_roulette"/>
+
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="10dp">
+
+                <Button
+                        android:id="@+id/buttonRouletteGame"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="룰렛 게임"/>
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:text="참여 인원 수와 이름을 입력하고, 룰렛 게임을 통해 정산 면제자를 선정한다."/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#D3D3D3"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"/>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center">
+
+            <ImageView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/icon_scales"/>
+
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="10dp">
+
+                <Button
+                        android:id="@+id/buttonDutchPay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="더치페이"/>
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:text="지출한 총 여행 비용을 입력한 인원 수만큼 나누어 표시한다."/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#D3D3D3"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"/>
+
+    </LinearLayout>
 
     <LinearLayout
             android:id="@+id/participantInputLayout"
@@ -60,14 +189,6 @@
                 android:text="다음"
                 android:layout_marginTop="16dp"
                 android:layout_gravity="center" />
-    </LinearLayout>
-
-    <LinearLayout
-            android:id="@+id/namesInputLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
     </LinearLayout>
 
     <LinearLayout
