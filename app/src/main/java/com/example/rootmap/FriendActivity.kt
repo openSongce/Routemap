@@ -36,10 +36,5 @@ class FriendActivity : AppCompatActivity() {
             super.onBackPressed()
         }
     }
-    fun init(){
-         finish() //인텐트 종료
-         val intent = intent //인텐트
-         startActivity(intent) //액티비티 열기
-    }
 
 }

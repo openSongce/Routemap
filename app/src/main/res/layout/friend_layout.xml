@@ -90,17 +90,6 @@
                         android:gravity="center"
                         android:text="ID" />
 
-                <Button
-                        android:id="@+id/friendButton"
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginRight="5dp"
-                        android:layout_weight="0"
-                        android:backgroundTint="@color/gray"
-                        android:text="액션"
-                        android:visibility="gone" />
-
                 <TextView
                         android:id="@+id/optionButton"
                         android:layout_width="wrap_content"
@@ -122,15 +111,17 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         app:srcCompat="@android:drawable/btn_dialog"
-                        android:id="@+id/imageButton2"
-                        android:layout_weight="0" />
+                        android:id="@+id/xButton"
+                        android:layout_weight="0"
+                        android:visibility="gone" />
 
                 <ImageButton
                         android:src="?android:attr/textCheckMark"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/imageButton3"
-                        android:layout_weight="0" />
+                        android:id="@+id/checkButton"
+                        android:layout_weight="0"
+                        android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>

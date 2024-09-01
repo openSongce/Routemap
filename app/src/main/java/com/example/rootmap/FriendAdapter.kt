@@ -76,31 +76,31 @@ class FriendAdapter() : RecyclerView.Adapter<FriendAdapter.FriendHolder>() {
             }
             when (mode) { //버튼 텍스트와 기능 설정
                 "List" -> {
-                  //  binding.friendButton2.text = "삭제"
                     binding.swipeView.setOnClickListener {// 버튼 기능
                         FriendList.getInstance()?.showAction(binding.friendId.text.toString())
                     }
                 }
                 "Request" -> {
-                    binding.friendButton.text = "거절"
-                 //   binding.friendButton2.text = "수락"
-                    binding.friendButton.visibility = View.VISIBLE
-                    binding.friendButton.setOnClickListener {
-                        FriendRequest.getInstance()?.showCancle(binding.friendId.text.toString())
-                    }
-                    binding.friendButton2.setOnClickListener {//수락 버튼 기능
-                        FriendRequest.getInstance()?.showAccept(binding.friendId.text.toString())
+                    binding.run {
+                        xButton.visibility = View.VISIBLE
+                        checkButton.visibility = View.VISIBLE
+                        xButton.setOnClickListener {
+                            FriendRequest.getInstance()?.showCancle(binding.friendId.text.toString())
+                        }
+                        checkButton.setOnClickListener {//수락 버튼 기능
+                            FriendRequest.getInstance()?.showAccept(binding.friendId.text.toString())
+                        }
                     }
                 }
                 "Add" -> {
                  //   binding.friendButton2.text = "취소"
-                    binding.friendButton2.setOnClickListener {//취소 버튼 기능
+                    binding.xButton.visibility = View.VISIBLE
+                    binding.xButton.setOnClickListener {//취소 버튼 기능
                         FriendAdd.getInstance()?.showCancle(binding.friendId.text.toString())
                     }
                 }
                 "RouteShare"->{
                     binding.run {
-                        friendButton2.visibility=View.GONE
                         shareCheck.visibility=View.VISIBLE
                         shareCheck.setOnCheckedChangeListener { _, isChecked ->
                             var friend=friendId.text.toString()
