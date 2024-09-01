@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rootmap.databinding.ActivitySettlementGameBinding
@@ -23,17 +24,24 @@ class SettlementGameActivity : AppCompatActivity() {
         binding = ActivitySettlementGameBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val btnGoBack: ImageButton = findViewById(R.id.btnGoBack)
+        btnGoBack.setOnClickListener {
+            finish() // 현재 액티비티를 종료하고 이전 액티비티로
+        }
+
         // ExpenditureDetailActivity에서 전달된 totalExpenditure 값을 가져옴
         totalExpenditure = intent.getIntExtra("totalExpenditure", 0)
 
         binding.buttonLadderGame.setOnClickListener {
-            selectedGame = "LADDER"
-            showParticipantCountInput()
+            // 사다리 게임 액티비티로 이동
+            val intent = Intent(this, LadderGameActivity::class.java)
+            startActivity(intent)
         }
 
         binding.buttonRouletteGame.setOnClickListener {
-            selectedGame = "ROULETTE"
-            showParticipantCountInput()
+            // 룰렛 게임 액티비티로 이동
+            val intent = Intent(this, RouletteGameActivity::class.java)
+            startActivity(intent)
         }
 
         binding.buttonDutchPay.setOnClickListener {
@@ -47,42 +55,14 @@ class SettlementGameActivity : AppCompatActivity() {
                 participantCount = countText.toInt()
                 if (selectedGame == "DUTCH_PAY") {
                     calculateDutchPay()  // 더치페이 계산
-                } else {
-                    showNameInputFields()
                 }
             }
         }
     }
 
     private fun showParticipantCountInput() {
-        binding.buttonLadderGame.visibility = View.GONE
-        binding.buttonRouletteGame.visibility = View.GONE
-        binding.buttonDutchPay.visibility = View.GONE
+        binding.settlementGameLayout.visibility = View.GONE
         binding.participantInputLayout.visibility = View.VISIBLE
-    }
-
-    private fun showNameInputFields() {
-        binding.buttonNext.visibility = View.GONE
-        binding.editTextParticipantCount.visibility = View.GONE
-
-        // 참여자 이름 입력 필드는 Ladder와 Roulette 게임에서만 필요합니다.
-        if (selectedGame != "DUTCH_PAY") {
-            for (i in 1..participantCount) {
-                val editText = EditText(this)
-                editText.hint = "참여자 이름 $i"
-                binding.namesInputLayout.addView(editText)
-            }
-
-            val buttonNextStep = Button(this).apply {
-                text = "게임 시작"
-                setOnClickListener {
-                    startSelectedGame()
-                }
-            }
-            binding.namesInputLayout.addView(buttonNextStep)
-
-            binding.namesInputLayout.visibility = View.VISIBLE
-        }
     }
 
     private fun calculateDutchPay() {
@@ -108,30 +88,5 @@ class SettlementGameActivity : AppCompatActivity() {
                 finish() // SettlementGameActivity를 종료하고 ExpenditureDetailActivity로 돌아감
             }
             .show()
-    }
-
-    private fun startSelectedGame() {
-        val participantNames = ArrayList<String>()
-        for (i in 0 until participantCount) {
-            val editText = binding.namesInputLayout.getChildAt(i) as EditText
-            participantNames.add(editText.text.toString())
-        }
-
-        when (selectedGame) {
-            "LADDER" -> startLadderGame(participantNames)
-            "ROULETTE" -> startRouletteGame(participantNames)
-        }
-    }
-
-    private fun startLadderGame(participantNames: ArrayList<String>) {
-        val intent = Intent(this, LadderGameActivity::class.java)
-        intent.putStringArrayListExtra("participantNames", participantNames)
-        startActivity(intent)
-    }
-
-    private fun startRouletteGame(participantNames: ArrayList<String>) {
-        val intent = Intent(this, RouletteGameActivity::class.java)
-        intent.putStringArrayListExtra("participantNames", participantNames)
-        startActivity(intent)
     }
 }

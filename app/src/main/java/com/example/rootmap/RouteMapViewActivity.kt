@@ -1,8 +1,11 @@
 package com.example.rootmap
 
 import android.R
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.util.AttributeSet
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rootmap.databinding.ActivityRouteMapViewBinding
@@ -21,6 +24,12 @@ import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
 import com.kakao.vectormap.label.LabelTextStyle
+import com.kakao.vectormap.route.RouteLine
+import com.kakao.vectormap.route.RouteLineLayer
+import com.kakao.vectormap.route.RouteLineOptions
+import com.kakao.vectormap.route.RouteLinePattern
+import com.kakao.vectormap.route.RouteLineSegment
+import com.kakao.vectormap.route.RouteLineStyle
 import com.kakao.vectormap.shape.MapPoints
 import com.kakao.vectormap.shape.PolylineOptions
 import com.kakao.vectormap.shape.PolylineStyle
@@ -30,6 +39,8 @@ class RouteMapViewActivity : AppCompatActivity() {
     lateinit var myDb: CollectionReference
     private val duration = 500
     var cnt: Int = 0
+    var byLevelLine: RouteLine? = null
+    var routeLineLayer: RouteLineLayer? = null
 
     private val readyCallback = object : KakaoMapReadyCallback() {
         override fun onMapReady(kakaoMap: KakaoMap) {
@@ -39,8 +50,9 @@ class RouteMapViewActivity : AppCompatActivity() {
             var dataList = mutableListOf<Map<String, *>>()
             var data: MutableMap<*, *>
             var glist = mutableListOf<GeoPoint>()
+            routeLineLayer = kakaoMap.routeLineManager?.getLayer()
 
-            myDb = db.collection("user").document(intent.getStringExtra("id").toString())
+            myDb = db.collection("user").document(intent.getStringExtra("userId").toString())
                 .collection("route")
             myDb.document(intent.getStringExtra("routeId").toString())
                 .get()
@@ -66,7 +78,11 @@ class RouteMapViewActivity : AppCompatActivity() {
                             val label: Label = layer!!.addLabel(options)
                             cnt++
                         }
-                        var areaPolyline = shapeManager!!.layer.addPolyline(getAreaOptions(list)!!)
+                        val styles = RouteLineStyle.from(20f, Color.GREEN, 1f, Color.WHITE).setZoomLevel(15)
+                            .setPattern(RouteLinePattern.from(baseContext, com.example.rootmap.R.style.GreenRouteArrowLineStyle))
+                        val options: RouteLineOptions =
+                            RouteLineOptions.from(RouteLineSegment.from(list, styles))
+                        byLevelLine = routeLineLayer?.addRouteLine(options)
                         if(cnt!=0) {
                             kakaoMap.moveCamera(
                                 CameraUpdateFactory.newCenterPosition(
@@ -92,7 +108,7 @@ class RouteMapViewActivity : AppCompatActivity() {
 
     private val lifecycleCallback = object : MapLifeCycleCallback() {
         override fun onMapDestroy() {
-            Toast.makeText(this@RouteMapViewActivity, "뒤로가기", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(this@RouteMapViewActivity, "뒤로가기", Toast.LENGTH_SHORT).show()
         }
 
         override fun onMapError(p0: Exception?) {
@@ -111,15 +127,11 @@ class RouteMapViewActivity : AppCompatActivity() {
         setContentView(view)
 
         binding.mapViewId.start(lifecycleCallback, readyCallback)
+        binding.routeTitle.setText("")
+        binding.routeTitle.setText(intent.getStringExtra("routeTitle").toString())
 
     }
 
-    fun getAreaOptions(list: MutableList<LatLng>): PolylineOptions? {
-        return PolylineOptions.from(
-            MapPoints.fromLatLng(list),
-            PolylineStyle.from(10f, Color.parseColor("#80ff2c35"), 3f, Color.RED)
-        )
-    }
 }
 
 

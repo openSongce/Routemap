@@ -99,11 +99,16 @@ class MyDocumentAdapter() : RecyclerView.Adapter<MyDocumentAdapter.Holder>()  {
                                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                                 )
                                 binding.friendId.text = spannableString
-                            } else {
+                            }
+                            else {
                                 // 현재 문서의 'shared' 값과 "님과 공유 중"을 결합하여 설정
-                                val sharingText = "\n님과 공유 중"
-                                val fullText = "$currentSharedText$sharingText"
-                                binding.friendId.text = fullText
+                                //val sharingText = "\n님과 공유 중"
+                                //val fullText = "$currentSharedText"
+                                if (currentSharedText != "") {
+                                    val sharingText = "\n님과 공유 중"
+                                    val fullText = "$currentSharedText$sharingText"
+                                    binding.friendId.text = fullText
+                                } else binding.friendId.text = ""
                             }
                         }
                         .addOnFailureListener { exception ->
