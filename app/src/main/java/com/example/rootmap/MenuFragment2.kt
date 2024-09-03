@@ -121,6 +121,7 @@ class MenuFragment2 : Fragment() {
                 routeDialog = makeMyPost()
             }
         }
+
         //binding.postListView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         CoroutineScope(Dispatchers.Main).launch {
             postlistAdapter.postList = postLists
@@ -200,6 +201,8 @@ class MenuFragment2 : Fragment() {
         CoroutineScope(Dispatchers.Main).launch {
             binding.postProgressBar.visibility = View.VISIBLE
             binding.postListView.isEnabled = false
+            binding.postListView.suppressLayout(true)
+            Log.d("onStart", "false")
             loadPostList()
             if (selectedOptions.isNotEmpty()) {
                 filter()
@@ -207,6 +210,8 @@ class MenuFragment2 : Fragment() {
             postlistAdapter.notifyDataSetChanged()
             binding.postProgressBar.visibility = View.GONE
             binding.postListView.isEnabled = true
+            binding.postListView.suppressLayout(false)
+            Log.d("onStart", "true")
         }
         super.onStart()
     }
