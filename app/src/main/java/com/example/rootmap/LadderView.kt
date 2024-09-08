@@ -208,7 +208,9 @@ class LadderView(context: Context, attrs: AttributeSet? = null) : View(context, 
             for (j in 0 until numLines) {
                 var yPosition: Int
                 do {
-                    yPosition = random.nextInt(height - 200) + 100 // Y 위치를 무작위로 결정
+                    // height가 200보다 작은 경우를 처리해 0 이하로 전달되지 않도록 수정
+                    val maxY = (height - 200).coerceAtLeast(1) // 최소 1을 보장
+                    yPosition = random.nextInt(maxY) + 100 // Y 위치를 무작위로 결정
                 } while (yPosition in usedYPositions || (usedYPositions.any { Math.abs(it - yPosition) < minSpacing }))
                 // 동일한 Y 위치에 중복 가로선이 생기지 않도록 하고, 최소 간격 유지
 

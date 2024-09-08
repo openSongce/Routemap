@@ -6,17 +6,45 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-    <EditText
-            android:id="@+id/editTextNumberOfPeople"
+    <LinearLayout
+            android:id="@+id/participantInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="인원 수 입력" />
+            android:orientation="vertical"
+            android:layout_marginTop="16dp">
 
-    <Button
-            android:id="@+id/buttonSubmitNumber"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="확인" />
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="참여 인원 수"
+                android:textSize="18sp"
+                android:layout_marginBottom="8dp" />
+
+        <!-- 인원 수 선택용 SeekBar -->
+        <SeekBar
+                android:id="@+id/seekBarParticipantCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="6"
+                android:progress="0" />
+
+        <!-- 선택된 인원 수 표시 -->
+        <TextView
+                android:id="@+id/textViewSelectedCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="참여 인원: 2명"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
+
+        <Button
+                android:id="@+id/buttonNext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="다음"
+                android:layout_marginTop="16dp"
+                android:layout_gravity="center" />
+    </LinearLayout>
 
     <LinearLayout
             android:id="@+id/layoutInputFields"
@@ -24,6 +52,38 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone" />
+
+    <!-- 이름 입력 필드 레이아웃 -->
+    <LinearLayout
+            android:id="@+id/nameInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginTop="16dp">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="이름 입력"
+                android:textSize="18sp"
+                android:layout_marginBottom="8dp" />
+    </LinearLayout>
+
+    <!-- 금액 입력 필드 레이아웃 -->
+    <LinearLayout
+            android:id="@+id/amountInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginTop="16dp">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="금액 입력"
+                android:textSize="18sp"
+                android:layout_marginBottom="8dp" />
+    </LinearLayout>
 
     <Button
             android:id="@+id/buttonStartGame"
@@ -34,6 +94,7 @@
 
     <com.example.rootmap.LadderView
             android:id="@+id/ladderView"
+            android:visibility="invisible"
             android:layout_width="match_parent"
             android:layout_height="400dp"
             android:layout_marginTop="20dp"
@@ -47,4 +108,12 @@
             android:gravity="center"
             android:textColor="#000000"
             android:paddingTop="16dp"/>
+
+    <Button
+            android:id="@+id/buttonConfirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="확인"
+            android:layout_gravity="center"
+            android:visibility="gone" />
 </LinearLayout>
