@@ -97,7 +97,7 @@
             android:layout_marginStart="10dp"
             app:layout_constraintBottom_toTopOf="@+id/bottom_button"
             android:scaleType="fitCenter"
-            app:tint="@color/selected_button_text"
+            app:tint="@color/white"
             android:background="@drawable/button_round_rectangle" />
 
     <ImageButton
@@ -112,7 +112,7 @@
             app:layout_constraintBottom_toTopOf="@+id/bottom_button"
             android:scaleType="fitCenter"
             android:padding = "5dp"
-            app:tint="@color/selected_button_text"
+            app:tint="@color/white"
             android:background="@drawable/button_round_rectangle" />
 
     <ImageButton

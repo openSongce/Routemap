@@ -7,15 +7,16 @@
         tools:context=".MyRouteActivity">
 
     <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="55dp"
+            android:layout_height="50dp"
             app:srcCompat="@android:drawable/ic_menu_revert"
+            app:tint="@color/white"
             android:id="@+id/backButton"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
-            android:backgroundTint="@color/custum_color" />
+            android:background="@drawable/button_round_rectangle" />
 
     <TextView
             android:id="@+id/textViewMyRoute"
@@ -31,12 +32,10 @@
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp" />
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/linearLayout"
-            android:layout_width="408dp"
+            android:layout_width="match_parent"
             android:layout_height="95dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
             app:layout_constraintTop_toBottomOf="@+id/textViewMyRoute"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -47,25 +46,36 @@
                 android:id="@+id/imageView"
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
-                android:src="@drawable/search" />
+                android:src="@drawable/search"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginStart="10dp"/>
 
         <EditText
                 android:id="@+id/searchMyRouteText"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:ems="10"
                 android:inputType="textEmailAddress"
                 android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp" />
+                android:layout_marginEnd="10dp"
+                app:layout_constraintStart_toEndOf="@id/imageView"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/mRSearchButton"/>
 
         <ImageView
                 android:id="@+id/mRSearchButton"
                 android:layout_width="40dp"
                 android:layout_height="wrap_content"
                 android:scaleType="fitCenter"
-                android:src="@drawable/send" />
-    </LinearLayout>
+                android:src="@drawable/send"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="10dp"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerList"
@@ -118,7 +128,7 @@
             app:layout_constraintBottom_toTopOf="@+id/textViewMyRoute"
             android:background="@android:color/transparent"
             android:visibility="gone"
-            android:tint="@color/light_blue_900"
+            app:tint="@color/light_blue_900"
             app:layout_constraintEnd_toStartOf="@+id/routeSaveButton2"
             android:layout_marginEnd="10dp" />
 
@@ -132,7 +142,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
             android:background="@android:color/transparent"
-            android:tint="@color/light_blue_900"
+            app:tint="@color/light_blue_900"
             app:layout_constraintBottom_toTopOf="@+id/textViewMyRoute"
             android:layout_marginEnd="10dp"
             android:visibility="gone" />

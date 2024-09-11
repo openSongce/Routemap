@@ -150,7 +150,8 @@ class MenuFragment2 : Fragment() {
                 //해당 경로 내의 여행지 리스트 보기
                 if (binding.postProgressBar.visibility == View.GONE) {
                     val clickItem = postlistAdapter.postList[position]
-                    viewRoute(clickItem.routeName, clickItem.docId, clickItem.ownerId)
+                    //viewRoute(clickItem.routeName, clickItem.docId, clickItem.ownerId)
+                    showRouteOnMap(clickItem.routeName, clickItem.docId, clickItem.ownerId, currentId) //지도화면으로 바로 전환
                 }
                 else{
                     Toast.makeText(context, "로딩중이에요 잠시만 기다려주세요", Toast.LENGTH_SHORT).show()
@@ -248,7 +249,7 @@ class MenuFragment2 : Fragment() {
                 showDownloadDialog(routeName, routeData)
             }
             showOnMap.setOnClickListener{
-                showRouteOnMap(routeName, docId, ownerId)
+                showRouteOnMap(routeName, docId, ownerId, currentId)
             }
         }
         val dialog = dialogBuild.show()
@@ -588,9 +589,10 @@ class MenuFragment2 : Fragment() {
         }
     }
 
-    private fun showRouteOnMap(tripname: String, docId:String, ownerId: String){
+    private fun showRouteOnMap(tripname: String, docId:String, ownerId: String, currId: String){
         val routeIntent = Intent(context, RouteMapViewActivity::class.java)
-        routeIntent.putExtra("userId", ownerId)
+        routeIntent.putExtra("ownerId", ownerId)
+        routeIntent.putExtra("currId", currId)
         routeIntent.putExtra("routeId", docId)
         routeIntent.putExtra("routeTitle", tripname)
         Log.d("Intentroute", docId + " " + ownerId + " " + tripname)

@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <corners android:radius="10dp" />
-    <solid android:color="@color/custum_color" /> <!-- 버튼 배경색 (필요에 따라 변경 가능) -->
+    <gradient
+            android:angle="315"
+            android:startColor="#FEA3C5"
+            android:centerColor="#FE6B9B"
+            android:endColor="#FE6B9B"
+            android:type="radial"
+            android:gradientRadius="100%p"
+            android:centerX="35%p"
+            android:centerY="35%p"/> <!-- 버튼 배경색 (필요에 따라 변경 가능) -->
 </shape>
