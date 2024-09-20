@@ -1,21 +1,28 @@
 package com.example.rootmap
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 class LadderGameActivity : AppCompatActivity() {
 
-    private lateinit var layoutInputFields: LinearLayout
+
+    private lateinit var participantInputLayout: LinearLayout
+    private lateinit var nameInputLayout: LinearLayout
+    private lateinit var amountInputLayout: LinearLayout
     private lateinit var ladderView: LadderView
-    private lateinit var editTextNumberOfPeople: EditText
-    private lateinit var buttonSubmitNumber: View
+    private lateinit var seekBarParticipantCount: SeekBar
+    private lateinit var textViewSelectedCount: TextView
+    private lateinit var buttonNext: Button
     private lateinit var buttonStartGame: View
     private lateinit var textViewResult: TextView
-    private var numberOfPeople: Int = 0
+    private lateinit var buttonConfirm: Button
+    private var numberOfPeople: Int = 2
     private val names = mutableListOf<String>()
     private val amounts = mutableListOf<Int>()
 
@@ -23,32 +30,50 @@ class LadderGameActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ladder_game)
 
-        editTextNumberOfPeople = findViewById(R.id.editTextNumberOfPeople)
-        buttonSubmitNumber = findViewById(R.id.buttonSubmitNumber)
-        layoutInputFields = findViewById(R.id.layoutInputFields)
+        participantInputLayout = findViewById(R.id.participantInputLayout)
+        nameInputLayout = findViewById(R.id.nameInputLayout)
+        amountInputLayout = findViewById(R.id.amountInputLayout)
+        seekBarParticipantCount = findViewById(R.id.seekBarParticipantCount)
+        textViewSelectedCount = findViewById(R.id.textViewSelectedCount)
+        buttonNext = findViewById(R.id.buttonNext)
         ladderView = findViewById(R.id.ladderView)
         buttonStartGame = findViewById(R.id.buttonStartGame)
         textViewResult = findViewById(R.id.textViewResult)
+        buttonConfirm = findViewById(R.id.buttonConfirm)
 
-        buttonSubmitNumber.setOnClickListener {
-            numberOfPeople = editTextNumberOfPeople.text.toString().toIntOrNull() ?: 0
-            if (numberOfPeople > 0) {
-                generateInputFields(numberOfPeople)
-                layoutInputFields.visibility = View.VISIBLE
-                buttonStartGame.visibility = View.VISIBLE
-            } else {
-                Toast.makeText(this, "유효한 인원 수를 입력하세요.", Toast.LENGTH_SHORT).show()
+        // SeekBar 값 변경 시 선택된 인원 수 업데이트
+        seekBarParticipantCount.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                numberOfPeople = progress + 2 // 0~6을 2~8로 변환
+                textViewSelectedCount.text = "참여 인원: ${numberOfPeople}명"
             }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        // "다음" 버튼 클릭 시 입력 필드 생성
+        buttonNext.setOnClickListener {
+            generateInputFields(numberOfPeople)
+            nameInputLayout.visibility = View.VISIBLE
+            amountInputLayout.visibility = View.VISIBLE
+            buttonStartGame.visibility = View.VISIBLE
         }
 
         buttonStartGame.setOnClickListener {
             collectInputData()
             startLadderGame()
         }
+
+        buttonConfirm.setOnClickListener {
+            finish() // 액티비티 종료
+        }
     }
 
     private fun generateInputFields(count: Int) {
-        layoutInputFields.removeAllViews()
+        nameInputLayout.removeAllViews()
+        amountInputLayout.removeAllViews()
+
         for (i in 1..count) {
             val editTextName = EditText(this).apply {
                 hint = "이름 $i 입력"
@@ -57,7 +82,7 @@ class LadderGameActivity : AppCompatActivity() {
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 )
             }
-            layoutInputFields.addView(editTextName)
+            nameInputLayout.addView(editTextName)
 
             val editTextAmount = EditText(this).apply {
                 hint = "금액 $i 입력"
@@ -66,7 +91,7 @@ class LadderGameActivity : AppCompatActivity() {
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 )
             }
-            layoutInputFields.addView(editTextAmount)
+            amountInputLayout.addView(editTextAmount)
         }
     }
 
@@ -74,9 +99,9 @@ class LadderGameActivity : AppCompatActivity() {
         names.clear()
         amounts.clear()
 
-        for (i in 0 until layoutInputFields.childCount step 2) {
-            val nameField = layoutInputFields.getChildAt(i) as EditText
-            val amountField = layoutInputFields.getChildAt(i + 1) as EditText
+        for (i in 0 until nameInputLayout.childCount) {
+            val nameField = nameInputLayout.getChildAt(i) as EditText
+            val amountField = amountInputLayout.getChildAt(i) as EditText
 
             val name = nameField.text.toString()
             val amount = amountField.text.toString().toIntOrNull() ?: 0
@@ -95,10 +120,12 @@ class LadderGameActivity : AppCompatActivity() {
         }
 
         // 입력 필드와 버튼 숨기기
-        editTextNumberOfPeople.visibility = View.GONE
-        buttonSubmitNumber.visibility = View.GONE
-        layoutInputFields.visibility = View.GONE
+        participantInputLayout.visibility = View.GONE
+        nameInputLayout.visibility = View.GONE
+        amountInputLayout.visibility = View.GONE
+        buttonNext.visibility = View.GONE
         buttonStartGame.visibility = View.GONE
+        ladderView.visibility = View.VISIBLE
 
         val ladderLines = ladderView.generateComplexLadderLines(numberOfPeople)
 
@@ -113,6 +140,9 @@ class LadderGameActivity : AppCompatActivity() {
             }
 
             textViewResult.text = results.joinToString("\n")
+
+            // 게임이 끝난 후 확인 버튼 표시
+            buttonConfirm.visibility = View.VISIBLE
         }
     }
 }

@@ -3,6 +3,7 @@ package com.example.rootmap
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import kotlin.math.cos
 import kotlin.math.min
@@ -69,7 +70,7 @@ class RouletteView @JvmOverloads constructor(
 
             for (i in names.indices) {
                 fillPaint.color = Color.parseColor(colors[i % colors.size])
-                val startAngle = sweepAngle * i
+                val startAngle = -sweepAngle * i
                 canvas.drawArc(rectF, startAngle, sweepAngle, true, fillPaint)
 
                 drawTextOnArc(canvas, rectF, names[i], startAngle, sweepAngle, centerX, centerY, radius)
@@ -80,11 +81,25 @@ class RouletteView @JvmOverloads constructor(
     }
 
     private fun drawTextOnArc(canvas: Canvas, rectF: RectF, text: String, startAngle: Float, sweepAngle: Float, centerX: Float, centerY: Float, radius: Float) {
-        val angle = Math.toRadians((startAngle + sweepAngle / 2 - 90).toDouble())
-        val textRadius = radius * 0.7
-        val textX = (centerX + cos(angle) * textRadius).toFloat()
-        val textY = (centerY + sin(angle) * textRadius).toFloat() + textPaint.textSize / 3
+        // 디버깅: 텍스트가 공란인지 확인
+        if (text.isBlank()) {
+            // 첫 번째 칸에 텍스트가 빈칸으로 들어가는지 확인
+            Log.d("RouletteView", "빈 텍스트 발견! startAngle: $startAngle, text: $text")
+        }
 
+        // 텍스트를 그릴 중앙 각도를 계산 (칸의 정중앙)
+        val middleAngle = startAngle + sweepAngle / 2
+        val angleInRadians = Math.toRadians(middleAngle.toDouble())
+
+        // 텍스트를 그릴 위치는 룰렛 칸의 정중앙, 반지름을 적절히 조정
+        val textRadius = radius * 0.5 // 중앙에 맞추기 위해 반지름을 절반 정도로 설정
+        val textX = (centerX + cos(angleInRadians) * textRadius).toFloat()
+        val textY = (centerY + sin(angleInRadians) * textRadius).toFloat()
+
+        // 디버깅: 텍스트와 위치 확인
+        Log.d("RouletteView", "텍스트 그리기 - Text: $text, X: $textX, Y: $textY")
+
+        // 텍스트 그리기
         canvas.drawText(text, textX, textY, textPaint)
     }
 }

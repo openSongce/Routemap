@@ -119,7 +119,7 @@ class MenuFragment3 : Fragment() {
     var locationData: MutableList<SearchLocation> = mutableListOf()
     var loadListData: MutableList<MyLocation> = mutableListOf()
     var mapListData: MutableList<MyLocation> = mutableListOf()
-    lateinit var listAdapter: RouteListAdapter
+    lateinit var listAdapter: RouteList_inmapAdapter
     lateinit var routelistAdapter: MyDocumentAdapter
     lateinit var myRouteListAdapter: ListLocationAdapter
     lateinit var swipeHelperCallbackRoute: SwapeManageAdapter
@@ -364,7 +364,7 @@ class MenuFragment3 : Fragment() {
         val recycledViewPool=RecyclerView.RecycledViewPool().apply {
             setMaxRecycledViews(1,15)
         }
-        listAdapter= RouteListAdapter()
+        listAdapter= RouteList_inmapAdapter()
         routelistAdapter= MyDocumentAdapter()
         routelistAdapter.userId=currentId
         myRouteListAdapter= ListLocationAdapter()
@@ -388,7 +388,7 @@ class MenuFragment3 : Fragment() {
             false
         }
         //검색 리스트의 클릭 이벤트 구현
-        listAdapter.setItemClickListener(object: RouteListAdapter.OnItemClickListener {
+        listAdapter.setItemClickListener(object: RouteList_inmapAdapter.OnItemClickListener {
             //검색 리스트 클릭 시
             override fun onClick(v: View, position: Int) {
                 var loc=LatLng.from(locationData[position].y, locationData[position].x)

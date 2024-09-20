@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rootmap.databinding.ActivityLikedPostsBinding
 import com.example.rootmap.databinding.CommentLayoutBinding
@@ -56,9 +57,9 @@ class LikedPostsActivity : AppCompatActivity() {
         }
 
         binding.postListView.apply {
-            layoutManager = LinearLayoutManager(this@LikedPostsActivity)
+            layoutManager = GridLayoutManager(this@LikedPostsActivity, 2)
             adapter = likedPostsAdapter
-            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+            //addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
 
         likedPostsAdapter.setItemClickListener(object : RouteListAdapter.OnItemClickListener {

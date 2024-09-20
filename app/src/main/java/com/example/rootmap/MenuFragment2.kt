@@ -1,18 +1,18 @@
 package com.example.rootmap
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
-import android.widget.Toast
-import android.app.AlertDialog
-import android.content.Intent
-import android.os.Build
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -28,6 +28,7 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.*
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
+
 
 private const val ARG_PARAM1 = "param1_board"
 private const val ARG_PARAM2 = "param2_board"
@@ -95,11 +96,12 @@ class MenuFragment2 : Fragment() {
 
         database = FirebaseDatabase.getInstance().reference
         auth = FirebaseAuth.getInstance()
+
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         binding = FragmentMenu2Binding.inflate(inflater, container, false)
 
@@ -119,6 +121,7 @@ class MenuFragment2 : Fragment() {
                 routeDialog = makeMyPost()
             }
         }
+
         //binding.postListView.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         CoroutineScope(Dispatchers.Main).launch {
             postlistAdapter.postList = postLists
@@ -147,7 +150,8 @@ class MenuFragment2 : Fragment() {
                 //해당 경로 내의 여행지 리스트 보기
                 if (binding.postProgressBar.visibility == View.GONE) {
                     val clickItem = postlistAdapter.postList[position]
-                    viewRoute(clickItem.routeName, clickItem.docId, clickItem.ownerId)
+                    //viewRoute(clickItem.routeName, clickItem.docId, clickItem.ownerId)
+                    showRouteOnMap(clickItem.routeName, clickItem.docId, clickItem.ownerId, currentId) //지도화면으로 바로 전환
                 }
                 else{
                     Toast.makeText(context, "로딩중이에요 잠시만 기다려주세요", Toast.LENGTH_SHORT).show()
@@ -198,6 +202,8 @@ class MenuFragment2 : Fragment() {
         CoroutineScope(Dispatchers.Main).launch {
             binding.postProgressBar.visibility = View.VISIBLE
             binding.postListView.isEnabled = false
+            binding.postListView.suppressLayout(true)
+            Log.d("onStart", "false")
             loadPostList()
             if (selectedOptions.isNotEmpty()) {
                 filter()
@@ -205,13 +211,15 @@ class MenuFragment2 : Fragment() {
             postlistAdapter.notifyDataSetChanged()
             binding.postProgressBar.visibility = View.GONE
             binding.postListView.isEnabled = true
+            binding.postListView.suppressLayout(false)
+            Log.d("onStart", "true")
         }
         super.onStart()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun viewRoute(routeName: String, docId: String, ownerId: String): AlertDialog { //다이어로그로 팝업창 구현
-        val dialogBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
+        val dialogBinding = RecyclerviewrouteDialogBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dialogBinding.root)
         var routeData = mutableListOf<MyLocation>()
         dialogBuild.setTitle(routeName)
@@ -241,7 +249,7 @@ class MenuFragment2 : Fragment() {
                 showDownloadDialog(routeName, routeData)
             }
             showOnMap.setOnClickListener{
-                showRouteOnMap(routeName, docId, ownerId)
+                showRouteOnMap(routeName, docId, ownerId, currentId)
             }
         }
         val dialog = dialogBuild.show()
@@ -437,7 +445,7 @@ class MenuFragment2 : Fragment() {
 
 
     private fun makeMyPost(): AlertDialog { //다이어로그로 팝업창 구현
-        val dialogBinding = RecyclerviewDialogBinding.inflate(layoutInflater)
+        val dialogBinding = RecyclerviewrouteDialogBinding.inflate(layoutInflater)
         val dialogBuild = AlertDialog.Builder(context).setView(dialogBinding.root)
         dialogBuild.setTitle("내가 만든 여행 리스트")
         routelistAdapter.list = routeList
@@ -581,9 +589,10 @@ class MenuFragment2 : Fragment() {
         }
     }
 
-    private fun showRouteOnMap(tripname: String, docId:String, ownerId: String){
+    private fun showRouteOnMap(tripname: String, docId:String, ownerId: String, currId: String){
         val routeIntent = Intent(context, RouteMapViewActivity::class.java)
-        routeIntent.putExtra("userId", ownerId)
+        routeIntent.putExtra("ownerId", ownerId)
+        routeIntent.putExtra("currId", currId)
         routeIntent.putExtra("routeId", docId)
         routeIntent.putExtra("routeTitle", tripname)
         Log.d("Intentroute", docId + " " + ownerId + " " + tripname)
@@ -680,7 +689,7 @@ class MenuFragment2 : Fragment() {
                         override fun onComplete(
                             databaseError: DatabaseError?,
                             committed: Boolean,
-                            currentData: DataSnapshot?
+                            currentData: DataSnapshot?,
                         ) {
                         }
                     })
@@ -696,7 +705,7 @@ class MenuFragment2 : Fragment() {
                         override fun onComplete(
                             databaseError: DatabaseError?,
                             committed: Boolean,
-                            currentData: DataSnapshot?
+                            currentData: DataSnapshot?,
                         ) {
                         }
                     })
@@ -763,7 +772,7 @@ class MenuFragment2 : Fragment() {
                     override fun onComplete(
                         databaseError: DatabaseError?,
                         committed: Boolean,
-                        currentData: DataSnapshot?
+                        currentData: DataSnapshot?,
                     ) {
                         val newLikeCount = currentData?.getValue(Int::class.java) ?: 0
                         likeNumView.text = newLikeCount.toString()

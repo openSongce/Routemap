@@ -36,7 +36,6 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             mainFrm.adapter = adapter
             mainFrm.setUserInputEnabled(false)
             pageName.text = "메인"
-
         }
         binding.mainFrm.registerOnPageChangeCallback(
             object : ViewPager2.OnPageChangeCallback() {
