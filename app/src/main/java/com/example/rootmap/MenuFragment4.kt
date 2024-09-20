@@ -34,6 +34,7 @@ import kotlinx.coroutines.tasks.await
 import android.Manifest
 import android.app.Activity.RESULT_OK
 import android.content.pm.PackageManager
+import android.graphics.drawable.ColorDrawable
 import android.provider.MediaStore
 import androidx.activity.result.ActivityResultLauncher
 import java.io.File
@@ -249,11 +250,11 @@ class MenuFragment4 : Fragment() {
                     R.color.holo_red_dark
                 )
             )
-            dBinding.addContext.text = "되돌릴 수 없습니다."
-            dBinding.addContext.visibility = View.VISIBLE
         }
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
         val dialog = dialogBuild.show() //다이어로그 창 띄우기
+      //  dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
         dBinding.bButton.setOnClickListener {//다이어로그 기능 설정
             if (mode == "logout") {
                 auth.signOut() // 로그아웃 처리
