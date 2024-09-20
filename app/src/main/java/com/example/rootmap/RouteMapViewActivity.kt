@@ -124,7 +124,7 @@ class RouteMapViewActivity : AppCompatActivity() {
                         cnt++
                     }
                     val styles =
-                        RouteLineStyle.from(20f, Color.GREEN, 1f, Color.WHITE).setZoomLevel(15)
+                        RouteLineStyle.from(20f, Color.rgb(255,193,204), 1f, Color.WHITE).setZoomLevel(15)
                             .setPattern(
                                 RouteLinePattern.from(
                                     baseContext,

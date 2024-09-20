@@ -3,6 +3,8 @@ package com.example.rootmap
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -253,6 +255,7 @@ class MenuFragment2 : Fragment() {
             }
         }
         val dialog = dialogBuild.show()
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         return dialog
     }
 

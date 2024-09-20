@@ -37,12 +37,12 @@
     <ImageButton
             android:layout_width="50dp"
             android:layout_height="50dp"
-            app:srcCompat="@android:drawable/stat_notify_chat"
+            android:layout_marginBottom="5dp"
             android:id="@+id/commentButton2"
             android:scaleType="fitCenter"
             android:paddingStart="5dp"
             android:paddingEnd="5dp"
-            android:background="@drawable/button_round_rectangle"
+            android:background="@drawable/comment"
             app:tint="@color/white"
             app:layout_constraintBottom_toTopOf="@+id/locationListView"
             app:layout_constraintEnd_toEndOf="parent"
@@ -51,7 +51,6 @@
     <ImageButton
             android:layout_width="50dp"
             android:layout_height="50dp"
-            app:srcCompat="@android:drawable/stat_sys_download"
             android:id="@+id/downloadButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/commentButton2"
@@ -62,7 +61,7 @@
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
             app:tint="@color/white"
-            android:background="@drawable/button_round_rectangle"/>
+            android:background="@drawable/download"/>
 
     <ImageView
             android:src="@drawable/heart_empty"
@@ -99,7 +98,7 @@
             android:src="@drawable/search_list_down"
             android:scaleType="fitCenter"
             app:tint="@color/white"
-            android:background="@drawable/button_round_rectangle"
+            android:background="@drawable/updownbox"
             />
 
     <androidx.recyclerview.widget.RecyclerView
