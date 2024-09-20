@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         when (item.itemId) {
             R.id.menu_tourist -> {
                 binding.mainFrm.currentItem = 0
-                binding.pageName.text = "메인"
+                binding.pageName.text = "관광지 추천"
                 return true
             }
             R.id.menu_post -> {

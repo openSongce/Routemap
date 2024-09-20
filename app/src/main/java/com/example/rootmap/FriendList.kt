@@ -101,7 +101,10 @@ class FriendList : Fragment() {
     }
 
 
-    fun showAction(frid:String){
+    fun showAction(frid:String){ //해당 친구 정보 뜨는 다이어로그 띄우기로 변경하기
+        deleteFriend(frid)
+    }
+    private fun deleteFriend(frid:String){
         val dBinding = DialogLayoutBinding.inflate(layoutInflater)
         dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
         dBinding.bButton.text = "확인"
