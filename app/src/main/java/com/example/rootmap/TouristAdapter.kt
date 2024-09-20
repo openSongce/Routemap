@@ -68,7 +68,8 @@ class TouristAdapter(
                 binding.image.setImageResource(R.drawable.map)
             }
 
-            binding.addButton.visibility = if (item.addButtonVisible) View.VISIBLE else View.GONE
+            // addButton을 항상 숨김
+            binding.addButton.visibility = View.GONE
 
             binding.likeButton.setOnClickListener {
                 val userId = auth.currentUser?.uid ?: return@setOnClickListener
