@@ -135,9 +135,9 @@ class MenuFragment2 : Fragment() {
             //리스트의 버튼 클릭시 동작
             override fun onClick(v: View, position: Int) {
                 //버튼 눌렀을때의 코드
-                    docId = routelistAdapter.list[position].docId
-                    docName = routelistAdapter.list[position].docName
-                    docOwner = routelistAdapter.list[position].owner
+                docId = routelistAdapter.list[position].docId
+                docName = routelistAdapter.list[position].docName
+                docOwner = routelistAdapter.list[position].owner
                 showFilterPopup("post")
             }
 
