@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/round_popup"
+        android:gravity="center"
+        android:minWidth="300dp"
+        android:minHeight="300dp"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+    <TextView
+            android:text="친구"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/info_friendNName"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:textSize="14sp"
+            android:gravity="center" />
+
+    <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@android:drawable/ic_menu_delete"
+            android:id="@+id/frDelButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:background="@drawable/button_round_rectangle" />
+
+    <TextView
+            android:text="id_email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/info_firendId"
+            app:layout_constraintTop_toBottomOf="@+id/info_friendNName"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@android:drawable/ic_menu_share"
+            android:id="@+id/imageButton3"
+            app:layout_constraintEnd_toStartOf="@+id/frDelButton"
+            android:background="@drawable/button_round_rectangle"
+            android:layout_marginRight="20dp"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

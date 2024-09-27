@@ -69,15 +69,15 @@ class FriendAdapter() : RecyclerView.Adapter<FriendAdapter.FriendHolder>() {
         var parent = parent
         var fdStrage: FirebaseStorage = FirebaseStorage.getInstance()
         var fileUri: Uri? = null
-
         init {
             binding.swipeView.setOnClickListener {
                 Log.d("click_test","click")
             }
+
             when (mode) { //버튼 텍스트와 기능 설정
                 "List" -> {
                     binding.swipeView.setOnClickListener {// 버튼 기능
-                        FriendList.getInstance()?.showAction(binding.friendId.text.toString())
+                        FriendList.getInstance()?.showAction(binding.friendName.text.toString(),binding.friendId.text.toString())
                     }
                 }
                 "Request" -> {
@@ -111,10 +111,6 @@ class FriendAdapter() : RecyclerView.Adapter<FriendAdapter.FriendHolder>() {
                         }
                     }
                 }
-            }
-
-            binding.root.setOnClickListener {
-                Log.d("click_test","클릭")
             }
         }
 

@@ -1,11 +1,14 @@
 package com.example.rootmap
 
 import android.app.AlertDialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
@@ -13,14 +16,18 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
+import com.example.rootmap.databinding.DialogChangePasswordBinding
 import com.example.rootmap.databinding.DialogLayoutBinding
 import com.example.rootmap.databinding.FragmentFriendListBinding
+import com.example.rootmap.databinding.FriendInfoDialogBinding
+import com.example.rootmap.databinding.FriendLayoutBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.async
 import kotlinx.coroutines.tasks.await
+import androidx.fragment.app.DialogFragment
 
 //친구 리스트 프래그먼트-현재 자신과 친구 상태인 유저의 리스트를 출력 등의 기능을 가진 화면
 // TODO: Rename parameter arguments, choose names that match
@@ -33,7 +40,7 @@ private const val ARG_PARAM2 = "param2"
  * Use the [FriendList.newInstance] factory method to
  * create an instance of this fragment.
  */
-class FriendList : Fragment() {
+class FriendList : Fragment(), ConfirmDialogInterface{
     // TODO: Rename and change types of parameters
     private var currentId: String? = null
     private var mode: String? = null
@@ -77,8 +84,8 @@ class FriendList : Fragment() {
             binding.recyclerList.adapter = listAdapter
             binding.recyclerList.layoutManager = LinearLayoutManager(context)
         }
-       // binding.recyclerList.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL)) //구분선
         fr=this
+
         super.onViewCreated(view, savedInstanceState)
     }
 
@@ -100,33 +107,20 @@ class FriendList : Fragment() {
         }
     }
 
+    fun showAction(frname:String,frid:String){ //친구 클릭 시
+        val dBinding = FriendInfoDialogBinding.inflate(layoutInflater)
+        dBinding.infoFirendId.text=frid
+        dBinding.infoFriendNName.text=frname
 
-    fun showAction(frid:String){ //해당 친구 정보 뜨는 다이어로그 띄우기로 변경하기
-        deleteFriend(frid)
-    }
-    private fun deleteFriend(frid:String){
-        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
-        dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
-        dBinding.bButton.text = "확인"
-        dBinding.content.text = "해당 유저를 친구에서 삭제하시겠습니까?"
         val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
-        val dialog = dialogBuild.show() //다이어로그 창 띄우기
-        var id=currentId.toString()
-        dBinding.bButton.setOnClickListener {
-            //검정 버튼의 기능 구현 ↓
-            db.collection("user").document(id).collection("friend").document(frid)
-                .delete()
-            db.collection("user").document(frid).collection("friend").document(id)
-                .delete()
-            refresh()
-            dialog.dismiss()
-        }
-        dBinding.wButton.setOnClickListener {//취소버튼
-            //회색 버튼의 기능 구현 ↓
-            dialog.dismiss()
+        val dialog = dialogBuild.show()
+        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dBinding.frDelButton.setOnClickListener {
+               val deletDialog=ConfirmDialog(this,"해당 유저를 친구에서 삭제하시겠습니까?",frid)
+             deletDialog.isCancelable = false
+             deletDialog.show(activity?.supportFragmentManager!!, "ConfirmDialog")
         }
     }
-
     suspend fun loadData(): Boolean {
         return try {
             val fr_add = myDb.whereEqualTo("state", "2").get().await()
@@ -166,6 +160,14 @@ class FriendList : Fragment() {
         fun getInstance():FriendList?{
             return instance
         }
+    }
+    override fun onYesButtonClick(id:String) {
+        var myid=currentId.toString()
+        db.collection("user").document(myid).collection("friend").document(id)
+            .delete()
+        db.collection("user").document(id).collection("friend").document(myid)
+            .delete()
+        refresh()
     }
 
 
