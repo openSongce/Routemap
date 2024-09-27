@@ -400,15 +400,14 @@ class RouteMapViewActivity : AppCompatActivity() {
 
     private fun downloadRoute(tripname: String, list: List<MyLocation>) {
         com.google.firebase.ktx.Firebase.firestore.collection("user").
-            document(intent.getStringExtra("currId").toString()).collection("route").
-            document().set(hashMapOf("tripname" to tripname, "routeList" to list, "created" to intent.getStringExtra("currId").toString(),
-                "shared" to listOf<String>())).addOnSuccessListener {
+        document(intent.getStringExtra("currId").toString()).collection("route").
+        document().set(hashMapOf("tripname" to tripname, "routeList" to list, "created" to intent.getStringExtra("currId").toString(),
+            "shared" to listOf<String>())).addOnSuccessListener {
             Toast.makeText(this, "성공적으로 저장하였습니다.", Toast.LENGTH_SHORT).show()
         }
     }
 
 }
-
 
 
 

@@ -28,7 +28,7 @@
 
     <Button
             android:id="@+id/tripDetailButton"
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:background="@drawable/round_button_background"
             android:textStyle="bold"
