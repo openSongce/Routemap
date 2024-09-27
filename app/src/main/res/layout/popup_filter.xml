@@ -15,11 +15,12 @@
                 android:text="여행지 선택"
                 android:textSize="16sp" />
 
-        <LinearLayout
+        <GridLayout
                 android:id="@+id/locationsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:orientation="horizontal"
+                android:columnCount="3"
                 android:layout_margin="8dp"/>
 
         <TextView
@@ -28,11 +29,12 @@
                 android:text="여행일 선택"
                 android:textSize="16sp" />
 
-        <LinearLayout
+        <GridLayout
                 android:id="@+id/durationsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:orientation="horizontal"
+                android:columnCount="3"
                 android:layout_margin="8dp"/>
 
         <TextView
@@ -41,11 +43,12 @@
                 android:text="테마 선택"
                 android:textSize="16sp" />
 
-        <LinearLayout
+        <GridLayout
                 android:id="@+id/themesContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:orientation="horizontal"
+                android:columnCount="3"
                 android:layout_margin="8dp"/>
 
     </LinearLayout>
