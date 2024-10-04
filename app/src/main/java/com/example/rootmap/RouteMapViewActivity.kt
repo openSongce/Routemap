@@ -44,6 +44,7 @@ import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
+import com.kakao.vectormap.label.LabelTextBuilder
 import com.kakao.vectormap.label.LabelTextStyle
 import com.kakao.vectormap.route.RouteLine
 import com.kakao.vectormap.route.RouteLineLayer
@@ -115,7 +116,7 @@ class RouteMapViewActivity : AppCompatActivity() {
 
                         val options = LabelOptions.from(LatLng.from(doc.latitude, doc.longitude))
                             .setStyles(style)
-                            .setTexts((cnt + 1).toString())
+                            .setTexts(LabelTextBuilder().setTexts((cnt + 1).toString()))
 
 
                         val layer = kakaoMap.labelManager!!.layer
