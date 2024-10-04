@@ -345,9 +345,15 @@ class MenuFragment : Fragment() {
 
                     CompletableFuture.allOf(*tasks.toTypedArray()).thenRun {
                         if (items.isNotEmpty()) {
-                            val adapter = TouristAdapter(items, database, auth, this@MenuFragment) { item ->
-                                item.contentid?.let { fetchTouristDetailIntro(it, currentContentTypeId) }
-                            }
+                            val adapter = TouristAdapter(
+                                items = items,
+                                database = database,
+                                auth = auth,
+                                menuFragment = this@MenuFragment,
+                                onItemClick = { item -> item.contentid?.let { fetchTouristDetailIntro(it, currentContentTypeId) } },
+                                addButtonVisible = true // MenuFragment에서는 addButton을 보이도록 설정
+                            )
+                            binding.recyclerView.adapter = adapter
 
                             if (currentContentTypeId == 25) {
                                 items.forEach { it.addButtonVisible = false }

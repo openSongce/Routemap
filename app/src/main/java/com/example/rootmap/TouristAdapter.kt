@@ -19,6 +19,7 @@ class TouristAdapter(
     private val database: DatabaseReference,
     private val auth: FirebaseAuth,
     private val menuFragment: MenuFragment? = null,
+    private val addButtonVisible: Boolean,
     private val onItemClick: (TouristItem) -> Unit
 ) : RecyclerView.Adapter<TouristAdapter.TouristViewHolder>() {
 
@@ -68,9 +69,6 @@ class TouristAdapter(
                 binding.image.setImageResource(R.drawable.map)
             }
 
-            // addButton을 항상 숨김
-            binding.addButton.visibility = View.GONE
-
             binding.likeButton.setOnClickListener {
                 val userId = auth.currentUser?.uid ?: return@setOnClickListener
 
@@ -95,6 +93,8 @@ class TouristAdapter(
                 val context = binding.root.context as MainActivity
                 context.navigateToMenuFragment3WithTitle(item.title ?: "", item.addr1 ?: "", item.addr2 ?: "")
             }
+
+            binding.addButton.visibility = if (addButtonVisible) View.VISIBLE else View.GONE
 
             binding.root.setOnClickListener {
                 if (item.contentTypeId in listOf(12, 14, 15, 25, 28, 32, 38, 39)) {

@@ -92,7 +92,7 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
     implementation("com.squareup.moshi:moshi:1.12.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
-    implementation("com.kakao.maps.open:android:2.9.7") //카카오맵
+    implementation("com.kakao.maps.open:android:2.12.7") //카카오맵
     implementation("com.google.android.gms:play-services-location:18.0.0")
     implementation("com.google.code.gson:gson:2.8.6")
     implementation("com.google.firebase:firebase-database:20.0.5")

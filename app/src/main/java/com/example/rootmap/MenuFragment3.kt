@@ -24,9 +24,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.contentValuesOf
-import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -42,7 +39,6 @@ import com.example.rootmap.databinding.RouteaddLayoutBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
-import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
@@ -55,6 +51,7 @@ import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapGravity.TOP
 import com.kakao.vectormap.MapLifeCycleCallback
+import com.kakao.vectormap.animation.Interpolation
 import com.kakao.vectormap.camera.CameraAnimation
 import com.kakao.vectormap.camera.CameraPosition
 import com.kakao.vectormap.camera.CameraUpdateFactory
@@ -63,14 +60,22 @@ import com.kakao.vectormap.label.LabelLayer
 import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
+import com.kakao.vectormap.label.LabelTextBuilder
 import com.kakao.vectormap.label.LabelTextStyle
+import com.kakao.vectormap.label.LabelTransition
 import com.kakao.vectormap.label.LodLabel
+import com.kakao.vectormap.label.Transition
+import com.kakao.vectormap.route.OnRouteLineAnimatorStopCallback
 import com.kakao.vectormap.route.RouteLine
+import com.kakao.vectormap.route.RouteLineAnimator
 import com.kakao.vectormap.route.RouteLineLayer
 import com.kakao.vectormap.route.RouteLineOptions
 import com.kakao.vectormap.route.RouteLinePattern
 import com.kakao.vectormap.route.RouteLineSegment
 import com.kakao.vectormap.route.RouteLineStyle
+import com.kakao.vectormap.route.animation.ProgressAnimation
+import com.kakao.vectormap.route.animation.ProgressDirection
+import com.kakao.vectormap.route.animation.ProgressType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -82,6 +87,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -160,7 +166,7 @@ class MenuFragment3 : Fragment() {
                 //일단은 마크가 하나만 찍히도록 구현
                 val styles = kakaoMap.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
                     R.drawable.clicklocation
-                )))
+                ).setIconTransition(LabelTransition.from(Transition.Scale, Transition.Scale))))
                 val options1 = LabelOptions.from(latLng).setStyles(styles)
                 if(clickMarker==null){ //이미 찍힌 마크가 없을 때
                     clickMarker=layer?.addLabel(options1)
@@ -278,7 +284,7 @@ class MenuFragment3 : Fragment() {
     @SuppressLint("MissingPermission")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         myDb = Firebase.firestore.collection("user").document(currentId.toString())
         //여기부터 코드 작성
@@ -342,7 +348,8 @@ class MenuFragment3 : Fragment() {
                 Log.d("Map3padding", kakaomap!!.padding.toString())
             }
         }
-        binding.searchText.setOnEditorActionListener { v, actionId, event //키보드 엔터 사용시
+        binding.searchText.setOnEditorActionListener {
+                v, actionId, event, //키보드 엔터 사용시
             ->
             if (!binding.progressBar.isVisible) {
                 context?.hideKeyboard(binding.root)
@@ -394,7 +401,7 @@ class MenuFragment3 : Fragment() {
                 var loc=LatLng.from(locationData[position].y, locationData[position].x)
                 val styles = kakaomap!!.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
                     R.drawable.clicklocation
-                )))
+                ).setIconTransition(LabelTransition.from(Transition.Scale, Transition.Scale))))
                 val options1 = LabelOptions.from(loc).setStyles(styles)
                 if(searchMarker==null){ //이미 찍힌 마크가 없을 때
                     searchMarker=layer?.addLabel(options1)
@@ -607,22 +614,32 @@ class MenuFragment3 : Fragment() {
             var segments = mutableListOf<RouteLineSegment>()
             var labelStyle= kakaomap!!.getLabelManager()?.addLabelStyles(LabelStyles.from(LabelStyle.from(
                 R.drawable.clicklocation
-            ).setTextStyles(
+            ).setIconTransition(LabelTransition.from(Transition.Scale, Transition.Scale)).setTextStyles(
                 LabelTextStyle.from(50, Color.parseColor("#0A3711")))))
             for(doc in list){
                 var lanLng=LatLng.from(doc.position.latitude,doc.position.longitude)
                 labels.add(LabelOptions.from(lanLng)
-                    .setStyles(labelStyle).setTexts(cnt.toString()))
+                    .setStyles(labelStyle).setTexts(LabelTextBuilder().setTexts(cnt.toString())))
                 latLngList.add(lanLng)
                 cnt++
             }
             // PolyLine이 앱을 더 무겁게 해서 RouteLine으로 변경.
-            val styles = RouteLineStyle.from(20f, Color.GREEN, 1f, Color.WHITE).setZoomLevel(15)
+            val styles = RouteLineStyle.from(20f, Color.rgb(255,193,204), 1f, Color.WHITE).setZoomLevel(15)
                 .setPattern(RouteLinePattern.from(activity?.baseContext, R.style.GreenRouteArrowLineStyle))
 
             val options: RouteLineOptions =
                 RouteLineOptions.from(RouteLineSegment.from(latLngList, styles))
             byLevelLine = layerR?.addRouteLine(options)
+
+            val panimation : ProgressAnimation = ProgressAnimation.from("animatorid",5000)
+            panimation.setInterpolation(Interpolation.Linear)
+            panimation.setProgressType(ProgressType.ToShow)
+            panimation.setProgressDirection(ProgressDirection.StartFirst)
+            panimation.setHideAtStop(false)
+            panimation.setResetToInitialState(false)
+
+           val panimator : RouteLineAnimator = kakaomap.routeLineManager!!.addAnimator(panimation)
+            panimator.addRouteLines(byLevelLine)
 
             var testlayer= kakaomap!!.getLabelManager()?.getLodLayer();
             label = testlayer!!.addLodLabels(labels)
@@ -633,6 +650,9 @@ class MenuFragment3 : Fragment() {
                 ),
                 CameraAnimation.from(500)
             )
+
+            panimator.start(OnRouteLineAnimatorStopCallback {  })
+
         }
     }
 
@@ -654,7 +674,7 @@ class MenuFragment3 : Fragment() {
             call.enqueue(object : Callback<ResultSearchKeyword> {
                 override fun onResponse(
                     call: Call<ResultSearchKeyword>,
-                    response: Response<ResultSearchKeyword>
+                    response: Response<ResultSearchKeyword>,
                 ) {
                     if (response.isSuccessful) {
                         Log.d("searchKeyword", "Response: ${response.body()}")
@@ -767,7 +787,7 @@ class MenuFragment3 : Fragment() {
         call.enqueue(object : Callback<ResultSearchKeyword> {
             override fun onResponse(
                 call: Call<ResultSearchKeyword>,
-                response: Response<ResultSearchKeyword>
+                response: Response<ResultSearchKeyword>,
             ) {
 // 통신 성공
                 addItemsAndMarkers(response.body())
@@ -1037,7 +1057,7 @@ class MenuFragment3 : Fragment() {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         when (requestCode) {
             PERMISSION_FINE_LOCATION -> {
