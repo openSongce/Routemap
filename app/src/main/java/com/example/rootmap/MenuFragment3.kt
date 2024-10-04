@@ -821,23 +821,44 @@ class MenuFragment3 : Fragment() {
             list
         }
     }
-    suspend fun loadMyRouteData(id:String,owner:String): Boolean {
-        //경로내의 여행지 리스트들을 가져오는 함수
-        var dataList= mutableListOf<Map<String,*>>()
+    suspend fun loadMyRouteData(id: String, owner: String): Boolean {
+        // 경로 내의 여행지 리스트들을 가져오는 함수
+        val dataList = mutableListOf<Map<String, *>>()
         return try {
-            var data: MutableMap<*, *>
-            db.collection("user").document(owner).collection("route").document(id).get().addOnSuccessListener { documents->
-                routeName=documents.data?.get("tripname").toString()
-                data=documents.data as MutableMap<*,*>
-                dataList.addAll(data["routeList"] as List<Map<String,*>>)
-                dataList.forEach{
+            //var data: MutableMap<*, *>
+            db.collection("user").document(owner).collection("route").document(id).get().addOnSuccessListener { documents ->
+                val documentData = documents.data
+                if (documentData != null) { //documents.data가 null인 경우 체크 문 추가
+                    routeName = documentData["tripname"]?.toString() ?: ""
+                    val data = documentData["routeList"] as? List<Map<String, *>> ?: emptyList()
+                    dataList.addAll(data)
+                    dataList.forEach {
+                        loadListData.add(
+                            MyLocation(
+                                it["name"]?.toString() ?: "",
+                                it["position"] as? GeoPoint ?: GeoPoint(0.0, 0.0),
+                                it["memo"]?.toString() ?: "",
+                                it["spending"]?.toString() ?: "0",
+                                it["day"]?.toString() ?: "0"
+                            )
+                        )
+                    }
+                }
+                //routeName=documents.data?.get("tripname").toString()
+
+                //data=documents.data as MutableMap<*,*>
+                //dataList.addAll(data["routeList"] as List<Map<String,*>>)
+                /*dataList.forEach{
                     loadListData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String,it["spending"] as String, it["day"] as String))
+                }*/
+                else {
+                    Log.d("load My Route Data", "Document data is null")
                 }
             }.await()
             true
         } catch (e: FirebaseException) {
-            Log.d("list_test", "error")
-            true
+            Log.d("list_test", "error: ${e.message}")
+            false
         }
     }
 
