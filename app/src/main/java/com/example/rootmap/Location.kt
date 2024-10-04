@@ -8,7 +8,7 @@ data class SearchLocation(var name:String, var adress:String,var x:Double,var y:
 
 data class MyRouteDocument(var docName:String,var docId:String,var owner:String)
 
-data class MyLocation(var name:String, var position: GeoPoint,var memo:String,var spending:String)
+data class MyLocation(var name:String, var position: GeoPoint,var memo:String,var spending:String, var day:String)
 
 data class RoutePost(
     var routeName: String = "",

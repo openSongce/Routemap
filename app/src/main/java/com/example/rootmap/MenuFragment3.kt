@@ -436,7 +436,7 @@ class MenuFragment3 : Fragment() {
                 viewLifecycleOwner.lifecycleScope.async {
                     loadListData.clear()
                     loadMyRouteData(docId,owner)
-                    loadListData.add(MyLocation(clickLocationName,clickLocationAdress,"","")) //해당 장소를 리스트에 추가
+                    loadListData.add(MyLocation(clickLocationName,clickLocationAdress,"","", "")) //해당 장소를 리스트에 추가
                     myRouteListAdapter.list=loadListData
                     showListDialog(docId,"add",owner)
                 }
@@ -811,7 +811,7 @@ class MenuFragment3 : Fragment() {
                 data=documents.data as MutableMap<*,*>
                 dataList.addAll(data["routeList"] as List<Map<String,*>>)
                 dataList.forEach{
-                    loadListData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String,it["spending"] as String))
+                    loadListData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String,it["spending"] as String, it["day"] as String))
                 }
             }.await()
             true
@@ -820,6 +820,7 @@ class MenuFragment3 : Fragment() {
             true
         }
     }
+
     private fun showDialog():AlertDialog{ //다이어로그로 팝업창 구현
         //boolean은 데이터의 유무-> true 있음, false 없음
         routeDialog = RecyclerviewDialogBinding.inflate(layoutInflater)

@@ -268,7 +268,7 @@ class MenuFragment2 : Fragment() {
                 data = documents.data as MutableMap<*, *>
                 dataList.addAll(data["routeList"] as List<Map<String, *>>)
                 dataList.forEach {
-                    postDatas.add(MyLocation(it["name"].toString(), it["position"] as GeoPoint, it["memo"] as String, it["spending"] as String))
+                    postDatas.add(MyLocation(it["name"].toString(), it["position"] as GeoPoint, it["memo"] as String, it["spending"] as String, it["day"] as String))
                 }
             }.await()
             postDatas

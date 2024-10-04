@@ -35,6 +35,13 @@ class ExpensesAdapter(
         return expensesList.size
     }
 
+    // 리스트 업데이트를 위한 메서드 추가
+    fun updateList(newExpenses: List<Expense>) {
+        expensesList.clear()
+        expensesList.addAll(newExpenses)
+        notifyDataSetChanged() // 데이터 변경을 알림
+    }
+
     inner class ExpenseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val nameTextView: TextView = itemView.findViewById(R.id.expenseName)
         private val spendingTextView: TextView = itemView.findViewById(R.id.expenseAmount)

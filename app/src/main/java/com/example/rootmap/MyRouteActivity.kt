@@ -1,5 +1,5 @@
 package com.example.rootmap
-//MyRouteActivity.kt
+
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
@@ -248,7 +248,7 @@ class MyRouteActivity : AppCompatActivity() {
                 data=documents.data as MutableMap<*,*>
                 dataList.addAll(data["routeList"] as List<Map<String,*>>)
                 dataList.forEach{
-                    routeDataList.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String,it["spending"] as String))
+                    routeDataList.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String, it["spending"] as String, it["day"] as String))
                 }
             }.await()
             true

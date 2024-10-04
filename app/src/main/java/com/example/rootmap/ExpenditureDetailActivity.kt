@@ -3,8 +3,11 @@ package com.example.rootmap
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -15,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import java.text.NumberFormat
 import java.util.Locale
+import android.view.View
 
 class ExpenditureDetailActivity : AppCompatActivity() {
     private lateinit var expensesAdapter: ExpensesAdapter
@@ -66,6 +70,62 @@ class ExpenditureDetailActivity : AppCompatActivity() {
             intent.putExtra("totalExpenditure", totalExpenditure) // 총 지출 금액 전달
             startActivity(intent)
         }
+
+        val spinner: Spinner = findViewById(R.id.daysCategory)
+
+        ArrayAdapter.createFromResource(
+            this,
+            R.array.days_categories,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinner.adapter = adapter
+        }
+
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                when (position) {
+                    0 -> {
+                        // 모든 날짜 선택: 모든 데이터 로드
+                        loadExpenses(createdBy ?: "", tripname ?: "") // 여기서 데이터를 새로 로드
+                    }
+                    1 -> {
+                        // DAY 1 선택
+                        val filteredList = expensesList.filter { it.day == "1" }
+                        expensesAdapter.updateList(filteredList) // 필터링된 리스트를 보여줌
+                    }
+                    2 -> {
+                        // DAY 2 선택
+                        val filteredList = expensesList.filter { it.day == "2" }
+                        expensesAdapter.updateList(filteredList) // 필터링된 리스트를 보여줌
+                    }
+                    3 -> {
+                        // DAY 3 선택
+                        val filteredList = expensesList.filter { it.day == "3" }
+                        expensesAdapter.updateList(filteredList) // 필터링된 리스트를 보여줌
+                    }
+                    4 -> {
+                        // DAY 4 선택
+                        val filteredList = expensesList.filter { it.day == "4" }
+                        expensesAdapter.updateList(filteredList) // 필터링된 리스트를 보여줌
+                    }
+                    5 -> {
+                        // DAY 5 선택
+                        val filteredList = expensesList.filter { it.day == "5" }
+                        expensesAdapter.updateList(filteredList) // 필터링된 리스트를 보여줌
+                    }
+                    else -> {
+                        expensesAdapter.updateList(expensesList) // 기본값
+                    }
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // 선택된 항목이 없을 때 모든 데이터 보여줌
+                expensesAdapter.updateList(expensesList)
+            }
+        }
+
     }
 
     private fun loadExpenses(createdBy: String, tripname: String) {
@@ -74,26 +134,25 @@ class ExpenditureDetailActivity : AppCompatActivity() {
                 val documentSnapshot =
                     firestore.collection("user").document(createdBy).collection("route")
                         .whereEqualTo("tripname", tripname).get().await()
+
                 if (!documentSnapshot.isEmpty) {
                     val document = documentSnapshot.documents[0]
-                    val routeList = document.get("routeList") as? List<Map<String, Any>>
-                    val sharedList = document.get("shared") as? List<String> ?: emptyList()
-                    totalExpenditure = 0 // 초기화
-                    if (routeList != null) {
-                        for (item in routeList) {
-                            val name = item["name"] as? String ?: ""
-                            val spending = item["spending"] as? String ?: "0"
+                    val routeList = document.get("routeList") as? List<Map<String, Any>> ?: emptyList()
 
-                            expensesList.add(Expense(name, spending))
-                            totalExpenditure += spending.replace(",", "").toIntOrNull() ?: 0
-                        }
-                        expensesAdapter.notifyDataSetChanged()
-                    } else {
-                        Log.d(
-                            "ExpenditureDetailActivity",
-                            "Route list is empty for tripname: $tripname"
-                        )
+                    expensesList.clear() // 기존 리스트 초기화
+                    totalExpenditure = 0 // 초기화
+
+                    for (item in routeList) {
+                        val name = item["name"] as? String ?: ""
+                        val spending = item["spending"] as? String ?: "0"
+                        val day = item["day"] as? String ?: ""
+
+                        expensesList.add(Expense(name, spending, day))
+                        totalExpenditure += spending.replace(",", "").toIntOrNull() ?: 0
                     }
+
+                    expensesAdapter.notifyDataSetChanged() // 어댑터 업데이트
+
                     val totalExpenditureFormatted = NumberFormat.getNumberInstance(Locale.US).format(totalExpenditure)
                     totalExpenditureTextView.text = "${totalExpenditureFormatted}원 지출"
 
@@ -101,6 +160,7 @@ class ExpenditureDetailActivity : AppCompatActivity() {
                     sharedInfoTextView.visibility = TextView.GONE
                 } else {
                     Log.d("ExpenditureDetailActivity", "No documents found for tripname: $tripname")
+                    // 데이터가 없음을 사용자에게 알릴 방법을 추가할 수 있음
                 }
             } catch (e: Exception) {
                 Log.e("Firestore", "Error getting documents: ", e)
