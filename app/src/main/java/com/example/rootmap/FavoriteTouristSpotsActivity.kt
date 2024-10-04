@@ -113,15 +113,20 @@ class FavoriteTouristSpotsActivity : AppCompatActivity() {
     private fun addTouristItemToUI(touristItem: TouristItem) {
         val currentList = (binding.recyclerView.adapter as? TouristAdapter)?.items?.toMutableList() ?: mutableListOf()
         currentList.add(touristItem)
-        val adapter = TouristAdapter(currentList, database, auth) { item ->
-            // Tourist item click handler (if needed)
-        }
+        val adapter = TouristAdapter(
+            items = currentList,
+            database = database,
+            auth = auth,
+            onItemClick = { item -> /* Tourist item click handler */ },
+            addButtonVisible = false // addButton을 숨기기 위해 false로 설정
+        )
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
         binding.noFavoritesText.visibility = View.GONE
         binding.recyclerView.visibility = View.VISIBLE
-        binding.progressBar2.visibility=View.GONE
+        binding.progressBar2.visibility = View.GONE
     }
+
 
     private fun displayNoFavoritesMessage() {
         binding.noFavoritesText.visibility = View.VISIBLE
