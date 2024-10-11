@@ -28,13 +28,20 @@
             android:layout_height="wrap_content"
             android:layout_weight="2">
 
-        <Spinner
+        <!--Spinner
                 android:id="@+id/expenseCategory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:entries="@array/expense_categories"
-                android:spinnerMode="dropdown" />
+                android:spinnerMode="dropdown" /-->
+        <TextView
+                android:id="@+id/expenseCategoryText"
+                android:text="카테고리 없음"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginEnd="8dp" />
 
     </LinearLayout>
 

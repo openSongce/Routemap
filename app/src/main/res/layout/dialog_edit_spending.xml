@@ -5,10 +5,29 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+    <!-- 기존의 지출 금액 입력 -->
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="지출 금액" />
+
     <EditText
             android:id="@+id/editSpending"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="지출 금액 입력" />
+            android:inputType="numberDecimal"
+            android:hint="금액 입력" />
+
+    <!-- 새로운 카테고리 선택용 Spinner 추가 -->
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="카테고리 선택" />
+
+    <Spinner
+            android:id="@+id/categorySpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown" />
+
 </LinearLayout>

@@ -28,6 +28,7 @@ class ExpenditureDetailActivity : AppCompatActivity() {
     private lateinit var sharedInfoTextView: TextView
     private var totalExpenditure: Int = 0 // 총 지출 금액 변수 추가
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_expenditure_detail)
@@ -85,49 +86,37 @@ class ExpenditureDetailActivity : AppCompatActivity() {
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 when (position) {
-                    0 -> {
-                        // 모든 날짜 선택: 모든 데이터 로드
-                        loadExpenses(createdBy ?: "", tripname ?: "") // 여기서 데이터를 새로 로드
-                    }
-                    1 -> {
-                        // DAY 1 선택
-                        val filteredList = expensesList.filter { it.day == "1" }
-                        expensesAdapter.updateList(filteredList) // 필터링된 리스트를 보여줌
-                    }
-                    2 -> {
-                        // DAY 2 선택
-                        val filteredList = expensesList.filter { it.day == "2" }
-                        expensesAdapter.updateList(filteredList) // 필터링된 리스트를 보여줌
-                    }
-                    3 -> {
-                        // DAY 3 선택
-                        val filteredList = expensesList.filter { it.day == "3" }
-                        expensesAdapter.updateList(filteredList) // 필터링된 리스트를 보여줌
-                    }
-                    4 -> {
-                        // DAY 4 선택
-                        val filteredList = expensesList.filter { it.day == "4" }
-                        expensesAdapter.updateList(filteredList) // 필터링된 리스트를 보여줌
-                    }
-                    5 -> {
-                        // DAY 5 선택
-                        val filteredList = expensesList.filter { it.day == "5" }
-                        expensesAdapter.updateList(filteredList) // 필터링된 리스트를 보여줌
-                    }
-                    else -> {
-                        expensesAdapter.updateList(expensesList) // 기본값
-                    }
+                    0 -> loadExpenses(createdBy ?: "", tripname ?: "") // 모든 날짜 선택
+                    1 -> filterByDay("1") // DAY 1 선택
+                    2 -> filterByDay("2") // DAY 2 선택
+                    3 -> filterByDay("3") // DAY 3 선택
+                    4 -> filterByDay("4") // DAY 4 선택
+                    5 -> filterByDay("5") // DAY 5 선택
                 }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                // 선택된 항목이 없을 때 모든 데이터 보여줌
                 expensesAdapter.updateList(expensesList)
             }
         }
 
+        // 카테고리별 버튼 클릭 이벤트 처리
+        val btnAll: Button = findViewById(R.id.btnAll)
+        val btnFood: Button = findViewById(R.id.btnFood)
+        val btnTransport: Button = findViewById(R.id.btnTransport)
+        val btnLodging: Button = findViewById(R.id.btnLodging)
+        val btnLeisure: Button = findViewById(R.id.btnLeisure)
+        val btnOther: Button = findViewById(R.id.btnOther)
+
+        btnAll.setOnClickListener { filterByCategory("모두 보기") }
+        btnFood.setOnClickListener { filterByCategory("식비") }
+        btnTransport.setOnClickListener { filterByCategory("교통비") }
+        btnLodging.setOnClickListener { filterByCategory("숙박") }
+        btnLeisure.setOnClickListener { filterByCategory("여가") }
+        btnOther.setOnClickListener { filterByCategory("기타") }
     }
 
+    private var originalExpensesList: MutableList<Expense> = mutableListOf()
     private fun loadExpenses(createdBy: String, tripname: String) {
         runBlocking {
             try {
@@ -146,11 +135,13 @@ class ExpenditureDetailActivity : AppCompatActivity() {
                         val name = item["name"] as? String ?: ""
                         val spending = item["spending"] as? String ?: "0"
                         val day = item["day"] as? String ?: ""
+                        val category = item["category"] as? String ?: ""
 
-                        expensesList.add(Expense(name, spending, day))
+                        expensesList.add(Expense(name, spending, day, category))
                         totalExpenditure += spending.replace(",", "").toIntOrNull() ?: 0
                     }
 
+                    originalExpensesList = expensesList.toMutableList() // 원본 리스트 저장
                     expensesAdapter.notifyDataSetChanged() // 어댑터 업데이트
 
                     val totalExpenditureFormatted = NumberFormat.getNumberInstance(Locale.US).format(totalExpenditure)
@@ -166,6 +157,23 @@ class ExpenditureDetailActivity : AppCompatActivity() {
                 Log.e("Firestore", "Error getting documents: ", e)
             }
         }
+    }
+
+    private fun filterByCategory(category: String) {
+        val filteredList = if (category == "모두 보기") {
+            originalExpensesList // 원본 목록으로 복원
+        } else {
+            originalExpensesList.filter { it.category == category } // 원본 데이터에서 필터링
+        }
+
+        Log.d("ExpenditureDetail", "Filtered list size: ${filteredList.size}")
+
+        expensesAdapter.updateList(filteredList)
+    }
+
+    private fun filterByDay(day: String) {
+        val filteredList = expensesList.filter { it.day == day }
+        expensesAdapter.updateList(filteredList)
     }
 
     fun updateTotalExpenditure(totalExpenditure: Int) {
