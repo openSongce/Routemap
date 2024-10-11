@@ -247,7 +247,8 @@ class RouteMapViewActivity : AppCompatActivity() {
                 data=documents.data as MutableMap<*,*>
                 dataList.addAll(data["routeList"] as List<Map<String,*>>)
                 dataList.forEach{
-                    locationData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String, it["spending"] as String, it["day"] as String))
+                    locationData.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String, it["spending"] as String,
+                        try{it["day"] as String} catch (e: Exception){"0"}))
                 }
                 Log.d("loadRoutetest", dataList.toString())
             }.await()
