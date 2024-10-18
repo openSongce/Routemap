@@ -169,7 +169,14 @@ class ExpenditureDetailActivity : AppCompatActivity() {
         Log.d("ExpenditureDetail", "Filtered list size: ${filteredList.size}")
 
         expensesAdapter.updateList(filteredList)
+
+        // 필터링된 지출 총계 계산
+        val filteredTotalExpenditure = filteredList.sumOf { it.spending.replace(",", "").toIntOrNull() ?: 0 }
+
+        // 지출 총계를 업데이트
+        updateTotalExpenditure(filteredTotalExpenditure)
     }
+
 
     private fun filterByDay(day: String) {
         val filteredList = expensesList.filter { it.day == day }
@@ -179,6 +186,5 @@ class ExpenditureDetailActivity : AppCompatActivity() {
     fun updateTotalExpenditure(totalExpenditure: Int) {
         val totalExpenditureFormatted = NumberFormat.getNumberInstance(Locale.US).format(totalExpenditure)
         totalExpenditureTextView.text = "${totalExpenditureFormatted}원 지출"
-        // 필요 시, 업데이트된 총 지출에 따라 더치페이 금액도 업데이트
     }
 }
