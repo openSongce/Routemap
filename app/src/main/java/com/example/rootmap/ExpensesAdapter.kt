@@ -92,9 +92,10 @@ class ExpensesAdapter(
             spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             categorySpinner.adapter = spinnerAdapter
 
-            // Firestore에서 가져온 카테고리 값을 Spinner에 설정
+            // Firestore에서 가져온 카테고리 값을 Spinner에 설정 (카테고리가 없으면 '기타'로 설정)
             val categories = context.resources.getStringArray(R.array.expense_categories)
-            val categoryPosition = categories.indexOf(expense.category)
+            val category = if (expense.category.isNullOrEmpty()) "기타" else expense.category
+            val categoryPosition = categories.indexOf(category)
             if (categoryPosition >= 0) {
                 categorySpinner.setSelection(categoryPosition)
             }
@@ -124,6 +125,7 @@ class ExpensesAdapter(
 
             dialog.show()
         }
+
 
         private fun updateFirestore(name: String, oldSpending: String, newSpending: String, newCategory: String) {
             firestore.collection("user").document(userEmail).collection("route")

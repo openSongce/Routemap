@@ -248,7 +248,7 @@ class MyRouteActivity : AppCompatActivity() {
                 data=documents.data as MutableMap<*,*>
                 dataList.addAll(data["routeList"] as List<Map<String,*>>)
                 dataList.forEach{
-                    routeDataList.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String, it["spending"] as String, it["day"] as String))
+                    routeDataList.add(MyLocation(it["name"].toString(),it["position"] as GeoPoint,it["memo"] as String, it["spending"] as String, it["day"] as String, it["category"] as String))
                 }
             }.await()
             true

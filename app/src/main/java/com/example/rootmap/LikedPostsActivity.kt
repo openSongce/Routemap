@@ -285,7 +285,7 @@ class LikedPostsActivity : AppCompatActivity() {
                 data = documents.data as MutableMap<*, *>
                 dataList.addAll(data["routeList"] as List<Map<String, *>>)
                 dataList.forEach {
-                    postDatas.add(MyLocation(it["name"].toString(), it["position"] as GeoPoint, it["memo"] as String, it["spending"] as String, it["day"] as String))
+                    postDatas.add(MyLocation(it["name"].toString(), it["position"] as GeoPoint, it["memo"] as String, it["spending"] as String, it["day"] as String, it["category"] as String))
                 }
             }.await()
             postDatas

@@ -6,8 +6,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.PopupMenu
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -30,11 +32,14 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
     var list = mutableListOf<MyLocation>()
     lateinit var parent: ViewGroup
     lateinit var myDb: CollectionReference
-    lateinit var docId:String
+    lateinit var docId: String
 
-     var postView=false
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):Holder {
+    var postView = false
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         this.parent = parent
+        // Firebase Firestore 초기화 (필요한 Collection의 참조로 초기화)
+        myDb = Firebase.firestore.collection("myCollection") // 원하는 Firebase collection으로 변경
         val binding =
             LocationListLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return Holder(binding)
@@ -125,6 +130,104 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
             try {
                 val dialogView = LayoutInflater.from(parent.context).inflate(R.layout.dialog_edit_spending, parent, false)
                 val spendingEditText: EditText = dialogView.findViewById(R.id.editSpending)
+                val expenseCategorySpinner: Spinner = dialogView.findViewById(R.id.categorySpinner)
+
+                // 기존 지출 금액 설정
+                spendingEditText.setText(spending)
+
+                // Spinner 어댑터 설정 (카테고리 선택)
+                val spinnerAdapter = ArrayAdapter.createFromResource(
+                    parent.context,
+                    R.array.expense_categories,
+                    android.R.layout.simple_spinner_item
+                )
+                spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                expenseCategorySpinner.adapter = spinnerAdapter
+
+                // Firestore에서 가져온 카테고리 값을 Spinner에 설정
+                val categories = parent.context.resources.getStringArray(R.array.expense_categories)
+                val currentExpense = list[position] // 현재 선택한 항목
+
+                // 카테고리가 비어있다면 기본값을 '기타'로 설정
+                val category = if (currentExpense.category.isNullOrEmpty()) "기타" else currentExpense.category
+                val categoryPosition = categories.indexOf(category)
+                if (categoryPosition >= 0) {
+                    expenseCategorySpinner.setSelection(categoryPosition)
+                }
+
+                val dialog = AlertDialog.Builder(parent.context)
+                    .setTitle("금액 및 카테고리 수정")
+                    .setView(dialogView)
+                    .setPositiveButton("확인") { _, _ ->
+                        // 지출 금액 수정
+                        val newSpending = spendingEditText.text.toString()
+                        val oldSpending = currentExpense.spending
+                        if (newSpending != oldSpending) {
+                            currentExpense.spending = newSpending
+                            notifyItemChanged(position)
+                        }
+
+                        // 카테고리 수정
+                        val selectedCategory = expenseCategorySpinner.selectedItem.toString()
+                        if (currentExpense.category != selectedCategory) {
+                            currentExpense.category = selectedCategory
+                            notifyItemChanged(position)
+                        }
+
+                        // Firestore에 지출 금액과 카테고리 업데이트
+                        updateFirestore(currentExpense.name, newSpending, selectedCategory)
+                    }
+                    .setNegativeButton("취소", null)
+                    .create()
+
+                dialog.show()
+            } catch (e: Exception) {
+                Log.e("ListLocationAdapter", "Error showing spending dialog", e)
+                Toast.makeText(parent.context, "Error showing spending dialog", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        private fun updateFirestore(name: String, newSpending: String, newCategory: String) {
+            if (!::myDb.isInitialized) {
+                Log.e("ListLocationAdapter", "myDb is not initialized")
+                return
+            }
+
+            myDb.document(docId).get().addOnSuccessListener { document ->
+                val routeList = document.get("routeList") as? MutableList<Map<String, Any>>
+                if (routeList != null) {
+                    val mutableRouteList = routeList.toMutableList()
+                    for (item in mutableRouteList) {
+                        if (item["name"] == name) {
+                            val mutableItem = item.toMutableMap()
+                            mutableItem["spending"] = newSpending
+                            mutableItem["category"] = newCategory
+                            mutableRouteList[mutableRouteList.indexOf(item)] = mutableItem
+                            break
+                        }
+                    }
+                    // Firebase Firestore에 업데이트 수행
+                    myDb.document(docId).update("routeList", mutableRouteList)
+                        .addOnSuccessListener {
+                            Log.d("FirestoreUpdate", "Document successfully updated!")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("FirestoreUpdate", "Error updating document", e)
+                        }
+                } else {
+                    Log.e("FirestoreUpdate", "routeList is null or empty")
+                }
+            }.addOnFailureListener { e ->
+                Log.e("FirestoreUpdate", "Error getting document", e)
+            }
+        }
+
+
+        /*
+        private fun showSpendingDialog(spending: String, position: Int) {
+            try {
+                val dialogView = LayoutInflater.from(parent.context).inflate(R.layout.dialog_edit_spending, parent, false)
+                val spendingEditText: EditText = dialogView.findViewById(R.id.editSpending)
                 spendingEditText.setText(spending)
 
                 val dialog = AlertDialog.Builder(parent.context)
@@ -145,28 +248,7 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                 Log.e("ListLocationAdapter", "Error showing spending dialog", e)
                 Toast.makeText(parent.context, "Error showing spending dialog", Toast.LENGTH_SHORT).show()
             }
-        }
-        /*
-                private fun updateFirestoreSpending(name: String, newSpending: String) {
-                    myDb.document(docId).get().addOnSuccessListener { document ->
-                        val routeList = document.get("routeList") as? MutableList<Map<String, Any>>
-                        if (routeList != null) {
-                            val mutableRouteList = routeList.toMutableList()
-                            for (item in mutableRouteList) {
-                                if (item["name"] == name) {
-                                    val mutableItem = item.toMutableMap()
-                                    mutableItem["spending"] = newSpending
-                                    mutableRouteList[mutableRouteList.indexOf(item)] = mutableItem
-                                    break
-                                }
-                            }
-                            myDb.document(docId).update("routeList", mutableRouteList)
-                        }
-                    }
-                }
-
-         */
-
+        }*/
     }
     // 현재 선택된 데이터와 드래그한 위치에 있는 데이터를 교환
 

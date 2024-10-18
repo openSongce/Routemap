@@ -443,7 +443,7 @@ class MenuFragment3 : Fragment() {
                 viewLifecycleOwner.lifecycleScope.async {
                     loadListData.clear()
                     loadMyRouteData(docId,owner)
-                    loadListData.add(MyLocation(clickLocationName,clickLocationAdress,"","", "")) //해당 장소를 리스트에 추가
+                    loadListData.add(MyLocation(clickLocationName,clickLocationAdress,"","", "","")) //해당 장소를 리스트에 추가
                     myRouteListAdapter.list=loadListData
                     showListDialog(docId,"add",owner)
                 }
@@ -839,7 +839,8 @@ class MenuFragment3 : Fragment() {
                                 it["position"] as? GeoPoint ?: GeoPoint(0.0, 0.0),
                                 it["memo"]?.toString() ?: "",
                                 it["spending"]?.toString() ?: "0",
-                                it["day"]?.toString() ?: "0"
+                                it["day"]?.toString() ?: "0",
+                                it["category"]?.toString() ?: ""
                             )
                         )
                     }
