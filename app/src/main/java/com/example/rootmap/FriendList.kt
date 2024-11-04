@@ -8,26 +8,18 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.Friend
-import com.example.rootmap.databinding.DialogChangePasswordBinding
-import com.example.rootmap.databinding.DialogLayoutBinding
 import com.example.rootmap.databinding.FragmentFriendListBinding
 import com.example.rootmap.databinding.FriendInfoDialogBinding
-import com.example.rootmap.databinding.FriendLayoutBinding
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.async
 import kotlinx.coroutines.tasks.await
-import androidx.fragment.app.DialogFragment
 
 //친구 리스트 프래그먼트-현재 자신과 친구 상태인 유저의 리스트를 출력 등의 기능을 가진 화면
 // TODO: Rename parameter arguments, choose names that match

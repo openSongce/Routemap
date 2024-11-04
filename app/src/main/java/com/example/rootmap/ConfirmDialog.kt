@@ -18,7 +18,7 @@ class ConfirmDialog(
     private var _binding: DialogLayoutBinding? = null
     private val binding get() = _binding!!
 
-    private var confirmDialogInterface: ConfirmDialogInterface? = null
+    private var confirmDialogInterface: ConfirmDialogInterface?
 
     private var text: String? = null
     private var id: String? = null

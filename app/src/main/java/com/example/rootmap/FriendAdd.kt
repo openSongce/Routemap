@@ -25,6 +25,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.firestore.DocumentSnapshot
+import okhttp3.internal.concat
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -36,7 +37,7 @@ private const val ARG_PARAM2 = "param2"
  * Use the [FriendAdd.newInstance] factory method to
  * create an instance of this fragment.
  */
-class FriendAdd : Fragment() {
+class FriendAdd : Fragment(), ConfirmDialogInterface {
     // TODO: Rename and change types of parameters
     private var currentId: String? = null
     private var param2: String? = null
@@ -44,6 +45,8 @@ class FriendAdd : Fragment() {
     val data: MutableList<Friend> = mutableListOf()
     val searchData:MutableList<Friend> = mutableListOf()
     lateinit var addAdapter: FriendAdapter
+    private var dialog_ver=0
+    lateinit var sendCheckDialog: ConfirmDialog
 
     init {
         instance = this
@@ -110,24 +113,10 @@ class FriendAdd : Fragment() {
         }
     }
     fun showCancle(frid: String) {
-        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
-        dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
-        dBinding.bButton.text = "확인"
-        dBinding.content.text = "해당 유저에게 보낸 신청을 취소하겠습니까?"
-        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
-        val dialog = dialogBuild.show() //다이어로그 창 띄우기
-        var id = currentId.toString()
-        dBinding.bButton.setOnClickListener {
-            db.collection("user").document(id).collection("friend").document(frid)
-                .delete()
-            db.collection("user").document(frid).collection("friend").document(id)
-                .delete()
-            refresh()
-            dialog.dismiss()
-        }
-        dBinding.wButton.setOnClickListener {//취소버튼
-            dialog.dismiss()
-        }
+        dialog_ver=0
+        val deletDialog=ConfirmDialog(this,"해당 유저에게 보낸 신청을 취소하겠습니까?",frid)
+        deletDialog.isCancelable = false
+        deletDialog.show(activity?.supportFragmentManager!!, "ConfirmDialog")
     }
 
     private fun Context.hideKeyboard(view: View) {
@@ -146,82 +135,16 @@ class FriendAdd : Fragment() {
         }
     }
 
-
     private fun showDialog(
-        text: String,
-        friendDb: CollectionReference
+        frid: String
+        //friendDb: CollectionReference
     ) { //다이어로그로 팝업창 구현, 아래의 searchUser()에서 사용
         //여기서 binding은 FriendAdd의 Binding, text는 신청보낼 유저 ID임
-        val dBinding = DialogLayoutBinding.inflate(layoutInflater)
-        dBinding.wButton.text = "취소" //다이어로그의 텍스트 변경
-        dBinding.bButton.text = "신청"
-        dBinding.content.text = "${text} 에게 친구 신청을 보내겠습니까?"
-        val dialogBuild = AlertDialog.Builder(context).setView(dBinding.root)
-        val dialog = dialogBuild.show() //다이어로그 창 띄우기
-        dBinding.bButton.setOnClickListener {//다이어로그 기능 설정
-            //검정 버튼의 기능 구현 ↓
-            context?.hideKeyboard(binding.root) //키보드 내리기 -> 키보드 사용안하는 사람은 사용X
-            var dc_friend = friendDb.whereEqualTo("id", currentId)
-            dc_friend.get().addOnSuccessListener { document ->
-                if (document.isEmpty) {//신청 보내기
-                    dialog.dismiss() //다이어로그 창 끄기
-                    friendDb.document(currentId.toString())
-                        .set(hashMapOf("id" to currentId, "state" to "0"))//상대의 데이터에 추가
-                    myDb.document(text).set(
-                        hashMapOf("id" to text, "state" to "1")
-                    )//내 데이터에 추가
-                    refresh()
-                    Toast.makeText(this.context, "친구 신청을 보냈습니다.", Toast.LENGTH_SHORT).show()
-                } else {//이미 데이터가 있는 경우
-                    // val d_id=document.documents[0].id //문서 아이디 저장
-                    dialog.dismiss()
-                    val state =
-                        friendDb.document(currentId.toString()).get()
-                            .addOnSuccessListener { dc ->
-                                val stateValue = dc.data?.get("state")
-                                when (stateValue.toString()) {
-                                    "0" -> Toast.makeText(
-                                        this.context,
-                                        "이미 신청을 보낸 상태입니다.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+        dialog_ver=1
+        sendCheckDialog=ConfirmDialog(this,"${frid} 에게 친구 신청을 보내겠습니까?",frid)
+        sendCheckDialog.isCancelable = false
+        sendCheckDialog.show(activity?.supportFragmentManager!!, "ConfirmDialog")
 
-                                    "1" -> Toast.makeText(
-                                        this.context,
-                                        "이미 요청을 받았습니다. '받은 요청'탭에서 수락하세요.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-
-                                    "2" -> Toast.makeText(
-                                        this.context,
-                                        "이미 친구입니다.",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-
-                                    else -> Toast.makeText(
-                                        this.context,
-                                        "알 수 없는 값",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-                                }
-                            }.addOnFailureListener { exception -> //DB접근에 실패했을때
-                                dialog.dismiss()
-                                loadFail()
-                            }
-                }
-                binding.searchFriendText.text = null
-            }.addOnFailureListener { exception -> //DB접근에 실패했을때
-                dialog.dismiss()
-                loadFail()
-            }
-        }
-        dBinding.wButton.setOnClickListener {//취소버튼
-            //회색 버튼의 기능 구현 ↓
-            dialog.dismiss()
-
-        }
     }
     private fun refresh(){
         //수정 필요
@@ -256,11 +179,11 @@ class FriendAdd : Fragment() {
 
                 if (combinedResults.isNotEmpty()) {
                     if (resultsByNickname.documents.size>1) {
+                        //text가 닉네임일 때
                         showUserSelectionDialog(resultsByNickname.documents)
                     } else {
-                        val firstResult = combinedResults.first()
-                        val friendQuery = db.collection("user").document(firstResult.id).collection("friend")
-                        showDialog(text, friendQuery)
+                        //id일 때
+                        showDialog(text)
                     }
 
                 } else {
@@ -274,37 +197,16 @@ class FriendAdd : Fragment() {
 
     private fun showUserSelectionDialog(users: List<DocumentSnapshot>) {
         val userNames = users.map { "${it.getString("nickname")} (${it.getString("id")})" }.toTypedArray()
-        val userIds = users.map { it.id }
-
+        val userIds = users.map { it.getString("id") }
         AlertDialog.Builder(context)
             .setTitle("사용자를 선택하세요")
             .setItems(userNames) { _, which ->
-                val selectedUserId = userIds[which]
-                val friendQuery = db.collection("user").document(selectedUserId).collection("friend")
-                showDialog(userIds[which], friendQuery)
+                val selectedUserId = userIds[which].toString()
+                showDialog(selectedUserId)
             }
             .setNegativeButton("취소", null)
             .show()
     }
-
-    /*private fun searchUser(text: String) {
-        //데이터베이터에서 해당 ID의 유저 검색
-        val userData =
-            db.collection("user").whereEqualTo("id", text) //필드의 id값이 text인 유저(문서)를 data에 저장
-        userData.get().addOnSuccessListener { document -> //DB접근 성공하였을 때
-            if (!document.isEmpty) {//해당 유저가 존재할 때
-                val friendQuery =
-                    db.collection("user").document(document.documents[0].id)
-                        .collection("friend")
-                showDialog(text, friendQuery)
-            } else {
-                Toast.makeText(context, "해당 유저는 존재하지 않아 신청을 보낼 수 없습니다.", Toast.LENGTH_SHORT)
-                    .show()
-            }
-        }.addOnFailureListener { exception -> //DB접근에 실패했을때
-            loadFail()
-        }
-    }*/
 
     private fun loadFail() {
         Toast.makeText(context, "데이터 로드에 실패했습니다.", Toast.LENGTH_SHORT).show()
@@ -336,4 +238,79 @@ class FriendAdd : Fragment() {
 
 
     }
+
+    override fun onYesButtonClick(id: String) {
+        var myid = currentId.toString()
+        if (dialog_ver == 0) {
+            db.collection("user").document(id).collection("friend").document(myid)
+                .delete()
+            db.collection("user").document(myid).collection("friend").document(id)
+                .delete()
+            refresh()
+        } else { //1인 경우
+
+            context?.hideKeyboard(binding.root) //키보드 내리기 -> 키보드 사용안하는 사람은 사용X
+            var friendDb=db.collection("user").document(id)
+                .collection("friend")
+            var dc_friend = db.collection("user").document(id)
+                .collection("friend").whereEqualTo("id", myid)
+            dc_friend.get().addOnSuccessListener { document ->
+                if (document.isEmpty) {//신청 보내기
+                    sendCheckDialog.dismiss() //다이어로그 창 끄기
+                    friendDb.document(myid)
+                        .set(hashMapOf("id" to myid, "state" to "0"))//상대의 데이터에 추가
+                    myDb.document(id).set(
+                        hashMapOf("id" to id, "state" to "1")
+                    )//내 데이터에 추가
+                    refresh()
+                    Toast.makeText(this.context, "친구 신청을 보냈습니다.", Toast.LENGTH_SHORT).show()
+                } else {//이미 데이터가 있는 경우
+                    // val d_id=document.documents[0].id //문서 아이디 저장
+                    sendCheckDialog.dismiss()
+                    val state =
+                        friendDb.document(myid).get()
+                            .addOnSuccessListener { dc ->
+                                val stateValue = dc.data?.get("state")
+                                when (stateValue.toString()) {
+                                    "0" -> Toast.makeText(
+                                        this.context,
+                                        "이미 신청을 보낸 상태입니다.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                    "1" -> Toast.makeText(
+                                        this.context,
+                                        "이미 요청을 받았습니다. '받은 요청'탭에서 수락하세요.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                    "2" -> Toast.makeText(
+                                        this.context,
+                                        "이미 친구입니다.",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+
+                                    else -> Toast.makeText(
+                                        this.context,
+                                        "알 수 없는 값",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+                                }
+                            }.addOnFailureListener { exception -> //DB접근에 실패했을때
+                                sendCheckDialog.dismiss()
+                                loadFail()
+                            }
+                }
+                binding.searchFriendText.text = null
+            }.addOnFailureListener { exception -> //DB접근에 실패했을때
+                sendCheckDialog.dismiss()
+                loadFail()
+            }
+
+        }
+
+    }
+
 }

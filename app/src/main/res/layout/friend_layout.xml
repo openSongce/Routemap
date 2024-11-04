@@ -60,7 +60,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="80dp"
                     android:gravity="center_vertical"
-                    android:background="@drawable/tourist_round">
+                    android:background="@drawable/friend_list_background">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                         android:id="@+id/picture"
@@ -113,15 +113,21 @@
                         app:srcCompat="@android:drawable/btn_dialog"
                         android:id="@+id/xButton"
                         android:layout_weight="0"
-                        android:visibility="gone" />
+                        android:visibility="gone"
+                        android:backgroundTint="#00FF0000"
+                        android:tint="@color/custum_color"
+                        android:tintMode="add" />
 
                 <ImageButton
-                        android:src="?android:attr/textCheckMark"
+                        android:src="?android:attr/textCheckMarkInverse"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/checkButton"
                         android:layout_weight="0"
-                        android:visibility="gone" />
+                        android:visibility="gone"
+                        android:backgroundTint="#00FF0000"
+                        android:tint="@color/red"
+                        android:tintMode="src_in" />
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>
