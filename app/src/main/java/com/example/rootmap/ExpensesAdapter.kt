@@ -19,6 +19,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.NumberFormat
 import java.util.Locale
+import kotlin.math.exp
 
 class ExpensesAdapter(
     private val expensesList: MutableList<Expense>,
@@ -52,7 +53,8 @@ class ExpensesAdapter(
     inner class ExpenseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val nameTextView: TextView = itemView.findViewById(R.id.expenseName)
         private val spendingTextView: TextView = itemView.findViewById(R.id.expenseAmount)
-        private val categoryTextView: TextView = itemView.findViewById(R.id.expenseCategoryText) // 변경된 TextView
+        private val categoryTextView: TextView = itemView.findViewById(R.id.expenseCategoryText) // 변경된 카테고리 TextView
+        private val dayTextView: TextView = itemView.findViewById(R.id.expenseDayText) // 변경된 카테고리 TextView
         private val editButton: Button = itemView.findViewById(R.id.btnEdit)
         //위 4개는 item_expense.xml에 위치
 
@@ -67,6 +69,11 @@ class ExpensesAdapter(
             } else {
                 categoryTextView.text = "카테고리 없음"
             }
+
+            if (expense.day.isNotEmpty())
+                dayTextView.text = expense.day
+            else
+                dayTextView.text = "날짜 없음"
 
             // 로그 추가 - Expense 객체에 있는 카테고리 값을 확인
             //Log.d("ExpenseDetail", "Loaded category: ${expense.category}")
@@ -224,6 +231,7 @@ class ExpensesAdapter(
                     val selectedDay = daySpinner.selectedItem.toString()
                     if (expense.day != selectedDay) {
                         expense.day = selectedDay
+                        dayTextView.text = selectedDay
                     }
 
                     updateTotalExpenditure()
