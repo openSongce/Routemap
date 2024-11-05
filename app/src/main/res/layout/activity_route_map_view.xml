@@ -91,14 +91,13 @@
             android:id="@+id/routeListDownButton"
             android:layout_width="50dp"
             android:layout_height="30dp"
-            android:layout_marginBottom="5dp"
+            android:layout_marginBottom="10dp"
             app:layout_constraintBottom_toTopOf="@+id/locationListView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:src="@drawable/search_list_down"
             android:scaleType="fitCenter"
-            app:tint="@color/white"
-            android:background="@drawable/updownbox"
+            android:background="@android:color/transparent"
             />
 
     <androidx.recyclerview.widget.RecyclerView

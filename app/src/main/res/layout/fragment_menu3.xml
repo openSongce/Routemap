@@ -74,14 +74,14 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:id="@+id/routeSaveButton"
-            android:src="@android:drawable/ic_menu_save"
+            android:src="@drawable/save"
             android:scaleType="fitCenter"
             android:padding = "5dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/listButton"
             android:layout_marginBottom="5dp"
             android:layout_marginEnd="5dp"
-            android:background="@drawable/button_round_rectangle"
+            android:background="@android:color/transparent"
             android:visibility="gone" />
 
     <ImageButton
@@ -92,12 +92,11 @@
             android:visibility="gone"
 
             app:layout_constraintStart_toEndOf="@+id/locationButton"
-            android:layout_marginBottom="5dp"
+            android:layout_marginBottom="10dp"
             android:layout_marginStart="10dp"
             app:layout_constraintBottom_toTopOf="@+id/bottom_button"
             android:scaleType="fitCenter"
-            app:tint="@color/white"
-            android:background="@drawable/button_round_rectangle" />
+            android:background="@android:color/transparent" />
 
     <ImageButton
             android:layout_width="40dp"
@@ -111,8 +110,7 @@
             app:layout_constraintBottom_toTopOf="@+id/bottom_button"
             android:scaleType="fitCenter"
             android:padding = "5dp"
-            app:tint="@color/white"
-            android:background="@drawable/button_round_rectangle" />
+            android:background="@android:color/transparent" />
 
     <ImageButton
             android:src="@drawable/route"
@@ -120,8 +118,7 @@
             android:layout_height="60dp"
             android:id="@+id/listButton"
             android:scaleType="fitCenter"
-            android:background="@drawable/button_round_rectangle"
-            app:tint="@color/white"
+            android:background="@android:color/transparent"
             android:visibility="visible"
             android:padding = "5dp"
 
@@ -136,8 +133,7 @@
             android:layout_height="60dp"
             android:id="@+id/listCloseButton"
             android:scaleType="fitCenter"
-            android:background="@drawable/button_round_rectangle"
-            app:tint="@color/white"
+            android:background="@android:color/transparent"
             android:padding = "5dp"
 
             app:layout_constraintEnd_toEndOf="parent"
@@ -147,15 +143,14 @@
             android:visibility="gone" />
 
     <ImageButton
-            android:src="@drawable/location"
+            android:src="@drawable/target"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:id="@+id/locationButton"
 
             android:scaleType="fitCenter"
             android:padding="5dp"
-            android:background="@drawable/button_rounded"
-            app:tint="#FFFFFF"
+            android:background="@android:color/transparent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginBottom="5dp"
             app:layout_constraintBottom_toTopOf="@+id/bottom_button"

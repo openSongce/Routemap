@@ -631,15 +631,7 @@ class MenuFragment3 : Fragment() {
                 RouteLineOptions.from(RouteLineSegment.from(latLngList, styles))
             byLevelLine = layerR?.addRouteLine(options)
 
-            val panimation : ProgressAnimation = ProgressAnimation.from("animatorid",5000)
-            panimation.setInterpolation(Interpolation.Linear)
-            panimation.setProgressType(ProgressType.ToShow)
-            panimation.setProgressDirection(ProgressDirection.StartFirst)
-            panimation.setHideAtStop(false)
-            panimation.setResetToInitialState(false)
 
-           val panimator : RouteLineAnimator = kakaomap.routeLineManager!!.addAnimator(panimation)
-            panimator.addRouteLines(byLevelLine)
 
             var testlayer= kakaomap!!.getLabelManager()?.getLodLayer();
             label = testlayer!!.addLodLabels(labels)
@@ -651,7 +643,6 @@ class MenuFragment3 : Fragment() {
                 CameraAnimation.from(500)
             )
 
-            panimator.start(OnRouteLineAnimatorStopCallback {  })
 
         }
     }
