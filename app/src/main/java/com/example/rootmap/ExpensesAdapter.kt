@@ -2,6 +2,7 @@ package com.example.rootmap
 
 import android.app.AlertDialog
 import android.content.Context
+import android.speech.AlternativeSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.NumberFormat
 import java.util.Locale
@@ -52,13 +54,14 @@ class ExpensesAdapter(
         private val spendingTextView: TextView = itemView.findViewById(R.id.expenseAmount)
         private val categoryTextView: TextView = itemView.findViewById(R.id.expenseCategoryText) // 변경된 TextView
         private val editButton: Button = itemView.findViewById(R.id.btnEdit)
+        //위 4개는 item_expense.xml에 위치
 
         fun bind(expense: Expense) {
             nameTextView.text = expense.name
             val spendingFormatted = NumberFormat.getNumberInstance(Locale.US).format(expense.spending.replace(",", "").toIntOrNull() ?: 0)
             spendingTextView.text = spendingFormatted
 
-            // Firestore에서 가져온 카테고리 값이 있다면 설정, 없다면 '카테고리 없음'을 표시
+            // Firestore에서 가져온 카테고리 값이 있다면 화면에 설정, 없다면 '카테고리 없음'을 표시
             if (expense.category.isNotEmpty()) {
                 categoryTextView.text = expense.category
             } else {
@@ -70,11 +73,93 @@ class ExpensesAdapter(
             //Log.d("ExpenseDetail", "Loaded name: ${expense.name}")
 
             editButton.setOnClickListener {
-                showEditDialog(expense)
+                //showEditDialog(expense)
+                showChoiceDialog(expense)
             }
         }
 
-        private fun showEditDialog(expense: Expense) {
+        private fun showChoiceDialog(expense: Expense) {
+            val options = arrayOf("날짜 수정", "금액 수정")
+            val icons = intArrayOf(R.drawable.calendar, R.drawable.money)
+
+            val dialog = AlertDialog.Builder(context)
+                .setTitle("수정 선택")
+                .setItems(options) { _, which ->
+                    when (which) {
+                        0 -> showDayEditDialog(expense) // "날짜 수정" 선택
+                        1 -> showSpendingEditDialog(expense) // "금액 수정" 선택
+                    }
+                }
+                .setNegativeButton("취소", null)
+                .create()
+            dialog.show()
+        }
+
+        private fun showDayEditDialog(expense: Expense) {
+            val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_day, null)
+
+            val daySpinner: Spinner = dialogView.findViewById(R.id.daySpinner) // Spinner 추가
+
+            // Spinner 어댑터 설정 (날짜 선택)
+            val spinnerDayAdapter = ArrayAdapter.createFromResource(
+                context,
+                R.array.days_categories,
+                android.R.layout.simple_spinner_item
+            )
+            spinnerDayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            daySpinner.adapter = spinnerDayAdapter
+
+            // Firestore에서 가져온 카테고리 값을 Spinner에 설정 (날짜가 없으면 '모든 날짜'로 설정)
+            val categories = context.resources.getStringArray(R.array.days_categories)
+            val category = if (expense.day.isNullOrEmpty()) "모든 날짜" else expense.day
+            val categoryPosition = categories.indexOf(category)
+            if (categoryPosition >= 0) {
+                daySpinner.setSelection(categoryPosition)
+            }
+
+            val dialog = AlertDialog.Builder(context)
+                .setTitle("날짜 수정")
+                .setView(dialogView)
+                .setPositiveButton("저장") { _, _ ->
+
+                    // 날짜 수정
+                    val selectedDay = daySpinner.selectedItem.toString()
+                    if (expense.day != selectedDay) {
+                        expense.day = selectedDay
+                        //categoryTextView.text = selectedDay // 수정된 카테고리 TextView에 반영
+                    }
+
+                    updateDayFirestore(expense.name, selectedDay)
+                }
+                .setNegativeButton("취소", null)
+                .create()
+
+            dialog.show()
+        }
+
+        private fun updateDayFirestore(name: String, newDay: String) {
+            firestore.collection("user").document(userEmail).collection("route")
+                .whereEqualTo("tripname", tripname).get()
+                .addOnSuccessListener { documents ->
+                    for (document in documents) {
+                        val routeList = document.get("routeList") as? MutableList<Map<String, Any>>
+                        if (routeList != null) {
+                            val mutableRouteList = routeList.toMutableList()
+                            for (item in mutableRouteList) {
+                                if (item["name"] == name) {
+                                    val mutableItem = item.toMutableMap()
+                                    mutableItem["category"] = newDay
+                                    mutableRouteList[mutableRouteList.indexOf(item)] = mutableItem
+                                    break
+                                }
+                            }
+                            document.reference.update("routeList", mutableRouteList)
+                        }
+                    }
+                }
+        }
+
+        private fun showSpendingEditDialog(expense: Expense) {
             val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_spending, null)
 
             val spendingEditText: EditText = dialogView.findViewById(R.id.editSpending)

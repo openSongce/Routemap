@@ -69,6 +69,7 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
         fun setData(myLocation: MyLocation,position: Int) {
             var memo=myLocation.memo
             var spending=myLocation.spending
+            var day = myLocation.day
             binding.triplocationName.text=myLocation.name
             binding.memoText.text=memo
             binding.costText.text=spending
@@ -83,8 +84,11 @@ class ListLocationAdapter : RecyclerView.Adapter<ListLocationAdapter.Holder>()  
                         R.id.memo -> { //메모 클릭
                             showMemoDialog(memo,position)
                         }
-                        else -> { //금액 클릭
+                        R.id.spending -> { //금액 클릭
                             showSpendingDialog(spending, position)
+                        }
+                        R.id.day -> {
+                            showSpendingDialog(day, position)
                         }
                     }
                     true

@@ -4,6 +4,9 @@
             android:id="@+id/memo"
             android:title="메모" />
     <item
-            android:id="@+id/account"
+            android:id="@+id/spending"
             android:title="금액" />
+    <item
+            android:id="@+id/day"
+            android:title="날짜" />
 </menu>

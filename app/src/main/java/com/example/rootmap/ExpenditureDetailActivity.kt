@@ -3,6 +3,7 @@ package com.example.rootmap
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -72,6 +73,7 @@ class ExpenditureDetailActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        //날짜에 해당하는 스피너 생성
         val spinner: Spinner = findViewById(R.id.daysCategory)
 
         ArrayAdapter.createFromResource(
@@ -83,22 +85,32 @@ class ExpenditureDetailActivity : AppCompatActivity() {
             spinner.adapter = adapter
         }
 
+        //firebase에서 가져온 날짜 값을 spinner에 설정
+        if (expensesList.isNotEmpty()) {
+            val day = if (expensesList[0].day.isNullOrEmpty()) "기타" else expensesList[0].day
+            val days = resources.getStringArray(R.array.days_categories)
+            val dayPosition = days.indexOf(day)
+            if (dayPosition >= 0)
+                spinner.setSelection(dayPosition)
+        }
+
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 when (position) {
-                    0 -> loadExpenses(createdBy ?: "", tripname ?: "") // 모든 날짜 선택
-                    1 -> filterByDay("1") // DAY 1 선택
-                    2 -> filterByDay("2") // DAY 2 선택
-                    3 -> filterByDay("3") // DAY 3 선택
-                    4 -> filterByDay("4") // DAY 4 선택
-                    5 -> filterByDay("5") // DAY 5 선택
+                    0 -> filterByDay("모든 날짜") //모든 날짜 선택
+                    1 -> filterByDay("DAY 1") // DAY 1 선택
+                    2 -> filterByDay("DAY 2") // DAY 2 선택
+                    3 -> filterByDay("DAY 3") // DAY 3 선택
+                    4 -> filterByDay("DAY 4") // DAY 4 선택
+                    5 -> filterByDay("DAY 5") // DAY 5 선택
                 }
             }
-
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 expensesAdapter.updateList(expensesList)
             }
         }
+
+
 
         // 카테고리별 버튼 클릭 이벤트 처리
         val btnAll: Button = findViewById(R.id.btnAll)
@@ -109,10 +121,10 @@ class ExpenditureDetailActivity : AppCompatActivity() {
         val btnOther: Button = findViewById(R.id.btnOther)
 
         btnAll.setOnClickListener { filterByCategory("모두 보기") }
-        btnFood.setOnClickListener { filterByCategory("식비") }
-        btnTransport.setOnClickListener { filterByCategory("교통비") }
-        btnLodging.setOnClickListener { filterByCategory("숙박") }
-        btnLeisure.setOnClickListener { filterByCategory("여가") }
+            btnFood.setOnClickListener { filterByCategory("식비") }
+            btnTransport.setOnClickListener { filterByCategory("교통비") }
+            btnLodging.setOnClickListener { filterByCategory("숙박") }
+            btnLeisure.setOnClickListener { filterByCategory("여가") }
         btnOther.setOnClickListener { filterByCategory("기타") }
     }
 
@@ -179,7 +191,12 @@ class ExpenditureDetailActivity : AppCompatActivity() {
 
 
     private fun filterByDay(day: String) {
-        val filteredList = expensesList.filter { it.day == day }
+        val filteredList = if (day == "모든 날짜") {
+            originalExpensesList // 원본 목록으로 복원
+        } else {
+            originalExpensesList.filter { it.day == day }
+        }
+        //val filteredList = expensesList.filter { it.day == day }
         expensesAdapter.updateList(filteredList)
     }
 
