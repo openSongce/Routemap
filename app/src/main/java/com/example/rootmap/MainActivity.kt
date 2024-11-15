@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         binding.run {
             mainFrm.adapter = adapter
             mainFrm.setUserInputEnabled(false)
-            pageName.text = "메인"
+            pageName.text = "관광지 추천"
         }
         binding.mainFrm.registerOnPageChangeCallback(
             object : ViewPager2.OnPageChangeCallback() {
@@ -49,18 +49,11 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         //하단에 탭 바 구성, 클릭 시 해당 프레그먼트로 이동
         binding.mainBottomNav.itemIconTintList = null
         binding.mainBottomNav.background = null
-        binding.mainBottomNav.menu.getItem(2).isEnabled = false
         binding.mainBottomNav.setOnItemReselectedListener { }
         var bundle = Bundle()
         bundle.putString("id", currentId)
         for (fragment in contextList) {
             fragment.arguments = bundle
-        }
-
-        binding.mainFloatingAddBtn.setOnClickListener{
-            //Toast.makeText(this, "클릭", Toast.LENGTH_SHORT).show()
-
-
         }
 
     }
@@ -104,6 +97,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     // MainActivity.kt
     fun navigateToMenuFragment3WithTitle(title: String, addr1: String? = null, addr2: String) {
         binding.mainFrm.currentItem = 2
+        binding.pageName.text = "지도"
         val fragment = supportFragmentManager.findFragmentByTag("f2") as? MenuFragment3
         fragment?.let {
             Log.d("navigateToMenuFragment3WithTitle", "Title: $title, Addr1: $addr1, Addr2: $addr2")

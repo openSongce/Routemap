@@ -6,16 +6,24 @@
         android:layout_height="match_parent"
         android:background="#ffffff"
         tools:context=".ui.MainActivity">
+
+    <ImageView
+            android:src="@mipmap/ic_rootmap_foreground"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:id="@+id/imageView3" />
+
     <TextView
             android:text="TextView"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
             android:id="@+id/pageName"
             android:gravity="center_horizontal|center_vertical"
             android:textStyle="bold"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintTop_toTopOf="@id/imageView3"
+            app:layout_constraintEnd_toEndOf="@id/imageView3"
+            app:layout_constraintStart_toStartOf="@id/imageView3"
+            android:layout_gravity="center_horizontal" />
 
     <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/main_frm"
@@ -23,7 +31,7 @@
             android:layout_height="match_parent"
             app:layout_constraintTop_toTopOf="@id/pageName"
             app:layout_constraintBottom_toTopOf="@id/main_bottom_appBar"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="60dp"
             android:layout_marginBottom="60dp" />
 
     <com.google.android.material.bottomappbar.BottomAppBar
@@ -46,19 +54,5 @@
                 app:itemTextColor="#000000" />
 
     </com.google.android.material.bottomappbar.BottomAppBar>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/main_floating_add_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/center_plus"
-            android:backgroundTint="#00FFFFFF"
-            app:borderWidth="0dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:tint="@null"
-            app:maxImageSize="60dp"
-            app:fabCustomSize="60dp"
-            app:layout_anchor="@id/main_bottom_appBar" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
