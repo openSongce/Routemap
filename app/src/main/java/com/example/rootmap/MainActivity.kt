@@ -57,6 +57,12 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             fragment.arguments = bundle
         }
 
+        binding.mainFloatingAddBtn.setOnClickListener{
+            //Toast.makeText(this, "클릭", Toast.LENGTH_SHORT).show()
+
+
+        }
+
     }
 
     override fun onBackPressed() {

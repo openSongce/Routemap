@@ -120,6 +120,8 @@ class FriendRequest : Fragment() {
             //취소 버튼
             dialog.dismiss()
         }
+
+
     }
     fun showCancle(frid: String) {
         val dBinding = DialogLayoutBinding.inflate(layoutInflater)
@@ -187,6 +189,7 @@ class FriendRequest : Fragment() {
             return instance
         }
     }
+
 
 
 }

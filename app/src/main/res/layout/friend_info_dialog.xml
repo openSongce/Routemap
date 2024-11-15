@@ -39,14 +39,4 @@
             android:layout_marginTop="10dp"
             app:layout_constraintEnd_toEndOf="parent" />
 
-    <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:srcCompat="@android:drawable/ic_menu_share"
-            android:id="@+id/imageButton3"
-            app:layout_constraintEnd_toStartOf="@+id/frDelButton"
-            android:background="@drawable/button_round_rectangle"
-            android:layout_marginRight="20dp"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>
