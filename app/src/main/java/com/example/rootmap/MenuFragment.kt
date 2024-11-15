@@ -22,6 +22,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -242,13 +243,15 @@ class MenuFragment : Fragment() {
     private fun selectButton(button: Button) {
         clearButtonSelection()
         button.setTextColor(ContextCompat.getColor(requireContext(), R.color.selected_button_text))
-        button.setTypeface(null, android.graphics.Typeface.BOLD)
+        button.setTypeface(ResourcesCompat.getFont(requireContext(), R.font.pretendard_medium), android.graphics.Typeface.BOLD) // 폰트 적용
         selectedButton = button
     }
 
     private fun clearButtonSelection() {
-        selectedButton?.setTextColor(ContextCompat.getColor(requireContext(), R.color.default_button_text))
-        selectedButton?.setTypeface(null, android.graphics.Typeface.NORMAL)
+        selectedButton?.let {
+            it.setTextColor(ContextCompat.getColor(requireContext(), R.color.default_button_text))
+            it.setTypeface(ResourcesCompat.getFont(requireContext(), R.font.pretendard_medium), android.graphics.Typeface.NORMAL) // 폰트 적용
+        }
     }
 
     private var isInitialLoad = true
